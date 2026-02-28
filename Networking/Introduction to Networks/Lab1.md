@@ -32,7 +32,9 @@ This lab introduces Packet Tracer's logical and physical network views to unders
 
 ### **Part 1: Investigate the Bottom Toolbar**
 I started by exploring Packet Tracer's bottom toolbar to familiarize myself with available network device categories. This helps understand what infrastructure components exist in real networks.
-Devices identified:
+
+**Devices identified:**
+
 - Routers
 - Switches
 - Hubs
