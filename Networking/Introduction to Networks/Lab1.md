@@ -51,7 +51,6 @@ I investigated the physical connections in a wiring closet to understand how ent
 - Webserver
 - Access Point
 - ALS1 switch
-Why this matters: Understanding physical topology reveals potential paths for lateral movement during network penetration testing.
 
 ![Wiring Closet](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/Wiring%20closets.jpg)
 
@@ -115,13 +114,13 @@ I configured the name of the Backup_Router to Edge_Router_Backup using CLI comma
 ![Overall Network](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/overall%20networks.jpg)
 
 
-### **Key Takeaways**
+## **Key Takeaways**
 
 - Physical and logical views provide different but complementary perspectives on network architecture
 - Using the wrong cables in real environments can cause connectivity issues or damage
 - Device naming conventions reveal organizational structure and can aid in reconnaissance
 
-### **Disclaimer**
+## **Disclaimer**
 
 This lab was performed in a Cisco Packet Tracer simulation environment for educational purposes only. No physical or production network devices were accessed.
 
