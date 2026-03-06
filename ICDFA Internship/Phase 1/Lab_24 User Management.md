@@ -47,7 +47,6 @@ After creation, I verified the user's existence by running `id student1`, which 
 
 ![create user](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/create%20user.jpg)
 
-
 ### Step 2: Adding the User to the Group
 
 I needed to add student1 to a group called "students" for organized access control. First, I created the group, then added the user to it.
@@ -65,7 +64,6 @@ The `-aG` flag means "append to group" - it adds the user to the new group witho
 
 ![Add to group](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/add%20user%20to%20group.jpg)
 
-
 ### Step 3: Setting a Secure Password for the User
 I changed the password for student1 using the `passwd` command. The system prompted me to enter and confirm the new password.
 
@@ -78,7 +76,6 @@ sudo passwd student1
 ```
 
 ![Change User Password](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/change%20user%20passwd.jpg)
-
 
 ### Step 4: Checking for Active Processes
 Before locking the account, I checked if student1 had any running processes that might cause issues.
@@ -93,7 +90,6 @@ ps -u student1
 The result showed no active processes (PID TTY TIME CMD header only), so it was safe to proceed.
 
 ![Check User Proccesses](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/check%20user%20proccesses.jpg)
-
 
 ### Step 5: Locking the User's Account
 I locked student1's account using `usermod -L`, which prevents the user from logging in by disabling their password.
@@ -111,7 +107,6 @@ The status check showed `L 2026-03-05 0 99999 7 -1`, where the 'L' confirms the 
 
 ![Lock User](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/Lock%20user%20account.jpg)
 
-
 ### Step 6: Unlocking the User's Account
 I reversed the lock with `usermod -U` to restore student1's login ability.
 
@@ -126,3 +121,72 @@ sudo passwd -S student1
 
 ![Unlock User](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/Unlock%20user%20account.jpg)
 
+### Step 7: Deleting User
+
+I removed the user account while preserving their home directory. This is useful when there is a need to archive a user's files before fully removing them.
+
+**When to use this:**
+In real scenarios, I might want to review user files for company data, transfer ownership of projects, or comply with data retention policies.
+
+**Command used:**
+```bash
+sudo deluser student1
+```
+
+After deletion, the user was removed from `/etc/passwd`, but `/home/student1` still existed with all their files.
+
+![Delete the User](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/Delete%20User.jpg)
+
+### Step 8: Complete Removal
+
+Finally, I manually deleted the leftover home directory using `rm -r`.
+
+**Why manual deletion:**
+The `deluser` command doesn't remove home directories by default as a safety measure. This prevents accidental data loss and gives admins control over when to permanently delete user data.
+
+**Commands used:**
+```bash
+ls /home
+sudo rm -r /home/student1
+ls /home
+```
+
+The `ls` commands before and after confirmed the directory was successfully removed.
+
+![Delete home directory](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/Delete%20user%20and%20home%20directory.jpg)
+
+## Findings
+
+**User Account Management:**
+- User student1 was assigned UID 1002 and GID 1002
+- Successfully added to students group (GID 100)
+- Account lock/unlock status properly reflected in `passwd -S` output
+
+**Security Observations:**
+- Locked accounts show 'L' status and cannot authenticate
+- No active processes were found for student1 before locking
+- Home directory permissions remained intact after user deletion
+
+**Deletion Behavior:**
+- `deluser` removes the account from the system files but preserves the `/home` directory
+- Manual removal is required to completely delete user data
+- Group memberships were removed when the user was deleted
+
+## Challenges Faced
+
+- Initial confusion about whether to use `useradd` or `adduser` - learned that `adduser` is the Debian/Ubuntu-friendly wrapper that handles setup automatically
+- Had to verify group creation before adding user to it - running `id student1` after group assignment confirmed success
+- Needed to understand the difference between `deluser` and `deluser --remove-home` for proper cleanup
+
+## Key Takeaways
+
+- User management requires balancing security with usability - locking accounts is reversible, but deletion is not
+- Always check for active processes before locking or deleting user accounts to avoid disrupting ongoing work
+- Groups simplify permission management across multiple users
+- The `passwd -S` command is essential for verifying account status changes
+- Preserving home directories during deletion provides a safety net for data recovery
+- Linux separates user account deletion from data deletion for security and audit purposes
+
+## Disclaimer
+
+This lab was performed in a controlled Kali Linux environment for educational purposes as part of the ICDFA Secure User Access Management in Linux course. All activities were conducted on a local system with proper authorization.
