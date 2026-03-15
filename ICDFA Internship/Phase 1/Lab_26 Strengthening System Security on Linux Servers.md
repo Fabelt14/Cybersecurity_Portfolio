@@ -1,4 +1,3 @@
-```markdown
 # Linux Server Security Hardening - Multi-Layer Access Control and System Auditing
 
 ## Overview
@@ -747,4 +746,3 @@ First audit rules were lost after reboot because I added them with `auditctl` co
 ## Disclaimer
 
 This lab was performed in a controlled Kali Linux environment for educational purposes as part of the ICDFA Strengthening System Security on Linux Servers course. All activities were conducted on a local system with proper authorization. The 2FA lockout incident occurred during testing and was resolved using legitimate recovery procedures.
-```
