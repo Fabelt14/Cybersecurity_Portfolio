@@ -1,4 +1,4 @@
-# Linux Server Security Hardening - Multi-Layer Access Control and System Auditing
+# Strengthening System Security on Linux Servers
 
 ## Overview
 
