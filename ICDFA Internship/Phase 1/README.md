@@ -2,11 +2,10 @@
 
 | Lab Number | Lab Name      | Description                      |
 |------------|---------------|----------------------------------|
-| 1          | Lab 1        | Description of Lab 1            |
-| 2          | Lab 2        | Description of Lab 2            |
-| 3          | Lab 3        | Description of Lab 3            |
-| 4          | Lab 4        | Description of Lab 4            |
-| 5          | Lab 5        | Description of Lab 5            |
+| 1          | Lab 01 Linux OS Fundamentals        | Introduction to Linux operating system, command line basics, and file system navigation            |
+| 2          | Lab 24 User Management        | User account creation, management, and administration on Linux systems            |
+| 3          | Lab 25 Linux File and Directory Permissions        | Understanding and configuring file/directory permissions, ownership, and access control            |
+| 4          | Lab 26 Strengthening System Security on Linux Servers        | Security hardening techniques and best practices for Linux server protection            |
 
 ---
 
