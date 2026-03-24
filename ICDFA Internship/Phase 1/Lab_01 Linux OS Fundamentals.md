@@ -16,7 +16,6 @@ This lab focused on mastering the Linux command line for security work. The goal
 
 - **OS**: Kali Linux
 - **Interface**: Terminal (Bash shell)
-- **Working Directory**: ~/Lab1
 
 ## Tools Used
 
@@ -87,6 +86,8 @@ mkdir -p Engagement_2024/{reconnaissance,exploitation,reporting,evidence/{screen
 mkdir -p Engagement_2024/{reconnaissance,exploitation,reporting,evidence/{screenshots,logs,packets}}
 ```
 
+![pentest directory](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/pentest%20diretory.jpg)
+
 #### Step 3: Adding README Files
 I needed to create readme.txt in each of the four main subdirectories (reconnaissance, exploitation, reporting, evidence).
 
@@ -106,6 +107,8 @@ ls
 cd ../reporting
 ls
 ```
+
+![Add Readme](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/add%20readme.jpg)
 
 Each directory contained its readme.txt file, confirming the structure was correct.
 
@@ -132,6 +135,8 @@ chmod 100 *.sh
 ls -l *.sh
 ```
 
+![executable only by the ownser](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/01%20exec%20by%20owner.jpg)
+
 **Output showed:**
 ```
 ---x------ 1 kali kali 0 Dec 12 06:18 admin_tools.sh
@@ -140,7 +145,7 @@ ls -l *.sh
 The wildcard `*.sh` applies the permission to all files ending in .sh in one command.
 
 #### Step 2: Setting Text Files Readable by All, Writable by Owner
-Text files needed to be readable by everyone but only the owner could modify them.
+Text files needed to be readable by everyone, but only the owner could modify them.
 
 **Permission breakdown:**
 - Owner needs: read (4) + write (2) = 6
@@ -158,6 +163,8 @@ Got "Operation not permitted" for secret_file.txt.
 
 **Why it failed:**
 Running `ls -l *.txt` showed secret_file.txt was owned by root, not kali. Regular users can't change permissions on files they don't own.
+
+![writable and readable by owner](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/01%20writable%20by%20owner.jpg)
 
 **Solution:**
 ```bash
@@ -181,6 +188,8 @@ chmod 000 private_file.txt
 ls -l private_file.txt
 ```
 
+![Inaccessible file](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/01%20inaccessible%20file.jpg)
+
 **Before:** `-rw-r--r--`
 **After:** `----------`
 
@@ -193,6 +202,8 @@ I needed to locate every .log file anywhere in my home directory.
 
 **Why find instead of ls:**
 `ls` only searches the current directory. The find command recursively searches subdirectories and can filter by filename patterns.
+
+![Find Log Files](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/01%20find%20log%20files.jpg)
 
 **Command used:**
 ```bash
@@ -220,8 +231,10 @@ I needed to:
 grep "ERROR" logfile.txt | wc -l > error_report.txt
 ```
 
+![count error and save to file](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/01%20count%20and%20save.jpg)
+
 **How each part works:**
-- `grep "ERROR" logfile.txt` - searches logfile.txt for lines containing "ERROR"
+- `grep "ERROR" logfile.txt` - searches logfile.txt for lines containing "ERROR."
 - `|` - pipes grep output to the next command
 - `wc -l` - counts lines (wc = word count, -l = lines only)
 - `> error_report.txt` - redirects output to a new file
