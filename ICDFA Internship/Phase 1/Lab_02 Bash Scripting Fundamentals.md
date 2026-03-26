@@ -423,4 +423,3 @@ The `free -m` output format wasn't immediately clear. Running `free -m | grep Me
 ## Disclaimer
 
 This lab was performed in a controlled Kali Linux environment for educational purposes as part of the ICDFA Linux Operating Systems Fundamentals course. All activities were conducted on a local system with proper authorization.
-```
