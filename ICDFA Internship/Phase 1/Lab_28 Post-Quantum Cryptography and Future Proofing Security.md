@@ -48,7 +48,7 @@ openssl version
 OpenSSL 3.5.5 27 Jan 2026 (Library: OpenSSL 3.5.5 27 Jan 2026)
 ```
 
-![OpenSSL version verification](images/openssl-version.png)
+![OpenSSL version verification](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.1%20OpenSSL%20version%20verification.jpg)
 
 This confirmed I had OpenSSL 3.5.5, which supports the provider model needed for post-quantum algorithms.
 
@@ -66,7 +66,7 @@ cd liboqs
 ls
 ```
 
-![Cloning liboqs repository](images/git-clone-liboqs.png)
+![Cloning liboqs repository](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.2%20Cloning%20liboqs%20repository.jpg)
 
 The repository contained algorithm implementations, build scripts, and test files.
 
@@ -84,7 +84,7 @@ cd build
 make
 ```
 
-![Building liboqs with cmake](images/cmake-build.png)
+![Building liboqs with cmake](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.3%20Building%20liboqs%20with%20cmake.jpg)
 
 The build process compiled the lattice-based math into machine code that OpenSSL can load and execute.
 
@@ -108,14 +108,14 @@ openssl genpkey -algorithm MLKEM768 -out pqc_kem_private.pem
 openssl pkey -in pqc_kem_private.pem -pubout -out pqc_kem_public.pem
 ```
 
-![ML-KEM key generation](images/mlkem-keygen.png)
+![ML-KEM key generation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.4%20ML-KEM%20key%20generation.jpg)
 
 **Private key contents:**
 ```bash
 cat pqc_kem_private.pem
 ```
 
-![ML-KEM private key](images/mlkem-private-key.png)
+![ML-KEM private key](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.5%20ML-KEM%20private%20key.jpg)
 
 The private key is encoded in base64 but represents the lattice-based secret values.
 
@@ -124,7 +124,7 @@ The private key is encoded in base64 but represents the lattice-based secret val
 cat pqc_kem_public.pem
 ```
 
-![ML-KEM public key](images/mlkem-public-key.png)
+![ML-KEM public key](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.6%20ML-KEM%20public%20key.jpg)
 
 The public key is significantly larger than traditional ECC keys due to the lattice structure.
 
@@ -143,28 +143,28 @@ ML-DSA provides digital signatures that remain secure even against quantum compu
 openssl genpkey -algorithm MLDSA65 -out pqc_sig_private.pem
 ```
 
-![ML-DSA private key generation](images/mldsa-private-keygen.png)
+![ML-DSA private key generation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.7%20ML-DSA%20private%20key%20generation.jpg)
 
 **Private key contents:**
 ```bash
 cat pqc_sig_private.pem
 ```
 
-![ML-DSA private key](images/mldsa-private-key.png)
+![ML-DSA private key](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.8%20ML-DSA%20private%20key.jpg)
 
 **Extracting the public key:**
 ```bash
 openssl pkey -in pqc_sig_private.pem -pubout -out pqc_sig_public.pem
 ```
 
-![ML-DSA public key generation](images/mldsa-public-keygen.png)
+![ML-DSA public key generation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.9%20ML-DSA%20public%20key%20generation.jpg)
 
 **Public key contents:**
 ```bash
 cat pqc_sig_public.pem
 ```
 
-![ML-DSA public key](images/mldsa-public-key.png)
+![ML-DSA public key](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.10%20ML-DSA%20public%20key.jpg)
 
 ### Step 6: Comparing Key Sizes - PQC vs Traditional Cryptography
 
@@ -183,7 +183,7 @@ ls -lh *.pem
 - ML-DSA-65 private key: ~3.9KB
 - ML-DSA-65 public key: ~2.7KB
 
-![Key size comparison](images/key-size-comparison.png)
+![Key size comparison](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.11%20Key%20size%20comparison.jpg)
 
 **Why PQC keys are larger:**
 Lattice-based cryptography relies on mathematical structures (polynomials, matrices) that require more data to represent than simple prime numbers used in RSA. The added size is the trade-off for quantum resistance.
@@ -223,21 +223,21 @@ echo "This message is protected by NIST-standardized Post-Quantum Cryptography."
 cat pqc_message.txt
 ```
 
-![Creating message file](images/create-message.png)
+![Creating message file](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.12%20Creating%20message%20file.jpg)
 
 **Signing the document:**
 ```bash
 openssl dgst -sign pqc_sig_private.pem -out pqc_message.sig pqc_message.txt
 ```
 
-![Signing document with ML-DSA](images/sign-document.png)
+![Signing document with ML-DSA](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.13%20Signing%20document%20with%20ML-DSA.jpg)
 
 **Signature file contents:**
 ```bash
 cat pqc_message.sig
 ```
 
-![Digital signature file](images/signature-file.png)
+![Digital signature file](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.14%20Digital%20signature%20file.jpg)
 
 The signature is encoded in base64 and represents the lattice-based mathematical proof that this message was signed by the holder of the private key.
 
@@ -258,7 +258,7 @@ openssl dgst -verify pqc_sig_public.pem -signature pqc_message.sig pqc_message.t
 Verified OK
 ```
 
-![Signature verification](images/verify-signature.png)
+![Signature verification](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.15%20Signature%20verification.jpg)
 
 **What this proves:**
 - The message was signed by the holder of pqc_sig_private.pem
@@ -278,7 +278,7 @@ This is because the MLWE problem remains hard even for quantum computers.
 I simulated secure key exchange using ML-KEM's Key Encapsulation Mechanism.
 
 **The process:**
-1. Sender uses receiver's public key to generate a random symmetric password
+1. Sender uses the receiver's public key to generate a random symmetric password
 2. That password is "locked" using the public key and sent as the encapsulated key
 3. Only the receiver with the matching private key can unlock and retrieve the password
 
@@ -287,14 +287,14 @@ I simulated secure key exchange using ML-KEM's Key Encapsulation Mechanism.
 openssl pkeyutl -encap -pubin -inkey pqc_kem_public.pem -secret shared_secret.bin -out encapsulated_key.bin
 ```
 
-![Key encapsulation](images/key-encap.png)
+![Key encapsulation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.16%20Key%20encapsulation.jpg)
 
 **Shared secret (the raw password):**
 ```bash
 cat shared_secret.bin
 ```
 
-![Shared secret contents](images/shared-secret.png)
+![Shared secret contents](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.17%20Shared%20secret%20contents.jpg)
 
 This is the symmetric key that will be used to encrypt the actual message (like an AES key).
 
@@ -303,7 +303,7 @@ This is the symmetric key that will be used to encrypt the actual message (like 
 cat encapsulated_key.bin
 ```
 
-![Encapsulated key contents](images/encapsulated-key.png)
+![Encapsulated key contents](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.18%20Encapsulated%20key%20contents.jpg)
 
 This is what gets transmitted over the network. It can only be unlocked with the private key.
 
@@ -316,18 +316,18 @@ I reversed the process by using the private key to unlock the encapsulated key a
 openssl pkeyutl -decap -inkey pqc_kem_private.pem -in encapsulated_key.bin -out recovered_secret.bin
 ```
 
-![Key decapsulation](images/key-decap.png)
+![Key decapsulation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.19%20Key%20decapsulation.jpg)
 
 **Recovered secret:**
 ```bash
 cat recovered_secret.bin
 ```
 
-![Recovered secret contents](images/recovered-secret.png)
+![Recovered secret contents](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.20%20Recovered%20secret%20contents.jpg)
 
 ### Step 12: Verifying the Shared Secrets Match
 
-I used cryptographic hashing to mathematically prove both keys are identical.
+I used cryptographic hashing to mathematically prove that both keys are identical.
 
 **Why sha256sum instead of diff:**
 The diff command compares text files. Cryptographic keys are binary data. Using sha256sum generates a unique fingerprint for each file - if the fingerprints match, the files are 100% identical.
@@ -343,12 +343,12 @@ sha256sum shared_secret.bin recovered_secret.bin
 4eb1d9ae30e25fbeec4a74b5dc72833b5d41974f2e8a3274f8a29dfd70c282f2  recovered_secret.bin
 ```
 
-![SHA256 hash comparison](images/sha256-comparison.png)
+![SHA256 hash comparison](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/28.21%20SHA256%20hash%20comparison.jpg)
 
-The identical hashes prove both symmetric keys are exactly the same. The sender and receiver now have a shared AES key without ever transmitting it in the clear.
+The identical hashes prove both symmetric keys are the same. The sender and receiver now have a shared AES key without ever transmitting it in the clear.
 
 **Why KEM is better than Diffie-Hellman for PQC:**
-Traditional Diffie-Hellman requires both parties to perform interactive math that produces the same result. With lattice-based crypto using MLWE (which intentionally adds mathematical noise), interactive exchange becomes unreliable because the noise compounds and prevents both sides from reaching the same answer. KEM solves this: one party generates the key, locks it with the other party's public key, and sends it. No interactive math needed, no noise compounding issues.
+Traditional Diffie-Hellman requires both parties to perform interactive math that produces the same result. With lattice-based crypto using MLWE (which intentionally adds mathematical noise), interactive exchange becomes unreliable because the noise compounds and prevents both sides from reaching the same answer. KEM solves this: one party generates the key, locks it with the other party's public key, and sends it. No interactive math needed, no noise-compounding issues.
 
 ## Findings
 
