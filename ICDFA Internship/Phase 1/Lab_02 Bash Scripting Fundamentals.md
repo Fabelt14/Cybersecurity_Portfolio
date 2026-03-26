@@ -17,7 +17,6 @@ This lab focused on writing Bash scripts to automate tasks and build programming
 
 - **OS**: Kali Linux
 - **Shell**: Bash (/bin/bash)
-- **Working Directory**: ~/INT301/Bash_Scripting
 
 ## Tools Used
 
@@ -54,7 +53,7 @@ echo "Hello User, your favorite colour is $colour and your favorite food is $foo
 - Input is stored in the variable name that follows (colour, food)
 - Variables are accessed with `$variable_name`
 
-![User Input Script Execution](screenshots/user_input_execution.png)
+![User Input Script Execution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.1%20User%20Input%20Script%20Execution.jpg)
 
 **Testing:**
 - Input: Purple, Beans
@@ -92,7 +91,7 @@ fi
 **Security flaw in this script:**
 The password is visible in plaintext when typed. Real implementations use `read -s` (silent mode) to hide input.
 
-![Password Checker Script Execution](screenshots/password_checker_execution.png)
+![Password Checker Script Execution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.2%20Password%20Checker%20Script%20Execution.jpg)
 
 **Testing:**
 - Correct password (secret123): "Password is Correct, Successfully login....."
@@ -135,7 +134,7 @@ echo "Blast Off!"
 **Why double brackets `[[ ]]`:**
 Double brackets support more advanced comparisons and are safer than single brackets for string operations.
 
-![Countdown Script Execution](screenshots/countdown_execution.png)
+![Countdown Script Execution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.3%20Countdown%20Script%20Execution.jpg)
 
 **Output:**
 Displays 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 with 1-second delays, then "Blast Off!" after 2 seconds.
@@ -178,7 +177,7 @@ echo "The sum of the two numbers is: $result"
 **Why capture in a variable:**
 Instead of echoing directly in the function, capturing the result lets you use it in further calculations or conditionals.
 
-![Sum Function Script Execution](screenshots/sum_function_execution.png)
+![Sum Function Script Execution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.4%20Sum%20Function%20Script%20Execution.jpg)
 
 **Testing:**
 - Input: 5, 9
@@ -226,7 +225,7 @@ fi
 **Why `elif` instead of multiple `if`:**
 `elif` creates a chain where only one block executes. Multiple `if` statements would check all conditions even after finding a match.
 
-![Greeting Script Execution](screenshots/greeting_execution.png)
+![Greeting Script Execution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.5%20Greeting%20Script%20Execution.jpg)
 
 **Testing at 10:24:**
 Output: "Good Morning! User...." followed by "The 🕔time is 10:24"
@@ -277,7 +276,7 @@ We only care if ping succeeded or failed, not the actual ping statistics. Suppre
 **Log format:**
 Each entry includes timestamp, exit status code, and connection state.
 
-![Network Monitor Log Output](screenshots/network_monitor_log.png)
+![Network Monitor Log Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.6%20Network%20Monitor%20Log%20Output.jpg)
 
 **Sample log entries:**
 ```
@@ -352,9 +351,7 @@ If available memory < 1024 MB (1 GB), trigger critical alert.
 **Why the sleep commands:**
 Creates a "checking..." effect that simulates processing time. In production, you'd remove these and run checks instantly.
 
-![Memory Health Monitor Output - Critical](screenshots/memory_critical.png)
-
-![Memory Health Monitor Output - Good](screenshots/memory_good.png)
+![Memory Health Monitor Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/02.7%20Memory%20Health%20Monitor%20Output.jpg)
 
 **Testing results:**
 - System with 2310 MB available: "GOOD: Memory Health is OK! You've used 932MB of 3572MB"
