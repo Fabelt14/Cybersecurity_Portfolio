@@ -6,7 +6,7 @@
 
 This lab covers web application reconnaissance techniques performed against three live Nigerian domains and a local OWASP Broken Web Applications (OWASP BWA) virtual machine. The goal was to map the attack surface of each target by identifying IP addresses, domain ownership, DNS records, running technologies, subdomains, open directories, and open ports before any exploitation attempt.
 
-Reconnaissance is the first step in any security engagement. You cannot test what you do not know, and you cannot defend what you have not mapped. This lab documents how that mapping process works in practice.
+Reconnaissance is the first step in any security engagement. You cannot test what you do not know, and you cannot defend what you have not mapped. This lab documents the practical application of that mapping process.
 
 ---
 
@@ -37,7 +37,7 @@ Reconnaissance is the first step in any security engagement. You cannot test wha
 
 ---
 
-## 4. Tools Used
+## 4. Tools and Commands Used
 
 - ping
 - whois
@@ -58,23 +58,23 @@ Reconnaissance is the first step in any security engagement. You cannot test wha
 
 #### Step 1: Identify IP Addresses
 
-The first task was to resolve the IP address of each domain. I used `ping -c 5` rather than a dedicated tool because ping confirms both name resolution and basic reachability in one step. The packet loss result tells you whether there is a stable connection to the host, useful context before running heavier tools.
+The first task was to resolve the IP address of each domain. I used `ping -c 5` rather than a dedicated tool because ping confirms both name resolution and basic reachability in one step. The packet loss result indicates whether there is a stable connection to the host, providing useful context before running heavier tools.
 
 **icdfa.edu.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.1%20IP.jpg)
 
 icdfa.edu.ng resolved to **131.153.147.186**, hosted on wghservers.com (Whogohost infrastructure). Zero percent packet loss confirmed a stable connection at the time of the scan.
 
 **nasarawastate.gov.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.2%20IP.jpg)
 
 nasarawastate.gov.ng resolved to **181.215.243.156**, hosted on qservers.net (Qservers infrastructure). Zero percent packet loss confirmed reachability.
 
 **icdfa.org.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.3%20IP.jpg)
 
 icdfa.org.ng resolved to **131.153.147.186**: the same IP address as icdfa.edu.ng. This tells us both domains share the same server, which is a common setup when an organization runs multiple domain extensions pointing to one hosting account.
 
@@ -94,23 +94,19 @@ WHOIS lookups go one level deeper than IP resolution. The goal here was to find 
 
 **icdfa.edu.ng: WHOIS on 131.153.147.186**
 
-![Image](link)
-
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.4%20whois.jpg)
 
 The IP block is managed by ARIN (American Registry for Internet Numbers). The parent organization is Secured Servers LLC. The lookup referred to an rwhois server at securedservers.com, which identified the specific network block as a /29 subnet (131.153.147.184 – 131.153.147.191). The registrant is listed as "Private Customer", a standard configuration hosting providers use to shield end-user identity from public WHOIS results.
 
 **nasarawastate.gov.ng: WHOIS on 181.215.243.156**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.5%20whois.jpg)
 
 The IP block is also managed by ARIN, with the parent organization listed as ORG-HTL23-RIPE. The registrant is again listed as "Private Customer," consistent with the same privacy configuration seen on the ICDFA domains.
 
 **icdfa.org.ng: WHOIS on 131.153.147.186**
 
-![Image](link)
-
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.6%20whois.jpg)
 
 The results mirror the icdfa.edu.ng lookup exactly, confirming both domains sit on the same /29 subnet managed by Secured Servers LLC.
 
@@ -122,7 +118,7 @@ DNS queries expose how a domain routes traffic, web requests, email, and name re
 
 **icdfa.edu.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.9%20DNS.jpg)
 
 - A record: 131.153.147.186
 - MX record: No mail servers returned. The organization uses external mail services rather than hosting email on this domain.
@@ -130,7 +126,7 @@ DNS queries expose how a domain routes traffic, web requests, email, and name re
 
 **nasarawastate.gov.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.10%20DNS.jpg)
 
 - A record: 181.215.243.156
 - MX record: Mail exchanger = 0, meaning no dedicated mail servers are configured under this domain
@@ -138,7 +134,7 @@ DNS queries expose how a domain routes traffic, web requests, email, and name re
 
 **icdfa.org.ng**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.11%20DNS.jpg)
 
 - A record: 131.153.147.186
 - MX record: No mail servers returned
@@ -162,11 +158,11 @@ WhatWeb fingerprints web technologies by analyzing HTTP headers, server banners,
 
 **Basic Scan**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.12%20Whatweb.jpg)
 
 **Aggressive Scan**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.13%20Aggressive%20whatweb.jpg)
 
 Both scans returned the same core output: identical server banners, HTTP headers, web server version, and framework details. The aggressive scan produced more verbose output when run with the `-v` flag, but the underlying findings were the same. Since the lab task specified an aggressive scan only (not a verbose comparison), the meaningful conclusion is that the target exposes its full technology stack even at basic scan intensity, which is itself a finding.
 
@@ -174,7 +170,7 @@ Both scans returned the same core output: identical server banners, HTTP headers
 
 ### Part 3: Website Enumeration and Information Gathering
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.13%20Aggressive%20whatweb.jpg)
 
 **Server Banners and HTTP Headers**
 
@@ -205,13 +201,13 @@ I ran two tools against each domain and compared their results.
 
 **Sublist3r**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.15%20subdomain%20enumeration.jpg)
 
 Sublist3r uses passive enumeration: it queries search engines (Google, Baidu, Yahoo, Bing) and SSL certificate databases to find subdomains without sending requests directly to the target. It found **30 unique subdomains**.
 
 **Knockpy**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.16%20knockpy%20subdomain.jpg)
 
 Knockpy uses active brute-force enumeration: it tests a wordlist of potential subdomain names directly against the domain's DNS. It also validates each result by checking HTTP/HTTPS status, TLS certificates, and IP addresses. It found **33 subdomains**.
 
@@ -223,13 +219,13 @@ Knockpy uses active brute-force enumeration: it tests a wordlist of potential su
 
 **Sublist3r**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.17%20subdomain%20with%20sublister.jpg)
 
 Sublist3r found **42 unique subdomains**.
 
 **Knockpy**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.18%20subdomain%20with%20knockpy.jpg)
 
 Knockpy found **69 subdomains**.
 
@@ -241,13 +237,13 @@ Knockpy found **69 subdomains**.
 
 **Sublist3r**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.19%20subdomain%20with%20sublister.jpg)
 
 Sublist3r found **37 unique subdomains**.
 
 **Knockpy**
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.20%20subdomain%20using%20knockpy.jpg)
 
 Knockpy found **1 subdomain**.
 
@@ -271,9 +267,7 @@ The reversal here is worth noting. Knockpy's brute-force approach depends heavil
 
 Directory enumeration tests whether the web server exposes internal folders that should not be publicly accessible. I ran Dirb against the OWASP BWA machine at http://192.168.92.3 using the default wordlist.
 
-![Image](link)
-
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.21%20Directory%20Enumeration%20using%20Dirb.jpg)
 
 Dirb scanned 4612 generated words and discovered multiple accessible directories. The most significant finding was that directory listing is enabled across several paths, meaning anyone who knows (or guesses) a directory path can browse its contents like a file manager. One notable example is /assets/. A directory listing of this kind is a direct path to sensitive file exposure.
 
@@ -285,7 +279,7 @@ Dirb scanned 4612 generated words and discovered multiple accessible directories
 
 I ran a basic Nmap scan against 192.168.92.3 to map all open ports and identify what services are running on each.
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.22%20Basic%20Nmap%20Scanning.jpg)
 
 **Open Ports and Services**
 
@@ -309,9 +303,7 @@ The number of open ports on this machine is itself a finding. A production serve
 
 Nikto is a web vulnerability scanner. It checks the server against a database of known misconfigurations, outdated software, and exposed files. I ran it against the HTTP service on port 80.
 
-![Image](link)
-
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.23%20Nikto%20Scan.jpg)
 
 Nikto confirmed that the server is running outdated software versions that are no longer receiving security patches: Apache 2.2.14, PHP 5.3.2, and OpenSSL 0.9.8k. Each of these has documented CVEs. Nikto also found exposed directories including /icons, /images, and /test, and confirmed that wp-config.php (which contains WordPress database credentials) is accessible, a critical exposure.
 
@@ -321,9 +313,9 @@ Nikto confirmed that the server is running outdated software versions that are n
 
 To bring the individual tools together, I wrote a Bash script that acts as a simple menu-driven reconnaissance launcher. The script prompts the user to input a target IP address or domain, then presents four tool options: WhatWeb, Nmap, Dirb, and Knockpy. Once the user selects an option, the script runs the corresponding tool against the target.
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.24.1%20Bash%20Scripting.jpg)
 
-![Image](link)
+![Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/03.24.2%20Bash%20Scripting.jpg)
 
 The left image shows the script code. The right image shows a successful execution, Nmap run against 131.153.147.186, and Knockpy run against icdfa.edu.ng.
 
@@ -378,7 +370,7 @@ Computers work with IP addresses, not domain names. DNS (Domain Name System) is 
 | wp-config.php accessible | WordPress database credentials file is publicly reachable |
 | Internal email addresses exposed | admin@metacorp.com, bob@ateliergraphique.com, test@thebodgeitstore.com harvested by WhatWeb |
 | Nine open ports on OWASP BWA | Wide attack surface including SSH, HTTP, IMAP, SMB, and HTTP proxies |
-| Knockpy vs Sublist3r | Neither tool is strictly better, results depend on how the domain's DNS is configured |
+| Knockpy vs Sublist3r | Neither tool is strictly better; results depend on how the domain's DNS is configured |
 
 ---
 
