@@ -1,516 +1,625 @@
-# Anonymity Testing with Tor and Proxychains
-
----
+# Packet Analysis with Wireshark: Capture, Filter, and Analyze Network Traffic
 
 ## 1. Engagement Overview
 
-This lab assessed the anonymity properties and operational limitations of routing
-network traffic through the Tor network using Proxychains on Kali Linux. The
-assessment covered Tor service configuration, IP masking verification, circuit behavior under repeated requests, Nmap scanning performance through Tor, and DNS leak risk. Testing was conducted in a live internet-connected environment
-using `httpbin.org` for IP verification and a public AWS host (`44.228.249.3`) for scan comparison. Tor v0.4.8.16 and Proxychains-ng 4.17 were used throughout.
-
----
+This lab analyzed network traffic between a Kali Linux attack machine and an OWASP Broken Web Applications VM to understand TCP/IP protocol behavior at each layer of the network stack. Traffic was captured using Wireshark during various network operations (web browsing, SSH connections, ping tests, port scans) and dissected to examine protocol headers, connection establishment sequences, error handling mechanisms, and layer interactions. The goal was to build practical knowledge of how protocols function in real network communication and develop troubleshooting skills by deliberately introducing network misconfigurations.
 
 ## 2. Objectives
 
-- Confirm that Tor successfully masks the real source IP address during
-  outbound connections
-- Measure and compare scan performance with and without Tor to quantify
-  the operational cost of anonymised scanning
-- Observe Tor's dynamic circuit management behavior across repeated
-  connections
-- Verify that browser and command-line traffic both exit through the same
-  Tor node to confirm there are no tool-level leaks
-- Document the technical limitations of Tor and Proxychains in a
-  penetration testing context, including protocol restrictions and exit node risks
-
----
+- Understand the relationship between TCP/IP and OSI network models
+- Analyze TCP connection establishment and teardown (three-way handshake, FIN/RST)
+- Examine IP packet headers and routing behavior on local subnets
+- Compare application layer protocols (HTTP vs SSH) for security implications
+- Study TCP reliability mechanisms (sequence numbers, acknowledgments, retransmissions)
+- Understand ICMP's role in network diagnostics (ping, traceroute)
+- Compare TCP and UDP protocol structures and use cases
+- Perform OS fingerprinting through packet analysis
+- Analyze ARP address resolution at the link layer
+- Troubleshoot network connectivity issues using packet inspection
 
 ## 3. Scope
 
-**In-Scope:**
-- Tor service on local Kali Linux machine (`127.0.0.1:9050`)
-- Proxychains configuration file (`/etc/proxychains.conf`)
-- Outbound HTTP/HTTPS connections to `httpbin.org` via `curl`
-- Nmap TCP scan against public AWS host `44.228.249.3`
-- Firefox browser IP verification via whatismyip
+**In-scope protocols and layers:**
+- Application Layer: HTTP, SSH, DNS
+- Transport Layer: TCP, UDP
+- Network Layer: IP, ICMP
+- Link Layer: Ethernet, ARP
 
-**Out-of-Scope:**
-- Dark web (.onion) service access
-- Active exploitation of any scanned host
-- UDP-based scanning or ICMP traffic (technically not supported by Tor)
+**In-scope systems:**
+- Attacker Machine: Kali Linux (192.168.92.4)
+- Target Machine: OWASP-BWA VM (192.168.92.3)
+- Network Segment: 192.168.92.0/24 (local subnet, no external routing)
 
-**Authorization Statement:**
-> All testing in this assessment was conducted using publicly accessible IP
-> verification services and a public AWS host for scan comparison purposes.
-> No systems were exploited and no unauthorized access was attempted.
-> All activities were performed in an isolated Kali Linux lab environment for
-> educational purposes under authorized course instruction.
-
----
+**Out-of-scope:**
+- Encrypted traffic decryption (SSH payload remains encrypted)
+- Wireless protocols (802.11)
+- IPv6 traffic analysis
+- Network devices beyond the two test VMs
 
 ## 4. Methodology
 
-### Phase 1 — Tool Installation and Service Configuration
-Tor and Proxychains were installed using `apt`. The Tor service was started
-via `sudo service tor start` and its status was confirmed with
-`systemctl status tor`. The Proxychains configuration at `/etc/proxychains.conf`
-was reviewed, with `dynamic_chain` enabled and the SOCKS5 proxy set to
-`127.0.0.1:9050`. DNS leak prevention was confirmed active via the
-`proxy_dns` directive in the same config file.
+### Exercise 1: TCP/IP vs OSI Model Mapping
 
-### Phase 2 — Baseline IP Identification
-The real public IP address was recorded using two methods: the
-`whatismyip.com` web interface and a direct `curl https://httpbin.org/ip`
-command. Both returned `102.89.68.117`, confirming the baseline non-anonymous
-IP associated with the local ISP.
+I started by understanding the conceptual difference between the TCP/IP model (practical implementation) and the OSI model (theoretical framework). The OSI model defines seven distinct layers with specific responsibilities at each level, while TCP/IP consolidates these into four broader layers for efficiency.
 
-### Phase 3 — Anonymity Verification
-Proxychains was prepended to the same curl command:
-`proxychains curl https://httpbin.org/ip`. The returned IP was compared
-against the baseline to confirm the traffic exited through a Tor node rather
-than the local ISP connection.
+**Layer mapping:**
 
-### Phase 4 — Circuit Behavior Testing
-The proxychains curl command was repeated multiple times without restarting
-Tor to observe whether exit IP addresses remained consistent or rotated across
-separate connections. Results were compared to assess Tor's circuit reuse
-behavior.
+| TCP/IP Layer | Corresponding OSI Layers |
+|--------------|--------------------------|
+| Application | Application, Presentation, Session |
+| Transport | Transport |
+| Internet | Network |
+| Link | Data Link, Physical |
 
-### Phase 5 — Browser Consistency Check
-Firefox was used to access a browser-based IP check service while Proxychains
-was active. The displayed IP was compared against the curl output to confirm
-no application-level leak existed between browser and command-line traffic.
+**Why this matters:** When analyzing packets, Wireshark displays information using OSI terminology (Layer 2, Layer 3, Layer 4), but real network stacks implement TCP/IP. Understanding the mapping helps translate between theory and practice. For example, HTTP headers appear at the Application layer in both models, but TCP/IP treats all application-level protocols (HTTP, SSH, DNS) as a single layer, whereas OSI separates presentation (data formatting) from session management (connection state).
 
-### Phase 6 — Nmap Scan Performance Comparison
-An Nmap TCP Connect scan was run against `44.228.249.3` twice: once through
-Proxychains and once directly, using identical flags (`-sT -Pn`). Completion
-times were recorded for both runs to quantify the performance cost of scanning
-via Tor.
+### Exercise 2: TCP Three-Way Handshake Analysis
 
-### Phase 7 — Risk and Limitation Analysis
-Tor exit node risks, DNS leak vectors, and the consequences of using Tor with
-authenticated personal accounts were assessed based on observed behavior and
-technical properties of the Tor protocol.
+I captured traffic while browsing to the OWASP-BWA VM to observe the TCP connection establishment sequence.
 
----
+![Wireshark capture showing SYN, SYN-ACK, ACK packets](screenshots/tcp_handshake.png)
 
-## 5. Vulnerability Summary
 
-> **Note:** This lab is an operational security and anonymity assessment rather
-> than a vulnerability scan against a target system. The findings below document
-> confirmed anonymity behaviors, measurable limitations, and residual risks
-> identified during testing.
 
-| ID | Finding | Severity | Context |
-|----|---------|----------|---------|
-| 01 | Tor Successfully Masks Real IP | Informational | proxychains curl - httpbin.org |
-| 02 | Exit IP Rotates Across Requests (Circuit Reuse) | Informational | Repeated curl via Proxychains |
-| 03 | Nmap Scan 4.7x Slower Through Tor (31.43s vs 6.63s) | Medium | Nmap -sT -Pn against 44.228.249.3 |
-| 04 | Tor Restricted to TCP - UDP and ICMP Not Supported | Medium | Proxychains Nmap -sU / ping |
-| 05 | Unencrypted HTTP Traffic Readable at Exit Node | High | Tor exit node risk - HTTP traffic |
-| 06 | DNS Leak Possible if proxy_dns Not Enabled | High | /etc/proxychains.conf - DNS config |
+**Handshake sequence:**
 
----
+1. **SYN (Synchronize):** My Kali machine (192.168.92.4) sends a TCP packet with the SYN flag set to port 80 on the OWASP VM (192.168.92.3), requesting a connection. This packet includes an initial sequence number that will be used to track data bytes.
+
+2. **SYN-ACK (Synchronize-Acknowledgment):** The OWASP VM responds with both SYN and ACK flags set. The SYN portion provides the server's own initial sequence number, while the ACK portion confirms receipt of the client's SYN by acknowledging the client's sequence number + 1.
+
+3. **ACK (Acknowledgment):** My Kali machine sends a final ACK to confirm receipt of the server's SYN-ACK. At this point, the connection is fully established and data transfer can begin.
+
+![tcpdump output showing the three-way handshake with sequence numbers](screenshots/tcpdump_handshake_sequence.png)
+
+
+
+**TCP flags observed:**
+- **SYN (0x02):** Connection initiation
+- **ACK (0x10):** Acknowledgment of received data
+- **FIN (0x01):** Graceful connection termination
+- **RST (0x04):** Abrupt connection reset (seen when connecting to closed ports)
+
+**Reliability mechanisms:** TCP uses sequence numbers to label every byte of data. If my machine sends bytes 1000-1500 and doesn't receive an ACK within the retransmission timeout, it assumes those bytes were lost and resends them automatically. This acknowledgment system ensures that corrupted or dropped packets are detected and recovered without application-level intervention.
+
+### Exercise 3: IP Packet Header Examination
+
+I examined IP packet headers to understand how routing decisions are made at the network layer.
+
+![IP packet header showing Source IP, Destination IP, TTL](screenshots/ip_packet_header.png)
+
+
+
+**Key IP header fields:**
+- **Source IP:** 192.168.92.4 (my Kali machine)
+- **Destination IP:** 192.168.92.3 (OWASP VM)
+- **TTL (Time to Live):** 64
+
+**TTL significance:** TTL is a hop counter that decrements by 1 at each router. If TTL reaches 0, the packet is discarded and an ICMP "Time Exceeded" message is sent back to the source. This prevents packets from looping infinitely if routing tables are misconfigured. Linux systems typically start with TTL=64, Windows with TTL=128. This difference is used for OS fingerprinting.
+
+**Routing analysis:** Both machines are on the same subnet (192.168.92.0/24), so routing is direct with zero hops. My system performs an ARP lookup to find the VM's MAC address, then delivers the packet directly over the Ethernet link without involving any routers. If the destination were on a different subnet, my system would send the packet to the default gateway instead.
+
+### Exercise 4: Application Layer Protocol Comparison
+
+#### HTTP Traffic Analysis
+
+I browsed to the WebGoat application on the OWASP VM and captured the HTTP request/response exchange.
+
+
+
+![HTTP request showing GET method, Host, User-Agent, Cookies](screenshots/http_request_headers.png)
+
+
+
+**HTTP request details:**
+- **Method:** GET /WebGoat/attack
+- **Host:** 192.168.92.3
+- **User-Agent:** Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
+- **Cookies:** JSESSIONID, PHPSESSID (session identifiers)
+
+
+
+![HTTP response showing 401 Unauthorized status](screenshots/http_response_401.png)
+
+
+
+**HTTP response details:**
+- **Status Code:** 401 Unauthorized
+- **Server:** Apache-Coyote (reveals server software)
+- **WWW-Authenticate:** Basic realm="WebGoat Application" (requires credentials)
+- **Content-Type:** text/html; charset=UTF-8
+- **Content-Encoding:** gzip (compressed response)
+
+**Security implications:** HTTP transmits everything in plaintext. The User-Agent string reveals my operating system and browser version. Session cookies are visible to anyone sniffing the network. The 401 status code means authentication is required, but credentials will also be sent in plaintext (Base64 encoding is not encryption). Any network eavesdropper can capture the Authorization header and extract the username:password pair.
+
+#### SSH Traffic Analysis
+
+I established an SSH connection to the OWASP VM and examined the encrypted traffic.
+
+
+
+![SSH Key Exchange Init showing cipher negotiation](screenshots/ssh_key_exchange.png)
+
+
+
+**SSH handshake observations:**
+- **Protocol Version:** SSH-2
+- **Key Exchange Method:** diffie-hellman-group-exchange-sha256
+- **Packet Length:** 780 bytes
+- **Message Code:** 20 (Key Exchange Init)
+
+After the initial key exchange negotiation, all subsequent traffic appears as encrypted payload in Wireshark. The packet details show random hex data with no discernible structure.
+
+
+
+![SSH encrypted payload showing unreadable hex data](screenshots/ssh_encrypted_payload.png)
+
+
+
+**Why SSH payload is unreadable:** SSH uses the negotiated cipher to encrypt everything after the key exchange completes. Wireshark can dissect the handshake because those packets follow a known protocol structure, but once encryption activates, the payload becomes opaque. Even if an attacker captures the entire session, they cannot extract login credentials or command data without breaking the encryption. This is the critical difference between HTTP and SSH - HTTP leaks sensitive data to passive eavesdroppers, SSH protects it.
+
+**Application layer's role:** The Application Layer translates user actions (clicking a link, typing a command) into protocol-specific messages. When I browse via HTTP, this layer formats GET requests with proper headers and cookies. When I connect via SSH, it handles authentication challenges and terminal emulation. Because the OWASP VM is intentionally vulnerable, application-layer flaws (broken authentication, missing input validation) are visible in HTTP traffic but protected in SSH traffic.
+
+### Exercise 5: TCP Error Handling and Retransmission
+
+To observe TCP's reliability mechanisms, I simulated packet loss by toggling the network interface during an active connection.
+
+**Expected behavior:** When packets are dropped or delayed, the sender waits for an ACK that never arrives. After the retransmission timeout expires, the sender assumes the packet was lost and resends it automatically.
+
+**How retransmissions work:** TCP uses Positive Acknowledgment with Retransmission (PAR). Every outgoing packet starts a timer. If the receiver's ACK doesn't arrive before the timer expires, the packet is retransmitted. This continues with exponentially increasing delays until the connection times out entirely.
+
+**Sequence number ordering:** Each byte is assigned a unique sequence number. If packets arrive out of order (packet 1000-1500, then 2000-2500, then 1500-2000), the receiver uses sequence numbers to reassemble them correctly. Gaps in the sequence trigger selective acknowledgments (SACKs) that specifically request the missing ranges.
+
+
+
+![Wireshark showing retransmitted packets with duplicate sequence numbers](screenshots/tcp_retransmission.png)
+
+
+
+**Observation:** When I disabled the network interface, pending packets failed to receive ACKs. Wireshark flagged these as "[TCP Retransmission]" because the same sequence numbers appeared multiple times. The connection eventually timed out after several retry attempts, demonstrating that TCP refuses to move forward until all data is confirmed as received.
+
+### Exercise 6: ICMP and Ping Analysis
+
+I used ping to send ICMP echo requests to the OWASP VM and analyzed the response structure.
+
+
+
+![ICMP packet showing Type 8 (Echo Request), Code 0, Checksum](screenshots/icmp_echo_request.png)
+
+
+
+**ICMP packet fields:**
+- **Type:** 8 (Echo Request)
+- **Code:** 0
+- **Checksum:** 0x56cf [correct]
+- **Identifier:** 0x0001
+- **Sequence Number:** 0x0100
+
+**ICMP's diagnostic role:** Ping uses ICMP to verify basic connectivity. If the target responds with Type 0 (Echo Reply), the path is clear. If no response arrives, the issue could be: target is down, firewall is blocking ICMP, or a router along the path is dropping packets. Tools like traceroute exploit ICMP to reveal the exact hop where failures occur.
+
+**TTL in ICMP context:** Traceroute sends packets with incrementing TTL values (TTL=1, TTL=2, TTL=3...). Each router decrements TTL and, when it hits zero, sends back an ICMP "Time Exceeded" message that reveals the router's IP. By deliberately causing TTL expiration at each hop, traceroute maps the entire path from source to destination.
+
+![Wireshark showing ICMP Echo Request and Echo Reply pairs](screenshots/icmp_echo_reply.png)
+
+
+
+### Exercise 7: UDP vs TCP Comparison
+
+I captured both TCP and UDP traffic to compare protocol structure and behavior.
+
+
+
+![Wireshark showing UDP packet with minimal header](screenshots/udp_packet_structure.png)
+
+
+
+**UDP packet structure:**
+- Source Port: (varies)
+- Destination Port: (varies)
+- Length: (payload size)
+- Checksum: (error detection only)
+
+**Key differences from TCP:**
+
+| Feature | TCP | UDP |
+|---------|-----|-----|
+| Connection | Requires handshake | Connectionless |
+| Reliability | Acknowledgments, retransmissions | None - fire and forget |
+| Ordering | Sequence numbers guarantee order | Packets may arrive out of order |
+| Header Size | 20-60 bytes (larger) | 8 bytes (minimal) |
+| Speed | Slower due to overhead | Faster, lower latency |
+
+**When UDP is preferred:** Live video streaming tolerates occasional dropped frames better than buffering delays. Online games need low latency more than perfect accuracy (missing one position update is acceptable). DNS queries are single request/response pairs where retransmission logic can be handled at the application level if needed.
+
+**UDP's management strategy:** UDP simply hands packets to IP and moves on. It has no state tracking, no connection establishment, no feedback loop. If reliability is required, the application must implement it. For example, TFTP (Trivial File Transfer Protocol) runs over UDP but adds its own acknowledgment system at the application layer.
+
+### Exercise 8: OS Detection via Nmap
+
+I ran an Nmap scan against the OWASP VM and examined the packet characteristics that reveal operating system identity.
+
+![Nmap scan results showing OS detection](screenshots/nmap_os_detection.png)
+
+
+
+**OS fingerprinting indicators:**
+
+**TTL value:** The OWASP VM responds with TTL=64, which is the default for Linux systems. Windows typically uses TTL=128. This single field immediately narrows the OS family.
+
+**TCP Window Size:** The initial SYN-ACK includes window size values (Win=1024, Win=5840 observed in capture). Different operating systems use different default window sizes and scaling factors. Linux 2.6.x kernels have a distinctive window size progression that differs from Windows 7/10 or BSD systems.
+
+
+
+![Wireshark showing TCP window size in SYN-ACK packet](screenshots/tcp_window_size.png)
+
+
+
+**TCP Options:** The order and content of TCP options (MSS, SACK permitted, timestamps, window scale) form a unique fingerprint. Linux arranges these options differently than Windows. Nmap maintains a database of known option patterns for hundreds of OS versions.
+
+**Response to malformed packets:** Nmap sends unusual packets (invalid flag combinations, odd TCP options) and observes how the target responds. Some OS stacks silently drop malformed packets, others send RST, others send ICMP errors. These responses reveal the TCP/IP stack implementation.
+
+**Why OS detection matters:** Knowing the target OS allows attackers to search for OS-specific exploits (kernel vulnerabilities, default configurations). It also helps administrators validate that systems are running expected software versions and detect unauthorized devices on the network.
+
+### Exercise 9: ARP Address Resolution
+
+I examined ARP traffic to understand how IP addresses are mapped to MAC addresses on the local network.
+
+
+
+![ARP request broadcast asking "Who has 192.168.92.3?"](screenshots/arp_request.png)
+
+**ARP packet details:**
+- **Sender MAC:** c8:f7:33:67:d6:17 (my Kali machine)
+- **Sender IP:** 192.168.92.4
+- **Target MAC:** 00:00:00:00:00:00 (unknown - this is what we're asking for)
+- **Target IP:** 192.168.92.3 (OWASP VM)
+
+**ARP operation:** My system broadcasts an ARP request to the entire local segment (destination MAC: ff:ff:ff:ff:ff:ff) asking "Who has 192.168.92.3? Tell 192.168.92.4." Every device on the segment receives this broadcast, but only the machine with IP 192.168.92.3 responds.
+
+
+
+![ARP reply providing MAC address](screenshots/arp_reply.png)
+
+
+
+**ARP reply:** The OWASP VM sends a unicast ARP reply directly to my MAC address (c8:f7:33:67:d6:17) saying "192.168.92.3 is at [target MAC address]." My system stores this mapping in its ARP cache for future use.
+
+**ARP's role in communication:** Without ARP, my system would know the VM's IP address (Layer 3) but couldn't construct the Ethernet frame (Layer 2) needed to actually deliver the packet. ARP bridges the gap between logical addressing (IP) and physical addressing (MAC). Once resolved, the Ethernet frame has the correct destination MAC, allowing the switch to forward it to the right physical port.
+
+**ARP cache:** After resolution, the mapping is cached (typically 60-300 seconds) to avoid re-broadcasting for every packet. I can view the cache with `arp -n` to see which IP addresses are currently resolved.
+
+### Exercise 10: Network Troubleshooting Simulation
+
+I deliberately misconfigured the Kali machine's subnet mask to simulate a common networking error, then used packet analysis to diagnose and resolve the issue.
+
+**Simulated issue:** Changed subnet mask from /24 (255.255.255.0) to /30 (255.255.255.252).
+
+**Impact:** With a /30 mask, only 4 IP addresses fit in the subnet (.0, .1, .2, .3). My Kali machine at 192.168.92.4 now believes the OWASP VM at 192.168.92.3 is on a different network, even though they're physically connected to the same switch. The routing table reflects this - 192.168.92.3 is no longer in the "directly connected" route.
+
+**Diagnosis process:**
+
+**Layer 3 (Network Layer):** Ran `route -n` to check routing table. The destination 192.168.92.3 no longer matched the local network range, so the system tried to route through a gateway that doesn't exist.
+
+```
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.92.0    0.0.0.0         255.255.255.252 U     0      0        0 eth0
+```
+
+**Layer 2 (Link Layer):** Ran `arp -n` to check ARP cache. No MAC address was resolved for 192.168.92.3 because the system never attempted local ARP resolution - it thought the VM was remote.
+
+```
+Address          HWtype  HWaddress           Flags Mask            Iface
+192.168.92.1     ether   (gateway MAC)       C                     eth0
+```
+
+**Wireshark observation:** No ARP requests were broadcast for 192.168.92.3. Instead, the system sent packets to the default gateway (which didn't exist), resulting in "Destination Host Unreachable" ICMP errors.
+
+![Wireshark showing failed ARP resolution due to subnet mask error](screenshots/subnet_mask_troubleshooting.png)
+
+
+
+**Resolution:** Corrected the subnet mask back to /24 (255.255.255.0). Immediately after applying the change:
+- Routing table updated to show 192.168.92.0/24 as directly connected
+- ARP request broadcast for 192.168.92.3
+- ARP reply received with VM's MAC address
+- Connectivity restored
+
+**Lesson:** Subnet masks define what "local" means. Even if two machines are on the same physical wire, incorrect subnet configuration makes them believe they're on different networks. The routing layer makes decisions before the link layer ever attempts communication.
+
+## 5. Protocol Analysis Summary
+
+| Protocol | Layer | Key Observation | Security Implication |
+|----------|-------|-----------------|---------------------|
+| HTTP | Application | Plaintext transmission, credentials visible | Session hijacking, credential theft via sniffing |
+| SSH | Application | Encrypted payload after key exchange | Confidentiality protected from passive eavesdropping |
+| TCP | Transport | Three-way handshake, sequence numbers, retransmissions | Reliable delivery, but SYN flood DoS possible |
+| UDP | Transport | No connection state, no reliability guarantees | Faster but application must handle packet loss |
+| IP | Network | TTL prevents loops, routing based on destination IP | OS fingerprinting via TTL values |
+| ICMP | Network | Echo request/reply for connectivity testing | Network mapping, traceroute reveals topology |
+| ARP | Link | Broadcasts requests, caches responses | ARP spoofing enables MITM attacks |
 
 ## 6. Detailed Findings
 
----
+### Finding: HTTP Transmits Sensitive Data in Plaintext
 
-### Finding 01 — Tor Successfully Masks Real IP Address
+**Severity:** High (in production environments)
 
-#### Severity
-Informational
+**Affected Protocol:** HTTP (Application Layer)
 
-#### Affected Component
-Outbound HTTP connections via `proxychains curl`
+**Description**
 
-#### Description
-When `proxychains` was prepended to the curl command, all outbound traffic
-was routed through the Tor SOCKS5 proxy at `127.0.0.1:9050` before reaching
-`httpbin.org`. The IP returned by the service was a Tor exit node address, not
-the local ISP address. The exit node IP (`109.70.100.6`) belongs to a Tor relay
-operator in a different country from the real source, confirming the ISP identity
-and geographic location were both masked.
+HTTP sends all request and response data without encryption. During analysis of traffic to the WebGoat application, the following sensitive information was visible in Wireshark:
 
-#### Proof of Concept
-
-Baseline IP confirmed without Tor:
+- User-Agent string revealing OS and browser version
+- Session cookies (JSESSIONID, PHPSESSID) that maintain authenticated sessions
+- HTTP 401 Unauthorized response indicating authentication is required
+- Server software version (Apache-Coyote)
 
 
 
-![curl httpbin.org/ip Without Tor - Real IP 102.89.68.117](image.jpg)
+![HTTP request showing plaintext cookies and headers](screenshots/http_plaintext_exposure.png)
 
 
 
-Proxychains curl output showing Tor exit node IP instead of real IP:
+**Proof of Observation**
 
+I captured HTTP traffic while browsing to http://192.168.92.3/WebGoat/attack. The request included:
 
-
-![proxychains curl httpbin.org/ip - Exit Node IP 109.70.100.6](image.jpg)
-
-
-
-Output comparison:
+```
+Cookie: JSESSIONID=...; PHPSESSID=...
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
 ```
 
-Without Tor:  "origin": "102.89.68.117"
-With Tor:     "origin": "109.70.100.6"
+The response header revealed:
+```
+Server: Apache-Coyote
+WWW-Authenticate: Basic realm="WebGoat Application"
 ```
 
-The Proxychains terminal also confirmed the routing path:
-```
-[proxychains] Dynamic chain ... 127.0.0.1:9050 ... httpbin.org:443
-```
+All of this information is immediately visible to anyone with network access.
 
-#### Impact
-Tor routing successfully prevents a destination server from identifying the
-original source IP address. From the server's perspective, the connection
-originates from the Tor exit node. This is the expected behavior and confirms
-the basic anonymity function works as intended.
+**Impact**
 
-#### Remediation
-This is a confirmed working control, not a vulnerability. To maintain this
-protection in practice, all traffic must be routed through Proxychains without
-exception. Any tool or application that does not respect the proxy configuration
-will leak the real IP.
+An attacker on the same network segment can:
+- Steal session cookies and impersonate the authenticated user (session hijacking)
+- Capture credentials if Basic Authentication is used (Base64 is easily decoded)
+- Map the server software to known vulnerabilities (Apache-Coyote version-specific exploits)
+- Profile the client's browser and OS for targeted client-side attacks
 
----
+**Remediation**
 
-### Finding 02 — Exit IP Rotates Across Repeated Requests
+Use HTTPS instead of HTTP. TLS encryption protects:
+- Request/response headers from inspection
+- Cookies from theft
+- Credentials from capture
+- Data integrity (prevents tampering)
 
-#### Severity
-Informational
+For internal applications, implement TLS with self-signed certificates or internal CA. For public applications, use certificates from trusted CAs.
 
-#### Affected Component
-Tor circuit management - repeated `proxychains curl` sessions
+### Finding: SSH Protects Payload After Key Exchange
 
-#### Description
-Running the same `proxychains curl https://httpbin.org/ip` command multiple
-times without restarting Tor returned different exit IPs across separate
-sessions. The IPs observed across runs included `109.70.100.6`,
-`185.220.101.24`, and `192.42.116.210`. This confirms that Tor builds new
-circuits periodically rather than permanently committing traffic to a single
-exit node. The rotation is managed automatically by Tor's circuit management
-and does not require any manual intervention.
+**Severity:** Informational (demonstrates proper encryption)
 
-#### Proof of Concept
+**Affected Protocol:** SSH (Application Layer)
 
-Three consecutive proxychains curl runs showing different exit IPs:
+**Description**
 
+SSH successfully negotiates encryption and protects all post-handshake traffic. The initial key exchange is visible in plaintext (necessary for cipher negotiation), but subsequent traffic appears as encrypted payload.
 
 
-![Three Consecutive proxychains curl Requests - Rotating Exit IPs](image.jpg)
 
+![SSH Key Exchange showing cipher selection](screenshots/ssh_key_exchange_detail.png)
 
 
-Exit IPs observed:
-```
 
-Run 1: "origin": "109.70.100.6"
-Run 2: "origin": "185.220.101.24"
-Run 3: "origin": "192.42.116.210"
-```
+**Observation**
 
-#### Impact
-IP rotation prevents a destination server from building a consistent picture of
-activity from a single address. However, rotation is not guaranteed on every
-single request. Tor reuses circuits for a period to avoid breaking active sessions.
-If a session requires login state or persistent connection, the circuit is kept alive
-longer, meaning the exit IP stays fixed for that session's duration.
+Wireshark dissects the Key Exchange Init packet (Message Code 20) showing:
+- Selected cipher: diffie-hellman-group-exchange-sha256
+- Protocol version: SSH-2
+- Packet length: 780 bytes
 
-#### Remediation
-For operational use, forcing a new Tor identity via `sudo service tor restart`
-guarantees a new circuit and exit node when strict IP change is needed. This
-should be done between distinct activities rather than mid-session.
+After this handshake completes, all further packets show only:
+- SSH Protocol header
+- Encrypted payload (random hex data)
+- No command data, no login credentials, no file contents
 
----
 
-### Finding 03 — Nmap Scan 4.7x Slower Through Tor
 
-#### Severity
-Medium
+![SSH encrypted payload appearing as random data](screenshots/ssh_encrypted_payload_detail.png)
 
-#### Affected Component
-Active scanning via `proxychains nmap -sT -Pn 44.228.249.3`
 
-#### Description
-The same Nmap TCP Connect scan was run against `44.228.249.3` with and
-without Proxychains. The scan through Tor completed in 31.43 seconds. The
-same scan run directly completed in 6.63 seconds. The latency penalty
-introduced by routing through multiple Tor relays before reaching the target
-produced a 4.7x slowdown on a single-host scan of a small port range. Scanning
-thousands of ports across a full subnet through Tor would produce proportionally
-longer times, making large-scale reconnaissance impractical in time-sensitive
-engagements.
 
-#### Proof of Concept
+**Impact**
 
-Nmap scan through Proxychains:
+Positive: Passive network monitoring cannot extract:
+- Login credentials
+- Commands executed during the session
+- File contents transferred via SCP/SFTP
+- Any application data
 
+This demonstrates proper encryption implementation. Even with complete packet capture, the session remains confidential.
 
+**Best Practice Validation**
 
-![Nmap via Proxychains - 31.43 Seconds Scan Time](image.jpg)
+SSH correctly implements:
+- Strong cipher negotiation (no fallback to weak algorithms)
+- Encrypted payload after key exchange
+- Protection against passive eavesdropping
 
+This is the security model all network protocols should follow.
 
+### Finding: TCP Reliability Mechanisms Prevent Data Loss
 
-Direct Nmap scan without Proxychains for comparison:
+**Severity:** Informational (demonstrates protocol behavior)
 
+**Affected Protocol:** TCP (Transport Layer)
 
+**Description**
 
-![Nmap Direct - 6.63 Seconds Scan Time](image.jpg)
-
-
-
-Both scans returned identical open ports, confirming the results were accurate
-despite the time difference:
-```
+TCP's acknowledgment and retransmission system successfully recovers from packet loss. When I simulated network disruption by toggling the interface, TCP automatically retransmitted unacknowledged packets.
 
-PORT     STATE  SERVICE
-80/tcp   open   http
-587/tcp  open   submission
-```
+**Observation**
 
-Scan times:
-```
-Via Proxychains: Nmap done: 1 IP address (1 host up) scanned in 31.43 seconds
-Direct:          Nmap done: 1 IP address (1 host up) scanned in 6.63 seconds
-```
-
-#### Impact
-The latency penalty is manageable for single-host, limited-port scans. It becomes
-a practical problem in engagements that require scanning wide port ranges or
-multiple hosts. A full 65535-port scan that takes 10 minutes directly could take
-nearly an hour via Tor. Planning must account for this if anonymised scanning
-is a requirement.
-
-#### Remediation
-Limit Tor-routed scanning to the minimum necessary scope. Run initial
-reconnaissance directly or through a VPS to identify live hosts and relevant port
-ranges, then use Tor only for targeted follow-up scans where source anonymity
-is specifically required.
+During the network disruption test:
+1. Packets were sent but no ACK received (interface down)
+2. Retransmission timer expired
+3. Same sequence numbers were retransmitted (flagged as "[TCP Retransmission]" in Wireshark)
+4. Connection eventually timed out after multiple retries
 
----
-
-### Finding 04 — Tor Restricted to TCP Traffic Only
 
-#### Severity
-Medium
-
-#### Affected Component
-Proxychains + Nmap - UDP scanning and ICMP ping
-
-#### Description
-Tor routes TCP traffic only. UDP packets and ICMP traffic cannot be proxied
-through Tor or Proxychains. In practice, this means UDP scans (`nmap -sU`)
-and standard ping-based host discovery are not available when routing through
-Proxychains. Nmap must use `-sT` (TCP Connect) instead of `-sS` (SYN stealth),
-which requires completing a full three-way TCP handshake for every port tested.
-A completed handshake is more visible in server logs than a half-open SYN
-scan, reducing the stealth benefit that anonymised scanning is meant to provide.
 
-#### Proof of Concept
+![Wireshark showing retransmitted packets](screenshots/tcp_retransmission_detail.png)
 
-Nmap scan command used through Proxychains:
-```
 
-proxychains nmap -sT -Pn 44.228.249.3
-```
 
-The `-Pn` flag was required because ICMP ping through Proxychains is not
-supported. Without it, Nmap would report the host as down. The `-sT` flag was
-mandatory because SYN scans require raw socket access that cannot pass
-through a SOCKS5 proxy.
+**How Reliability Works**
 
-#### Impact
-The protocol restriction limits the types of reconnaissance that can be performed
-anonymously. UDP services (DNS on port 53, SNMP on port 161, etc.) cannot be
-scanned through Tor. Host discovery via ICMP is unavailable, so the port list
-and host targets must be predetermined before routing through Proxychains.
-The full three-way handshake required by `-sT` also leaves more complete log
-entries at the target than a stealth SYN scan would.
+- **Sequence Numbers:** Every byte is assigned a unique number. If bytes 1000-1500 are sent, the ACK confirms receipt by acknowledging sequence 1501 (next expected byte).
+- **Retransmission Timer:** Each packet starts a timer. If ACK doesn't arrive before timeout, the packet is assumed lost and resent.
+- **Ordered Delivery:** If packets arrive as 1000-1500, 2000-2500, 1500-2000, TCP uses sequence numbers to reorder them correctly before delivering to the application.
 
-#### Remediation
-Accept the TCP-only restriction as a design property of Tor rather than a
-misconfiguration. UDP enumeration should be conducted through a separate
-channel if needed. When using `-sT` through Proxychains, combine it with
-timing flags (`-T2` or slower) to reduce the density of log entries at the target.
+**Impact**
 
----
+This reliability ensures:
+- File downloads don't become corrupted
+- Database transactions maintain data integrity
+- Web pages load completely even on unreliable networks
 
-### Finding 05 — Unencrypted HTTP Traffic Readable at Tor Exit Node
+However, retransmissions add latency. Applications requiring low latency over perfect accuracy (VoIP, gaming, live video) use UDP instead.
 
-#### Severity
-High
+### Finding: OS Detection Possible Through Packet Analysis
 
-#### Affected Component
-Tor exit node operator visibility - HTTP traffic
+**Severity:** Informational (reconnaissance technique)
 
-#### Description
-Tor encrypts traffic between the client and the exit node, but the exit node
-decrypts the traffic before forwarding it to the destination server. For HTTP
-connections (port 80, unencrypted), the exit node operator can read the full
-request content including any credentials, session tokens, or personal data in
-the HTTP body. Additionally, a malicious exit node can perform a
-man-in-the-middle attack, injecting content into HTTP responses or
-downgrading HTTPS connections if the client does not enforce strict TLS
-certificate checking. The exit node does not know the source IP, but it can
-see everything the destination sees.
+**Affected Protocols:** TCP, IP, ICMP (multiple layers)
 
-#### Proof of Concept
+**Description**
 
-The Nmap scan confirmed port 80/tcp open on the test host:
-```
+Operating systems can be identified through passive and active packet analysis. Different OS implementations have unique TCP/IP stack behaviors that create fingerprints.
 
-80/tcp  open  http
-```
 
-Any HTTP request sent to this or any other HTTP endpoint via Tor exits at the
-Tor relay in cleartext before reaching the server. The exit node operator
-receives the full plaintext HTTP request.
 
-#### Impact
-A user who sends credentials, API keys, or personal data over HTTP while
-believing Tor provides complete privacy has a false sense of security. The
-geographic and ISP identity is protected, but the content of unencrypted
-communications is not. This is a frequent misunderstanding about what Tor
-actually protects.
+![Nmap OS detection results](screenshots/nmap_os_detection_results.png)
 
-#### Remediation
-Use HTTPS for all connections routed through Tor without exception. Enforce
-HTTPS by installing browser extensions like HTTPS Everywhere or enabling
-strict HTTPS-only mode in Firefox. Avoid submitting credentials or sensitive
-data over any HTTP endpoint, regardless of whether Tor is in use.
 
----
 
-### Finding 06 — DNS Leak Possible Without proxy_dns Directive
+**Detection Indicators Observed:**
 
-#### Severity
-High
+**TTL Value:** OWASP VM consistently responds with TTL=64 (Linux default). Windows systems use TTL=128. This single field immediately identifies the OS family.
 
-#### Affected Component
-`/etc/proxychains.conf` - DNS resolution behavior
+**TCP Window Size:** Initial SYN-ACK packets included window sizes of 1024 and 5840. These values, combined with window scaling options, are characteristic of Linux 2.6.x kernels.
 
-#### Description
-By default, DNS resolution can occur outside the proxy chain if the application
-performs a DNS lookup before establishing the proxied TCP connection. Without
-the `proxy_dns` directive enabled in `/etc/proxychains.conf`, DNS queries are
-sent directly to the system resolver over the real network connection, not through
-Tor. This means the ISP's DNS server receives a query for every hostname
-resolved, creating a log of all destinations visited even when the actual
-connection content is hidden. During this lab, `proxy_dns` was confirmed active
-in the configuration file, mitigating this risk for the current session.
+**TCP Options Order:** The sequence of options (MSS, SACK, Timestamps, Window Scale) is arranged differently in Linux vs Windows vs BSD. Nmap compares observed patterns against a database of known fingerprints.
 
-#### Proof of Concept
+**Response to Probes:** When Nmap sent packets to closed ports, the VM responded with [RST, ACK] flags. The exact timing and flag combinations reveal the TCP/IP stack implementation.
 
-`/etc/proxychains.conf` configuration showing `proxy_dns` enabled and the
-SOCKS5 proxy entry pointing to Tor:
+**Impact**
 
+OS detection enables:
+- Attackers to search for OS-specific vulnerabilities
+- Network administrators to validate expected systems
+- Inventory management (detecting unauthorized devices)
+- Targeted exploit selection based on confirmed OS version
 
+**Reconnaissance Value**
 
-![proxychains.conf - proxy_dns and SOCKS5 127.0.0.1:9050 Configuration](image.jpg)
+After fingerprinting the OWASP VM as Linux 2.6.x, an attacker can:
+- Search exploit databases for kernel vulnerabilities
+- Assume default file paths (/etc/passwd, /var/www)
+- Tailor payloads to Linux architecture
+- Skip Windows-specific attack vectors
 
+This is why OS detection is Step 2 in most penetration test methodologies (after network discovery, before vulnerability scanning).
 
+### Finding: ARP Has No Authentication - Spoofing Possible
 
-Configuration entries confirmed:
-```
+**Severity:** Medium (enables MITM attacks)
 
-proxy_dns
-socks5  127.0.0.1  9050
-tcp_read_time_out  15000
-tcp_connect_time_out  8080
-```
+**Affected Protocol:** ARP (Link Layer)
 
-A DNS leak in the absence of `proxy_dns` would allow the ISP to log every
-resolved hostname, enabling timing correlation between the DNS request
-timestamps and Tor connection timestamps to identify visited destinations.
+**Description**
 
-#### Impact
-DNS leaks are one of the most common causes of de-anonymisation in
-proxy-routed sessions. If an investigator has access to ISP DNS logs and can
-observe that a DNS query for a sensitive hostname was made from a specific IP
-at the same time an anonymous Tor connection reached that host, correlation is
-straightforward. `proxy_dns` forces DNS resolution through Tor, preventing
-the ISP from seeing hostname queries.
+ARP accepts responses without verification. Any device can claim ownership of an IP address, and the requesting system will believe it. This enables ARP spoofing attacks where an attacker intercepts traffic intended for another machine.
 
-#### Remediation
-Confirm `proxy_dns` is present and uncommented in `/etc/proxychains.conf`
-before any anonymised session. Periodically test for DNS leaks using services
-such as `dnsleaktest.com` routed through Proxychains to verify no out-of-band
-DNS queries are being made during active Tor sessions.
 
----
+
+![ARP request and reply exchange](screenshots/arp_request_reply_detail.png)
+
+
+
+**How ARP Spoofing Works:**
+
+1. Legitimate flow: My machine broadcasts "Who has 192.168.92.3?" and the VM replies "I am 192.168.92.3 at [legitimate MAC]"
+2. Attack scenario: Attacker sends unsolicited ARP reply "192.168.92.3 is at [attacker's MAC]"
+3. My machine updates ARP cache with poisoned entry
+4. All packets intended for 192.168.92.3 are now sent to attacker's MAC
+5. Attacker can intercept, read, modify, then forward to legitimate destination
+
+**Impact**
+
+ARP spoofing enables:
+- Man-in-the-middle attacks (attacker relays traffic between victim and target)
+- Session hijacking (steal cookies from HTTP traffic)
+- Credential capture (intercept login attempts)
+- Traffic analysis (monitor all communication)
+
+**Why This Works**
+
+ARP has no authentication mechanism. The protocol was designed for trusted local networks and assumes all participants are honest. Modern switched networks limit broadcast domains, but ARP spoofing still works within a VLAN.
+
+**Mitigation**
+
+- Use static ARP entries for critical systems (manual management overhead)
+- Enable Dynamic ARP Inspection (DAI) on switches (validates ARP packets against DHCP bindings)
+- Implement 802.1X port authentication (prevents unauthorized devices from joining network)
+- Use HTTPS/SSH to protect data even if ARP is compromised
+
+This finding demonstrates why encryption at higher layers (TLS, SSH) is necessary - link-layer security cannot be guaranteed on shared networks.
 
 ## 7. Tools Used
 
-- Kali Linux (lab environment)
-- Tor v0.4.8.16-1
-- Proxychains-ng 4.17
-- curl (IP verification via `httpbin.org/ip`)
-- Nmap 7.98 (TCP connect scanning)
-- Firefox (browser-based IP verification)
-
----
+- Wireshark (GUI packet analyzer)
+- tcpdump (command-line packet capture)
+- Nmap (OS detection and port scanning)
+- ping (ICMP connectivity testing)
+- traceroute (path discovery)
+- netstat (connection status)
+- route (routing table inspection)
+- arp (ARP cache management)
 
 ## 8. Challenges Encountered
 
-- **Tor circuit reuse made IP comparison across runs inconsistent:** Tor does
-  not guarantee a new exit node on every single request. Some consecutive curl
-  runs returned the same exit IP, while others rotated. Waiting briefly between
-  runs or restarting Tor produced more consistent rotation for the purpose of
-  demonstrating the behavior.
-- **Nmap host discovery disabled by Tor's ICMP restriction:** Running Nmap
-  without the `-Pn` flag caused it to report the target as down, because the
-  default ping probe could not pass through Proxychains. Adding `-Pn` bypassed
-  the host discovery phase entirely and proceeded directly to port scanning.
-- **Systemd service status output cut off in terminal:** The `systemctl status tor`
-  output was paginated, requiring pressing the spacebar to view the full output.
-  Piping to `cat` or using `--no-pager` produced the full output in one block
-  for documentation purposes.
+**Challenge: Wireshark display filter syntax confusion**
 
----
+During initial packet capture, I attempted to filter HTTP traffic using `protocol == HTTP`, which returned no results. Wireshark uses `http` (lowercase, no comparison operator) as the display filter. This is different from capture filters (BPF syntax) which use `port 80`. I resolved this by consulting Wireshark's filter reference and learning that display filters use protocol names directly (http, tcp, icmp) while capture filters use port numbers and protocol keywords.
+
+**Challenge: SSH payload appears as gibberish**
+
+When analyzing SSH traffic, I initially thought Wireshark was displaying the data incorrectly because the payload showed as random hex with no readable text. I later understood this is correct behavior - SSH encryption is working as designed. The key insight was that only the initial key exchange (Message Code 20) is visible in plaintext, and everything after that is intentionally encrypted. This taught me to differentiate between "Wireshark isn't working" and "encryption is working".
+
+**Challenge: Subnet mask misconfiguration diagnosis**
+
+After deliberately setting the wrong subnet mask (/30 instead of /24), I initially looked for the problem at the application layer (is the web server running?). I then worked down through the layers: Transport (is TCP connecting?), Network (is routing correct?), and finally Link (is ARP resolving?). The `route -n` command showed the destination wasn't in the local route, and `arp -n` showed no MAC address for the target. This reinforced the importance of bottom-up troubleshooting - if Layer 2/3 are broken, Layer 7 problems are irrelevant.
+
+**Challenge: Understanding why UDP has no retransmission**
+
+I initially questioned why UDP doesn't just add basic reliability features like acknowledgments. The answer became clear when analyzing live video streaming - retransmitting a lost video frame after the next 10 frames have already arrived provides no value. The frame is displayed for 1/30th of a second, and by the time the retransmission arrives, the viewer has moved on. UDP's "fire and forget" approach makes sense for time-sensitive data where old data is worthless.
 
 ## 9. Key Takeaways
 
-- **Tor protects identity at the network level, not the content level:** The
-  verified IP change from `102.89.68.117` to `109.70.100.6` confirms identity
-  masking works as expected. What Tor does not protect is the content of
-  unencrypted connections after they leave the exit node. Treating Tor as a
-  full privacy solution without using HTTPS leads to the wrong conclusions
-  about what is actually protected.
-- **proxy_dns is a required configuration, not optional:** A correctly configured
-  IP proxy that still leaks DNS queries provides much weaker protection than it
-  appears to. Enabling `proxy_dns` is a one-line configuration change that
-  closes a significant de-anonymisation vector.
-- **The 4.7x scan slowdown has real operational consequences:** The difference
-  between 6.63 and 31.43 seconds on a tiny scan scales badly. Anonymised
-  scanning is practical only when the target scope is deliberately small and
-  pre-defined. Large-scale discovery and enumeration do not fit within the
-  performance constraints Tor imposes.
-- **Authenticated sessions destroy anonymity regardless of Tor:** Logging into
-  a personal account over Tor gives the service provider a direct link between
-  the Tor circuit and a verified identity. This is not a Tor failure — it is the
-  correct outcome of providing credentials. Tor cannot anonymise an action the
-  user intentionally identifies themselves for.
-- **Chain mode selection has a direct tradeoff between reliability and
-  detection resistance:** Strict chain is the most predictable but breaks on any
-  proxy failure. Dynamic chain keeps the connection alive but reduces the
-  number of hops when proxies drop out. Random chain produces the least
-  consistent traffic pattern from a logging perspective, at the cost of being
-  unpredictable about which path the traffic actually takes.
+**Layer boundaries matter for security.** HTTP operates at Layer 7, but an attacker at Layer 2 (ARP spoofing) can intercept it. Understanding which layer protects what is critical. Encryption must happen at the right layer - TLS at Layer 6 protects against Layer 2/3 attacks, but ARP spoofing still works until you implement link-layer security (802.1X, DAI).
 
----
+**TCP's reliability is expensive.** Every packet requires an ACK, sequence numbers consume bandwidth, and retransmissions add latency. This overhead is acceptable for file transfers and web browsing but unacceptable for VoIP and gaming. Choosing between TCP and UDP requires understanding the application's tolerance for packet loss vs latency.
+
+**TTL reveals more than just hop count.** Beyond preventing routing loops, TTL exposes OS identity. A single response packet with TTL=64 immediately identifies Linux, while TTL=128 indicates Windows. This passive fingerprinting works without sending any active probes to the target.
+
+**Encryption doesn't hide everything.** SSH protects payload content, but the key exchange negotiation is visible. An observer knows: that SSH is being used, which cipher was negotiated, the packet sizes and timing, and both endpoints' IPs. Traffic analysis remains possible even when content is encrypted.
+
+**ARP's lack of authentication is a fundamental weakness.** Any device can claim ownership of any IP address on the local segment. This is why enterprise networks implement port security, DHCP snooping, and Dynamic ARP Inspection. The assumption that "everyone on the LAN is trusted" is incorrect.
+
+**Wireshark reveals the gap between theory and practice.** Textbooks explain the OSI model cleanly, but real packets show TCP options that aren't in the standard, window scaling negotiations that vary by OS, and retransmission algorithms that differ between implementations. Hands-on packet analysis teaches how networks actually work, not how they theoretically should work.
+
+**Troubleshooting requires layer-by-layer analysis.** When connectivity fails, start at Layer 1 (is the cable plugged in?) and work up. Checking application logs before verifying IP routing wastes time. The subnet mask misconfiguration exercise demonstrated this - the routing table (Layer 3) showed the problem immediately, eliminating the need to debug HTTP (Layer 7).
 
 ## 10. Disclaimer
 
-> This assessment was conducted within an isolated Kali Linux lab environment
-> for educational purposes only. All IP verification was performed against publicly
-> accessible services (`httpbin.org`, `whatismyip.com`). The Nmap scan target
-> (`44.228.249.3`) is a public AWS infrastructure IP used solely for scan
-> timing comparison — no exploitation or unauthorized access was attempted
-> against any host. Tor and Proxychains were used within the bounds of normal
-> educational security training. These tools must only be used in contexts where
-> applicable laws and explicit authorization permit their use.
-
----
+This lab was performed on isolated virtual machines (Kali Linux and OWASP-BWA) in a controlled local network environment for educational purposes only. No production systems were analyzed. All packet captures were performed on systems under my direct control. Traffic analysis techniques demonstrated in this lab should only be applied to networks where you have explicit authorization. Unauthorized network sniffing or protocol analysis may violate laws and organizational policies.
