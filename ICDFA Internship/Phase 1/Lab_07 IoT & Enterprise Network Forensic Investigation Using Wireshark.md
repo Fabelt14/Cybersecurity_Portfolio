@@ -339,31 +339,7 @@ behavior, the attacker has a complete picture of the server technology stack.
 
 ## 7. Attack Chain
 
-```
-[12:07 UTC] Reconnaissance
-IP 111.224.250.131 browses BookWorldStore using Firefox
-→ Identifies /search.php and /admin/login.php
-        ↓
-[12:09 UTC] SQL Injection & Database Enumeration
-sqlmap v1.8.3 targets /search.php
-→ UNION ALL SELECT NULL patterns sent to map database structure
-→ 500 errors returned but database probed successfully
-        ↓
-[12:17 UTC] Brute Force Authentication
-Repeated POST to /admin/login.php with credential guessing
-→ Successful login: admin:admin123!
-→ HTTP 302 redirect to /admin/index.php (admin dashboard)
-        ↓
-[12:XX UTC] Unrestricted File Upload
-Malicious PHP web shell (NVri2vhp.php) uploaded via admin dashboard
-→ File stored at /admin/uploads/NVri2vhp.php
-        ↓
-[12:26 UTC] Web Shell Trigger
-GET /admin/uploads/NVri2vhp.php
-→ Reverse shell payload executes
-→ TCP port 443 reverse connection attempted
-→ No interactive session captured in PCAP
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_07_Attack%20Chain.png)
 
 The attack demonstrates a complete multi-stage compromise: passive reconnaissance
 leading to active SQLi enumeration, authentication bypass via brute force, and
