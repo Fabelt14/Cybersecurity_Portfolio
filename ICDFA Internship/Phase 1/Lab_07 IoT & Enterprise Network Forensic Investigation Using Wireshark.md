@@ -1,13 +1,4 @@
-# Security Assessment Report
-## IoT & Enterprise Network Forensic Investigation Using Wireshark
-
-**Student Name:** Asekun Fatai
-**Student ID:** 2025/INT/12158
-**Course:** Kali Linux Tools and System Security
-**Instructor:** Mr. Aminu Idris
-**Date:** 05 January 2026
-
----
+# IoT & Enterprise Network Forensic Investigation Using Wireshark
 
 ## 1. Engagement Overview
 
@@ -15,7 +6,7 @@ A forensic investigation was conducted on a provided PCAP capture file related t
 confirmed security incident affecting BookWorldStore.com, an e-commerce web
 application hosted at IP address `73.124.22.98`. The investigation covered network
 traffic recorded on **March 15, 2024, between 12:07 and 12:26 UTC**. The testing
-approach was black-box forensic analysis — working solely from captured network
+approach was black-box forensic analysis, working solely from captured network
 traffic without prior knowledge of the application internals. Tools used included
 Wireshark for packet analysis and DNS statistics review.
 
@@ -56,37 +47,37 @@ involved in the incident
 
 ## 4. Methodology
 
-### Phase 1 — Reconnaissance (Traffic Behavior Analysis)
+### Phase 1: Reconnaissance (Traffic Behavior Analysis)
 Wireshark was opened with the provided PCAP file. A high-level review of all
 captured packets was performed to identify traffic patterns, unique IP addresses, and
 protocol distribution. Endpoint statistics and DNS statistics were reviewed to
 establish baseline behavior and identify anomalies.
 
-### Phase 2 — Mapping / Spidering (Attack Surface Identification)
+### Phase 2: Mapping / Spidering (Attack Surface Identification)
 HTTP traffic was filtered and analyzed to enumerate all endpoints accessed during
 the capture window. Suspicious GET and POST requests were identified by examining
 request URIs, HTTP methods, and User-Agent strings. The site map of accessed
 endpoints was reconstructed manually from packet data.
 
-### Phase 3 — Vulnerability Identification
+### Phase 3: Vulnerability Identification
 HTTP POST requests were inspected for brute force patterns against
 `/admin/login.php`. GET requests to `/search.php` were analyzed for SQL injection
 signatures including `UNION ALL SELECT NULL` patterns and `sqlmap` User-Agent
 headers. File upload activity at `/admin/index.php` was identified and the uploaded
 filename extracted from packet data.
 
-### Phase 4 — Exploitation Analysis
+### Phase 4: Exploitation Analysis
 The attack chain was reconstructed step by step using packet timestamps and
 content. Authentication bypass via brute force, database enumeration via SQLi, and
 web shell installation via unrestricted file upload were confirmed. The reverse shell
 trigger was identified via a GET request to `/admin/uploads/NVri2vhp.php`.
 
-### Phase 5 — Validation
+### Phase 5: Validation
 DNS statistics were reviewed to confirm the absence of DNS-based C2 activity.
-Data exfiltration channels were examined — no interactive session or outbound data
+Data exfiltration channels were examined, no interactive session or outbound data
 transfer was observed in the PCAP beyond the shell trigger.
 
-### Phase 6 — Documentation
+### Phase 6: Documentation
 All findings including IOCs, attacker IPs, payloads, endpoints, and timestamps were
 recorded and compiled into this report.
 
@@ -108,13 +99,13 @@ recorded and compiled into this report.
 
 ---
 
-### Finding 01 — Brute Force Authentication Attack
+### Finding 01: Brute Force Authentication Attack
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/admin/login.php` — HTTP POST
+`/admin/login.php` (HTTP POST)
 
 #### Description
 The attacker (IP `111.224.250.131`) submitted repeated POST requests to the admin
@@ -129,7 +120,7 @@ to the admin dashboard.
 Wireshark capture showing repeated POST requests from `111.224.250.131` to
 `/admin/login.php` with form-encoded credentials:
 
-![Repeated POST Requests to /admin/login.php](image.jpg)
+![Repeated POST Requests to /admin/login.php](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_01_Repeated%20POST%20Requests%20to%20admin-login.jpg)
 
 Successful authentication response captured in packet data:
 ```
@@ -139,6 +130,8 @@ Date: Fri, 15 Mar 2024 12:17:34 GMT
 Server: Apache/2.4.52 (Ubuntu)
 ```
 
+![Authentication Response](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_06_Authentication%20Response.jpg)
+
 #### Impact
 Authentication bypass granted the attacker full administrative access to the
 BookWorldStore dashboard. This directly enabled the subsequent file upload attack.
@@ -147,20 +140,20 @@ exploitable.
 
 #### Remediation
 - Implement account lockout after 5 failed login attempts
-- Enforce strong password policies — prohibit default or common credentials
+- Enforce strong password policies and prohibit default or common credentials
 - Add CAPTCHA or multi-factor authentication to the admin login
 - Implement IP-based rate limiting on authentication endpoints
 - Alert on repeated failed login attempts via security monitoring
 
 ---
 
-### Finding 02 — SQL Injection
+### Finding 02: SQL Injection
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/search.php` — HTTP GET, `search` parameter
+`/search.php` (HTTP GET), `search` parameter
 
 #### Description
 The search functionality on BookWorldStore concatenates user-supplied input
@@ -176,7 +169,7 @@ remained accessible to further probing.
 Wireshark capture showing sqlmap User-Agent and UNION SELECT NULL payload
 in the GET request to `/search.php`:
 
-![SQL Injection GET Request with sqlmap User-Agent](image.jpg)
+![SQL Injection GET Request with sqlmap User-Agent](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_03_SQL%20Injection%20GET%20Request%20with%20sqlmap%20User-Agent.jpg)
 
 Payload observed in packet:
 ```
@@ -188,7 +181,7 @@ Host: bookworldstore.com
 
 #### Impact
 SQL injection on an e-commerce platform with direct database access places all
-stored customer data at immediate risk — including names, email addresses, physical
+stored customer data at immediate risk, including names, email addresses, physical
 addresses, payment details, and order history. Successful enumeration of table and
 column structure is the precursor to full data extraction. Even without confirmed
 exfiltration in this PCAP, the database structure was actively being mapped.
@@ -199,21 +192,21 @@ exfiltration in this PCAP, the database structure was actively being mapped.
 $stmt = $pdo->prepare("SELECT * FROM books WHERE title = ?");
 $stmt->execute([$search]);
 ```
-- Validate and whitelist all search input — reject or sanitize special SQL characters
+- Validate and whitelist all search input and reject or sanitize special SQL characters
 - Implement a Web Application Firewall (e.g., ModSecurity) to block SQLi patterns
-- Apply least-privilege database accounts — the application user should have no
+- Apply least-privilege database accounts, the application user should have no
   schema-level permissions
 - Suppress verbose database error messages in production; log them server-side only
 
 ---
 
-### Finding 03 — Unrestricted File Upload
+### Finding 03: Unrestricted File Upload
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/admin/index.php` — Authenticated file upload form
+`/admin/index.php` (Authenticated file upload form)
 
 #### Description
 After gaining authenticated access via brute force, the attacker used the admin
@@ -227,7 +220,7 @@ filtering, or content inspection on uploaded files. The file was stored directly
 Wireshark capture confirming successful upload via POST to `/admin/index.php`
 and server confirmation response:
 
-![Malicious File Upload POST Request and Confirmation](image.jpg)
+![Malicious File Upload POST Request and Confirmation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_02_Malicious%20File%20Upload%20POST%20Request%20and%20Confirmation.jpg)
 
 Server response confirming upload success:
 ```
@@ -248,7 +241,7 @@ active interaction in this PCAP, the shell remained accessible for future exploi
 
 #### Remediation
 - Restrict uploaded file types to a strict whitelist (e.g., images only: `.jpg`, `.png`,
-  `.gif`) — reject `.php`, `.phtml`, `.phar`, and all executable extensions
+  `.gif`) reject `.php`, `.phtml`, `.phar`, and all executable extensions
 - Validate file content using MIME-type inspection, not just extension checking
 - Store uploaded files outside the web root to prevent direct HTTP access
 - Rename uploaded files server-side using randomly generated non-guessable names
@@ -258,13 +251,13 @@ active interaction in this PCAP, the shell remained accessible for future exploi
 
 ---
 
-### Finding 04 — Web Shell Execution & Reverse Shell
+### Finding 04: Web Shell Execution & Reverse Shell
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/admin/uploads/NVri2vhp.php` — HTTP GET
+`/admin/uploads/NVri2vhp.php` (HTTP GET)
 
 #### Description
 Following the upload of the malicious PHP file, the attacker triggered its execution
@@ -272,7 +265,7 @@ by sending a direct GET request to its publicly accessible path. The PHP file
 contained a reverse shell payload configured to connect back to the attacker on TCP
 port 443. While no interactive session or command output was captured in the PCAP,
 the execution of the shell was confirmed by the server returning an HTTP 500 error
-during the trigger — indicating PHP code executed but the reverse connection could
+during the trigger, indicating PHP code executed but the reverse connection could
 not be established within the capture window.
 
 #### Proof of Concept
@@ -280,7 +273,7 @@ not be established within the capture window.
 Wireshark capture showing the GET request to the uploaded shell and the 500
 Internal Server Error response during trigger:
 
-![Web Shell GET Request and 500 Error Response](image.jpg)
+![Web Shell GET Request and 500 Error Response](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_04_Web%20Shell%20GET%20Request%20and%20500%20Error%20Response.jpg)
 
 Packets captured:
 ```
@@ -308,7 +301,7 @@ persistent access indefinitely.
 
 ---
 
-### Finding 05 — Information Disclosure via HTTP Response Headers
+### Finding 05: Information Disclosure via HTTP Response Headers
 
 #### Severity
 Medium
@@ -327,6 +320,8 @@ Response headers captured in Wireshark:
 ```
 Server: Apache/2.4.52 (Ubuntu)
 ```
+
+![Server Display](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/07_05_Response%20headers%20captured%20in%20Wireshark.jpg)
 
 #### Impact
 Exposure of Apache version information allows an attacker to query public CVE
@@ -381,9 +376,9 @@ upon shell execution.
 ## 8. Tools Used
 
 - Wireshark (packet capture analysis and DNS statistics)
-- Firefox (used by attacker — observed in User-Agent headers)
-- sqlmap v1.8.3 (used by attacker — identified via User-Agent header)
-- Gobuster (used by attacker — identified via User-Agent header)
+- Firefox (used by attacker, was observed in User-Agent headers)
+- sqlmap v1.8.3 (used by attacker and was identified via User-Agent header)
+- Gobuster (used by attacker, was identified via User-Agent header)
 - Kali Linux (investigation environment)
 
 ---
@@ -411,7 +406,7 @@ upon shell execution.
   headers is an unambiguous indicator of automated injection tooling and should be
   blocked at the WAF layer before any payload reaches the application.
 - **Brute force success reveals weak credential policy:** The attacker succeeded with
-  `admin:admin123!` — a trivially guessable credential on a production e-commerce
+  `admin:admin123!`, a trivially guessable credential on a production e-commerce
   admin panel. Enforcing strong passwords and MFA would have broken this attack
   chain entirely at the second stage.
 - **File upload is a critical trust boundary:** Allowing authenticated users to upload
@@ -420,11 +415,11 @@ upon shell execution.
   for any upload functionality.
 - **Multi-stage attacks require layered defenses:** No single control would have
   prevented this compromise. The attacker pivoted across three distinct vulnerability
-  classes — SQLi, brute force, and file upload — meaning each layer must be
+  classes: SQLi, brute force, and file upload, meaning each layer must be
   independently hardened.
 - **PCAP analysis has temporal limits:** Forensic conclusions are bounded by the
   capture window. The absence of confirmed exfiltration in this PCAP does not rule
-  out data theft outside the recorded period — a critical consideration when scoping
+  out data theft outside the recorded period, a critical consideration when scoping
   incident response.
 
 ---
@@ -433,15 +428,15 @@ upon shell execution.
 
 | Type | Value | Description |
 |------|-------|-------------|
-| Attacker IP | `111.224.250.131` | Primary attacker — brute force, SQLi, file upload |
-| Scanner IP | `170.40.150.126` | Preliminary scanner — TCP RST packets observed |
+| Attacker IP | `111.224.250.131` | Primary attacker: brute force, SQLi, file upload |
+| Scanner IP | `170.40.150.126` | Preliminary scanner: TCP RST packets observed |
 | Suspicious User-Agent | `sqlmap/1.8.3#stable` | Automated SQL injection tool |
 | Suspicious User-Agent | `gobuster/3.0` | Directory brute-forcing tool |
 | Malicious File | `NVri2vhp.php` | PHP reverse shell uploaded to `/admin/uploads/` |
-| Vulnerable Endpoint | `/admin/login.php` | Susceptible to brute force — no rate limiting |
+| Vulnerable Endpoint | `/admin/login.php` | Susceptible to brute force, no rate limiting |
 | Vulnerable Endpoint | `/search.php` | Susceptible to SQL injection |
 | Vulnerable Endpoint | `/admin/index.php` | Susceptible to unrestricted file upload |
-| Compromised Directory | `/admin/uploads/` | Web-accessible upload storage — shell hosted here |
+| Compromised Directory | `/admin/uploads/` | Web-accessible upload storage, shell hosted here |
 
 ---
 
