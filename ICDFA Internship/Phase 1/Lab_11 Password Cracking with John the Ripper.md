@@ -1,11 +1,4 @@
 # Security Portfolio: Password Cracking with John the Ripper
-
-**Student Name:** Asekun Fatai
-**Student ID:** 2025/INT/12158
-**Course:** Kali Linux Tools and System Security
-**Instructor:** Mr. Aminu Idris
-**Date:** 09 January 2026
-
 ---
 
 ## 1. Engagement Overview
