@@ -1,4 +1,4 @@
-# Security Portfolio: File Upload Vulnerabilities in DVWA
+# File Upload Vulnerabilities in DVWA
 
 
 ## 1. Engagement Overview
