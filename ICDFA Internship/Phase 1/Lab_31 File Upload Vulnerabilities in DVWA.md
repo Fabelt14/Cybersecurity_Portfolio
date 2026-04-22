@@ -55,7 +55,7 @@ via the Weevely terminal client and executing commands on the server.
 
 ## 4. Methodology
 
-### Phase 1 -- Reconnaissance
+### Phase 1: Reconnaissance
 The DVWA File Upload page was accessed and the upload form was reviewed.
 A harmless text file (`file1.txt`) and a shell script (`dns_resolve.sh`) were uploaded
 to confirm which file types the form accepted at low security level. An OpenVPN
@@ -64,7 +64,7 @@ any file type restriction. All uploads succeeded, confirming no file type valida
 was present at low level. The server response confirmed the upload directory as
 `../../hackable/uploads/`.
 
-### Phase 2 -- Web Shell Generation
+### Phase 2: Web Shell Generation
 Weevely 4.0.2 was used to generate an obfuscated PHP web shell:
 ```
 
@@ -74,12 +74,12 @@ The generated file (`backdoor.php`, 693 bytes) was reviewed in nano. The content
 was confirmed as obfuscated PHP, designed to evade signature-based detection
 by WAFs and security scanners.
 
-### Phase 3 -- Low Security Upload
+### Phase 3: Low Security Upload
 With security level set to Low, `backdoor.php` was uploaded directly through the
 browser without modification. The server accepted the file and returned the upload
 path, confirming no server-side file type validation was in place at this level.
 
-### Phase 4 -- Medium Security Bypass via Content-Type Modification
+### Phase 4: Medium Security Bypass via Content-Type Modification
 With security level set to Medium, a direct upload of `backdoor.php` was rejected
 with the message "We can only accept JPEG or PNG images." Burp Suite was
 configured to intercept the upload request. The `Content-Type` header in the
@@ -88,7 +88,7 @@ modified request was forwarded and the server returned HTTP 200, confirming
 the shell was uploaded. The medium-level filter checked only the `Content-Type`
 header and did not inspect the actual file content.
 
-### Phase 5 -- High Security Bypass via Magic Bytes and Double Extension
+### Phase 5: High Security Bypass via Magic Bytes and Double Extension
 With security level set to High, both a direct upload and a Content-Type bypass
 were insufficient. The high-level filter validated the file's magic bytes against
 known image signatures rather than trusting the request headers. To bypass this,
@@ -97,7 +97,7 @@ and the filename was changed to `backdoor.php.jpg` (double extension). The
 modified request was intercepted in Burp Suite and forwarded. The server
 returned HTTP 200 and confirmed the upload succeeded.
 
-### Phase 6 -- Shell Access Confirmation
+### Phase 6: Shell Access Confirmation
 The uploaded shell was accessed via Weevely from the terminal:
 ```
 
@@ -124,13 +124,13 @@ the server.
 
 ---
 
-### Finding 01 -- Unrestricted File Upload (Low Security)
+### Finding 01: Unrestricted File Upload (Low Security)
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/upload/` -- File upload form, POST
+`/dvwa/vulnerabilities/upload/` File upload form, POST
 
 #### Description
 At low security level, the DVWA upload form accepts any file type regardless of
@@ -145,7 +145,7 @@ DVWA File Upload page confirming upload form accessed at low security:
 
 
 
-![DVWA File Upload Page - Low Security Level](image.jpg)
+![DVWA File Upload Page - Low Security Level](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_01%20DVWA%20File%20Upload%20Page%20-%20Low%20Security%20Level.jpg)
 
 
 
@@ -153,7 +153,7 @@ Text file and shell script uploaded with server confirmation:
 
 
 
-![Upload Confirmation - file1.txt and dns_resolve.sh Successfully Uploaded](image.jpg)
+![Upload Confirmation - dns_resolve.sh Successfully Uploaded](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_02%20Upload%20Confirmation%20-%20dns_resolve.sh%20Successfully%20Uploaded.jpg)
 
 
 
@@ -161,7 +161,7 @@ OpenVPN configuration file uploaded to confirm absence of file type restriction:
 
 
 
-![Upload Confirmation - vpnbook-ca149-tcp443.ovpn Successfully Uploaded](image.jpg)
+![Upload Confirmation - vpnbook-ca149-tcp443.ovpn Successfully Uploaded](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_03%20Upload%20Confirmation%20-%20vpnbook-ca149-tcp443.ovpn%20Successfully%20Uploaded.jpg)
 
 
 
@@ -169,7 +169,7 @@ OpenVPN configuration file uploaded to confirm absence of file type restriction:
 
 
 
-![Upload Confirmation - backdoor.php Successfully Uploaded at Low Security](image.jpg)
+![Upload Confirmation - backdoor.php Successfully Uploaded at Low Security](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_04%20Upload%20Confirmation%20-%20backdoor.php%20Successfully%20Uploaded%20at%20Low%20Security.jpg)
 
 
 
@@ -198,13 +198,13 @@ escalation from the `www-data` context to root.
 
 ---
 
-### Finding 02 -- MIME Type Bypass via Content-Type Header (Medium Security)
+### Finding 02: MIME Type Bypass via Content-Type Header (Medium Security)
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/upload/` -- File upload form, POST
+`/dvwa/vulnerabilities/upload/` File upload form, POST
 
 #### Description
 At medium security level, the upload form rejected `backdoor.php` with the
@@ -221,7 +221,7 @@ Medium-level upload rejection without modification:
 
 
 
-![DVWA Medium Level - Upload Rejected for PHP File](image.jpg)
+![DVWA Medium Level - Upload Rejected for PHP File](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_05%20DVWA%20Medium%20Level%20-%20Upload%20Rejected%20for%20PHP%20File.jpg)
 
 
 
@@ -230,7 +230,7 @@ Burp Suite request interception showing `Content-Type` modification from
 
 
 
-![Burp Suite Intercept - Content-Type Changed to image/jpeg](image.jpg)
+![Burp Suite Intercept - Content-Type Changed to image/jpeg](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_06%20Burp%20Suite%20Intercept%20-%20Content-Type%20Changed%20to%20image_jpeg.jpg)
 
 
 
@@ -238,7 +238,7 @@ Server response after forwarding the modified request:
 
 
 
-![Upload Confirmation - backdoor.php Uploaded After Content-Type Bypass](image.jpg)
+![Upload Confirmation - backdoor.php Uploaded After Content-Type Bypass](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_07%20Upload%20Confirmation%20-%20backdoor.php%20Uploaded%20After%20Content-Type%20Bypass.jpg)
 
 
 
@@ -275,13 +275,13 @@ $mime = finfo_file($finfo, $_FILES['uploaded']['tmp_name']);
 
 ---
 
-### Finding 03 -- Magic Byte Bypass via GIF Signature and Double Extension (High Security)
+### Finding 03: Magic Byte Bypass via GIF Signature and Double Extension (High Security)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/upload/` -- File upload form, POST
+`/dvwa/vulnerabilities/upload/` File upload form, POST
 
 #### Description
 At high security level, the server validated the uploaded file's content using
@@ -301,7 +301,7 @@ before the PHP code:
 
 
 
-![nano Editor - GIF89a Magic Bytes Prepended to backdoor.php.jpg](image.jpg)
+![nano Editor - GIF89a Magic Bytes Prepended to backdoor.php.jpg](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_08%20nano%20Editor%20-%20GIF89a%20Magic%20Bytes%20Prepended%20to%20backdoor.php.jpg)
 
 
 
@@ -310,7 +310,7 @@ Burp Suite request showing the filename set to `backdoor.php.jpg` and
 
 
 
-![Burp Suite Intercept - Double Extension and image/jpeg Content-Type for High Level](image.jpg)
+![Burp Suite Intercept - Double Extension and image/jpeg Content-Type for High Level](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_09%20Burp%20Suite%20Intercept%20-%20Double%20Extension%20and%20image_jpeg%20Content-Type%20for%20High%20Level.jpg)
 
 
 
@@ -352,7 +352,7 @@ $filename = bin2hex(random_bytes(16)) . '.jpg';
 
 ---
 
-### Finding 04 -- Remote Code Execution via Uploaded Web Shell
+### Finding 04: Remote Code Execution via Uploaded Web Shell
 
 #### Severity
 Critical
@@ -378,7 +378,7 @@ Weevely terminal output confirming shell access and command execution:
 
 
 
-![Weevely Shell - Connected to backdoor.php, Commands Executed](image.jpg)
+![Weevely Shell - Connected to backdoor.php, Commands Executed](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_10%20Weevely%20Shell%20-%20Connected%20to%20backdoor.php%2C%20Commands%20Executed.jpg)
 
 
 
@@ -421,13 +421,13 @@ for further pivot targets.
 
 ---
 
-### Finding 05 -- Upload Directory Web-Accessible with PHP Execution Enabled
+### Finding 05: Upload Directory Web-Accessible with PHP Execution Enabled
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/hackable/uploads/` -- Web-accessible directory
+`/hackable/uploads/` Web-accessible directory
 
 #### Description
 The directory where DVWA stores uploaded files (`/hackable/uploads/`) is
@@ -476,46 +476,7 @@ Options -ExecCGI
 
 ## 7. Attack Chain
 
-```
-[Step 1] Reconnaissance
-Upload form tested with .txt, .sh, and .ovpn files at Low security
-All files accepted - no file type restriction present
-Upload directory confirmed: ../../hackable/uploads/
-        |
-        v
-[Step 2] Web Shell Generation
-weevely generate 12345 backdoor.php
-693-byte obfuscated PHP shell generated
-File content confirmed as obfuscated to evade signature scanners
-        |
-        v
-[Step 3] Low Level - Direct Upload
-backdoor.php uploaded via browser with no modification
-Server accepts file, returns upload path
-No server-side validation present at low level
-        |
-        v
-[Step 4] Medium Level - Content-Type Bypass
-Direct upload rejected: "We can only accept JPEG or PNG images"
-Burp Suite intercept: Content-Type changed from application/x-php to image/jpeg
-Modified request forwarded, HTTP 200 returned
-backdoor.php uploaded with .php extension intact
-        |
-        v
-[Step 5] High Level - Magic Byte + Double Extension Bypass
-Direct upload blocked, Content-Type change alone insufficient
-GIF89a magic bytes prepended to shell content in nano
-Filename changed to backdoor.php.jpg, Content-Type set to image/jpeg
-All three modifications applied simultaneously in Burp Suite
-HTTP 200 returned, backdoor.php.jpg confirmed uploaded
-        |
-        v
-[Step 6] Shell Access Confirmed
-weevely http://127.0.0.1:42001/hackable/uploads/backdoor.php 12345
-Interactive terminal session established on server
-uname -a, ls, pwd executed - full filesystem access confirmed
-Working directory: /var/lib/dvwa/uploads
-```
+![Lab_31 Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/31_11%20Attack%20Chain.jpg)
 
 ---
 
