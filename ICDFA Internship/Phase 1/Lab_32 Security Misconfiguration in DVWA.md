@@ -53,29 +53,29 @@ to inspect HTTP response headers and intercept the file upload request.
 
 ## 4. Methodology
 
-### Phase 1 -- Default Credential Testing
+### Phase 1: Default Credential Testing
 The DVWA login page was accessed and the default credentials `admin` /
 `password` were entered without any prior reconnaissance. The application
 authenticated successfully and granted admin-level access.
 
-### Phase 2 -- Directory Listing Verification
+### Phase 2: Directory Listing Verification
 The URL `http://192.168.92.3/dvwa/vulnerabilities/` was navigated to directly.
 The Apache web server returned a directory index page listing all subdirectories
 and files present in that path, confirming that the `Options Indexes` directive
 was active.
 
-### Phase 3 -- Error Handling Analysis
+### Phase 3: Error Handling Analysis
 A single quote was injected into the `id` parameter of the SQL injection module
 at `http://192.168.92.3/dvwa/vulnerabilities/sqli/?id='&Submit=Submit#`. The
 application returned an unhandled MySQL exception directly in the browser
 response, exposing the backend database type and query structure.
 
-### Phase 4 -- Security Header Inspection
+### Phase 4: Security Header Inspection
 An HTTP response from DVWA was captured in Burp Suite. The full response
 header set was reviewed to identify which standard security headers were present
 and which were absent.
 
-### Phase 5 -- File Upload Misconfiguration
+### Phase 5: File Upload Misconfiguration
 A PHP web shell (`backdoor.php`) was submitted to the DVWA file upload form
 at medium security level. The direct upload was rejected. Burp Suite was used
 to intercept the request and the `Content-Type` header was changed from
@@ -100,13 +100,13 @@ the server confirmed a successful upload.
 
 ---
 
-### Finding 01 -- Default Credentials Accepted
+### Finding 01: Default Credentials Accepted
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/login.php` -- POST, username and password fields
+`/dvwa/login.php` POST, username and password fields
 
 #### Description
 DVWA ships with the default credentials `admin` / `password`. The application
@@ -122,7 +122,7 @@ DVWA accessed and login attempted with `admin` / `password`:
 
 
 
-![DVWA Login - Default Credentials admin/password Accepted](image.jpg)
+![DVWA Login - Default Credentials admin/password Accepted](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_01%20DVWA%20Login%20-%20Default%20Credentials%20admin-password%20Accepted.jpg)
 
 
 
@@ -147,13 +147,13 @@ exploitation of backend systems.
 
 ---
 
-### Finding 02 -- Directory Listing Enabled
+### Finding 02: Directory Listing Enabled
 
 #### Severity
 Medium
 
 #### Affected Endpoint
-`http://192.168.92.3/dvwa/vulnerabilities/` -- Apache directory index
+`http://192.168.92.3/dvwa/vulnerabilities/` Apache directory index
 
 #### Description
 Navigating directly to the `/dvwa/vulnerabilities/` path returned an Apache
@@ -172,7 +172,7 @@ directory index:
 
 
 
-![Apache Directory Index - /dvwa/vulnerabilities/ Listing All Subdirectories](image.jpg)
+![Apache Directory Index - /dvwa/vulnerabilities/ Listing All Subdirectories](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_02%20Apache%20Directory%20Index%20-%20dvwa-vulnerabilities-Listing%20All%20Subdirectories.jpg)
 
 
 
@@ -205,13 +205,13 @@ upload functionality, which directly supports the attack in Finding 05.
 
 ---
 
-### Finding 03 -- Verbose SQL Error Message Disclosure
+### Finding 03: Verbose SQL Error Message Disclosure
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/sqli/?id='&Submit=Submit#` -- GET, `id` parameter
+`/dvwa/vulnerabilities/sqli/?id='&Submit=Submit#` GET, `id` parameter
 
 #### Description
 Injecting a single quote into the `id` parameter caused the application to throw
@@ -234,7 +234,7 @@ Application response visible in the browser:
 
 
 
-![Verbose MySQL Error Message in Browser Response](image.jpg)
+![Verbose MySQL Error Message in Browser Response](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_03%20Verbose%20MySQL%20Error%20Message%20in%20Browser%20Response.jpg)
 
 
 
@@ -264,7 +264,7 @@ precise injection payloads.
 
 ---
 
-### Finding 04 -- Missing HTTP Security Headers
+### Finding 04: Missing HTTP Security Headers
 
 #### Severity
 Medium
@@ -285,7 +285,7 @@ HTTP response headers captured in Burp Suite:
 
 
 
-![Burp Suite Response - No Security Headers Present](image.jpg)
+![Burp Suite Response - No Security Headers Present](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_04%20Burp%20Suite%20Response%20-%20No%20Security%20Headers%20Present.jpg)
 
 
 
@@ -338,13 +338,13 @@ be set in `httpd.conf` or `.htaccess` using the `Header always set` directive.
 
 ---
 
-### Finding 05 -- MIME Type Bypass on File Upload (Medium Security)
+### Finding 05: MIME Type Bypass on File Upload (Medium Security)
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/upload/` -- File upload form, POST
+`/dvwa/vulnerabilities/upload/` File upload form, POST
 
 #### Description
 At medium security level, the DVWA file upload form restricts uploads to JPEG
@@ -365,7 +365,7 @@ to `image/jpeg` while the filename remained `backdoor.php`:
 
 
 
-![Burp Suite Intercept - Content-Type Modified to image/jpeg for backdoor.php](image.jpg)
+![Burp Suite Intercept - Content-Type Modified to image/jpeg for backdoor.php](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_05%20Burp%20Suite%20Intercept%20-%20Content-Type%20Modified%20to%20image-jpeg%20for%20backdoor.php.jpg)
 
 
 
@@ -373,7 +373,7 @@ Server confirmation after forwarding the modified request:
 
 
 
-![Upload Confirmation - backdoor.php Successfully Uploaded via MIME Bypass](image.jpg)
+![Upload Confirmation - backdoor.php Successfully Uploaded via MIME Bypass](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_06%20Upload%20Confirmation%20-%20backdoor.php%20Successfully%20Uploaded%20via%20MIME%20Bypass.jpg)
 
 
 
@@ -418,35 +418,7 @@ Options -ExecCGI
 
 ## 7. Attack Chain
 
-```
-[Step 1] Default Credentials
-admin / password accepted on first attempt
-Full admin access granted with no rate limiting or MFA
-        |
-        v
-[Step 2] Directory Listing
-/dvwa/vulnerabilities/ returns Apache index
-Upload path, source files, and all module directories disclosed
-        |
-        v
-[Step 3] Error Disclosure
-Single quote in id parameter triggers unhandled MySQL exception
-Database type (MySQL) and query structure returned in browser
-Informs SQL injection payload selection
-        |
-        v
-[Step 4] Missing Security Headers
-No CSP, X-Frame-Options, X-Content-Type-Options, or HSTS
-Browser security controls inactive across all pages
-XSS payloads execute without restriction (confirmed in XSS lab)
-        |
-        v
-[Step 5] File Upload Bypass
-backdoor.php rejected at medium security level
-Burp Suite intercept: Content-Type changed to image/jpeg
-Server accepts PHP file, stores at ../../hackable/uploads/backdoor.php
-Remote code execution possible via direct HTTP access to uploaded file
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/32_07%20Attack%20Chain.jpg)
 
 Each misconfiguration in the chain feeds the next. Directory listing confirms
 the upload path. Error disclosure confirms the database type for injection
