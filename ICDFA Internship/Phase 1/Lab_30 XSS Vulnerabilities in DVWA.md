@@ -1,4 +1,4 @@
-XSS Vulnerabilities in DVWA
+# XSS Vulnerabilities in DVWA
 
 ## 1. Engagement Overview
 
@@ -51,12 +51,12 @@ between tests using the DVWA setup panel.
 
 ## 4. Methodology
 
-### Phase 1 — Reconnaissance
+### Phase 1: Reconnaissance
 DVWA was accessed via Firefox and the XSS Reflected, Stored, and DOM
 modules were identified from the left-hand navigation menu. The application's
 security level was confirmed as Low for the initial tests.
 
-### Phase 2 — Vulnerability Identification
+### Phase 2: Vulnerability Identification
 A harmless HTML tag `<p> Hello DVWA </p>` was submitted into the Reflected
 XSS name field. The application rendered the tag as formatted HTML in the
 response rather than displaying it as escaped text. The browser received `Hello`
@@ -64,7 +64,7 @@ followed by a rendered paragraph containing `Hello DVWA`, confirming that
 the server passed the input directly into the HTML response without converting
 `<` and `>` to `&lt;` and `&gt;`. This confirmed the field was injectable.
 
-### Phase 3 — Exploitation
+### Phase 3: Exploitation
 Payloads were tested progressively across security levels. A script-based
 payload was used for Stored XSS to confirm database persistence. An `img`
 onerror payload was used for medium-level Stored XSS after the client-side
@@ -73,13 +73,13 @@ tools. A case-modified script tag was used to bypass the medium-level
 blocklist on the Reflected XSS page. A JavaScript anchor tag was used as a
 custom payload on the Reflected XSS low-level page.
 
-### Phase 4 — Validation
+### Phase 4: Validation
 Each payload's execution was confirmed by observing the resulting alert dialog
 or rendered HTML. The high-level Stored XSS attempt was validated by
 inspecting the stored output in the page source and confirming the tags were
 encoded rather than executed.
 
-### Phase 5 — Documentation
+### Phase 5: Documentation
 All payloads, application responses, and screenshots were recorded throughout
 the assessment.
 
@@ -103,13 +103,13 @@ the assessment.
 
 ---
 
-### Finding 01 -- Stored XSS via Script Tag (Low Security)
+### Finding 01: Stored XSS via Script Tag (Low Security)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_s/` -- Name field, POST
+`/dvwa/vulnerabilities/xss_s/`: Name field, POST
 
 #### Description
 At low security level, the Stored XSS page accepts input into a Name field and
@@ -130,7 +130,7 @@ script executed automatically, producing an alert dialog displaying
 `192.168.92.3`. The alert fired again on every subsequent page load, confirming
 the payload was stored persistently in the database.
 
-![Stored XSS - alert(document.domain) Executing on Page Load](image.jpg)
+![Stored XSS - alert(document.domain) Executing on Page Load](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_01%20Stored%20XSS%20-%20alert(document%20domain)%20Executing%20on%20Page%20Load.jpg)
 
 #### Impact
 Stored XSS requires no victim interaction beyond visiting the page. Any
@@ -151,13 +151,13 @@ echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
 
 ---
 
-### Finding 02 -- Reflected XSS via Script Tag in URL (Low Security)
+### Finding 02: Reflected XSS via Script Tag in URL (Low Security)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_r/` -- `name` GET parameter
+`/dvwa/vulnerabilities/xss_r/`: `name` GET parameter
 
 #### Description
 The Reflected XSS page at low security level takes a name value from the URL's
@@ -176,7 +176,7 @@ http://192.168.92.3/dvwa/vulnerabilities/xss_r/?name=<script>alert("Hacked")</sc
 The browser received the script tag as part of the HTML response and executed
 it, displaying an alert containing `Hacked`.
 
-![Reflected XSS - Alert Dialog Displaying "Hacked" from URL Parameter](image.jpg)
+![Reflected XSS - Alert Dialog Displaying "Hacked" from URL Parameter](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_02%20Reflected%20XSS%20-%20Alert%20Dialog%20Displaying%20Hacked%20from%20URL%20Parameter.jpg)
 
 #### Impact
 Reflected XSS requires the victim to visit a crafted URL. An attacker distributes
@@ -194,13 +194,13 @@ to an attacker-controlled page.
 
 ---
 
-### Finding 03 -- Stored XSS via img onerror Payload (Medium Security)
+### Finding 03: Stored XSS via img onerror Payload (Medium Security)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_s/` -- Name field, POST
+`/dvwa/vulnerabilities/xss_s/`: Name field, POST
 
 #### Description
 At medium security level, the Name field enforces a client-side `maxlength`
@@ -216,7 +216,7 @@ was used instead, which the server did not filter.
 
 Developer tools used to modify the maxlength attribute in the Name field:
 
-![Developer Tools - maxlength Changed from 10 to 100](image.jpg)
+![Developer Tools - maxlength Changed from 10 to 100](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_03%20Developer%20Tools%20-%20maxlength%20Changed%20from%2010%20to%20100.jpg)
 
 Payload injected after the maxlength was raised:
 ```
@@ -228,7 +228,7 @@ valid image path, the load failed and the `onerror` event handler fired,
 executing the alert. The payload was stored in the database and fired for every
 subsequent visitor.
 
-![Stored XSS - img onerror Alert Executing via Broken Image Source](image.jpg)
+![Stored XSS - img onerror Alert Executing via Broken Image Source](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_04%20Stored%20XSS%20-%20img%20onerror%20Alert%20Executing%20via%20Broken%20Image%20Source.jpg)
 
 #### Impact
 Client-side input length restrictions provide no real security. They can be
@@ -249,13 +249,13 @@ if (strlen($name) > 10) { die("Input too long"); }
 
 ---
 
-### Finding 04 -- Reflected XSS via Case-Sensitive Blocklist Bypass (Medium Security)
+### Finding 04: Reflected XSS via Case-Sensitive Blocklist Bypass (Medium Security)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_r/` -- `name` GET parameter
+`/dvwa/vulnerabilities/xss_r/`: `name` GET parameter
 
 #### Description
 At medium security level, the Reflected XSS page blocks the `<script>` tag
@@ -280,7 +280,7 @@ The uppercase version was not matched by the server's blocklist, so it passed
 through to the response. The browser parsed `<SCRIPT>` as a valid script tag
 and executed the alert.
 
-![Reflected XSS Medium Level - SCRIPT Uppercase Bypass Alert Displayed](image.jpg)
+![Reflected XSS Medium Level - SCRIPT Uppercase Bypass Alert Displayed](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_05%20Reflected%20XSS%20Medium%20Level%20-%20SCRIPT%20Uppercase%20Bypass%20Alert%20Displayed.jpg)
 
 #### Impact
 Case-based blocklists are unreliable. HTML tag names are case-insensitive in
@@ -297,13 +297,13 @@ by the first case variation an attacker tries.
 
 ---
 
-### Finding 05 -- Reflected XSS via JavaScript Anchor Tag (Low Security, Custom Payload)
+### Finding 05: Reflected XSS via JavaScript Anchor Tag (Low Security, Custom Payload)
 
 #### Severity
 Medium
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_r/` -- Name field, GET
+`/dvwa/vulnerabilities/xss_r/`: Name field, GET
 
 #### Description
 A custom payload using an HTML anchor tag with a `javascript:` URI was
@@ -324,7 +324,7 @@ The application rendered the anchor tag in the response. The page displayed
 the text "Hello" followed by a clickable hyperlink reading "Free Money".
 Clicking the link executed the JavaScript alert.
 
-![Reflected XSS - Anchor Tag with javascript: URI Rendered and Clicked](image.jpg)
+![Reflected XSS - Anchor Tag with javascript: URI Rendered and Clicked](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_06%20Reflected%20XSS%20-%20Anchor%20Tag%20with%20javascript%2C%20URI%20Rendered%20and%20Clicked.jpg)
 
 The browser inspector confirmed the raw anchor tag was present in the HTML
 without any encoding applied:
@@ -349,13 +349,13 @@ single click on a link that appears harmless to the victim.
 
 ---
 
-### Finding 06 -- Client-Side maxlength Restriction Bypassed via Developer Tools
+### Finding 06: Client-Side maxlength Restriction Bypassed via Developer Tools
 
 #### Severity
 Medium
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_s/` -- Name field HTML attribute
+`/dvwa/vulnerabilities/xss_s/`: Name field HTML attribute
 
 #### Description
 The Stored XSS page at medium security level sets `maxlength="10"` on the
@@ -380,7 +380,7 @@ Modified via developer tools to:
 After the change, the longer `img onerror` payload was submitted successfully,
 as documented in Finding 03.
 
-![Developer Tools - maxlength Attribute Modified from 10 to 100](image.jpg)
+![Developer Tools - maxlength Attribute Modified from 10 to 100](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_07%20Developer%20Tools%20-%20maxlength%20Attribute%20Modified%20from%2010%20to%20100.jpg)
 
 #### Impact
 Client-side restrictions on input length, format, or content are not security
@@ -397,13 +397,13 @@ request reaches the server.
 
 ---
 
-### Finding 07 -- High-Level HTML Entity Encoding Neutralizes Attack (Informational)
+### Finding 07: High-Level HTML Entity Encoding Neutralizes Attack (Informational)
 
 #### Severity
 Informational
 
 #### Affected Endpoint
-`/dvwa/vulnerabilities/xss_s/` -- Name and Message fields (High security)
+`/dvwa/vulnerabilities/xss_s/`: Name and Message fields (High security)
 
 #### Description
 At high security level, the same `<body onload=alert('BugBot19')>` payload
@@ -448,36 +448,7 @@ the vulnerability across all three XSS module types.
 
 ## 7. Attack Chain
 
-```
-[Step 1] Vulnerability Identification
-Harmless HTML tag submitted: <p> Hello DVWA </p>
-Application renders <p> as formatted HTML rather than escaped text
-Confirms input is written into the response without entity encoding
-        |
-        v
-[Step 2] Stored XSS - Low Level
-Payload: <script>alert(document.domain)</script>
-Stored in database, executes on every page load for all visitors
-Zero-click code execution confirmed
-        |
-        v
-[Step 3] Medium Level - Client-Side Restriction Bypassed
-maxlength changed from 10 to 100 via developer tools
-Payload: <img src=x onerror=alert(I.hack.you)>
-img onerror bypasses script tag filter, stored XSS confirmed
-        |
-        v
-[Step 4] Reflected XSS - Blocklist Bypass
-Lowercase <script> blocked by medium-level filter
-Uppercase <SCRIPT>alert('Hacked') </SCRIPT> bypasses filter
-Case-insensitive tag parsing by browser executes payload
-        |
-        v
-[Step 5] High Level - Attack Neutralized
-<body onload=alert('BugBot19')> submitted at high security
-Output stored as &lt;body onload=alert('BugBot19')&gt;
-HTML entity encoding prevents browser from parsing as markup
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/30_08%20Attack%20Chain.jpg)
 
 ---
 
