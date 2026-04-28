@@ -1,9 +1,20 @@
-# Cybersecurity Portfolio
+<div align="center">
 
-Welcome to my cybersecurity portfolio! This repository is a dedicated space where I document my hands-on experience, technical labs, and the continuous growth of my skills in the field of information security.
+# Fatai Asekun Portfolio
+### Aspiring Ethical Hacker & Digital Forensics Enthusiast
 
-## About Me
-I am a dedicated Cybersecurity student and aspiring **Ethical Hacker**. My journey is driven by a passion for understanding how systems are compromised and, more importantly, how to defend them through proactive security testing. I focus on practical application, moving beyond theory to gain hands-on experience in ethical hacking, networking, and reconnaissance. This repository serves as a living document of my technical proficiency and my commitment to securing the digital landscape.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/asekun-fatai/)
+[![X](https://img.shields.io/badge/X-000000?style=flat&logo=x&logoColor=white)](https://x.com/Prime_shell)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/Fabelt14)
+
+</div>
+
+## 🛡️ Laboratory Environment
+All labs documented here are conducted within a **controlled, isolated virtual environment** to ensure safety and ethical compliance.
+* **Host:** Windows 11 / Kali Linux (Main Attack Box)
+* **Hypervisor:** VMware Workstation / Oracle VirtualBox
+* **Targets:** OWASP Mutillidae II, DVWA (Damn Vulnerable Web App), Metasploitable
 
 ## 🛠 Cybersecurity Labs Overview
 
@@ -11,14 +22,16 @@ The following table outlines the labs I have completed, detailing the specific t
 
 | Lab Name | Category | Description | Status |
 | :--- | :--- | :--- | :--- |
-| **[User Management](./ICDFA%20Internship/Phase%201/Lab_24%20User%20Management.md)** | Admin Security | Configured user accounts and permissions to enforce the Principle of Least Privilege (PoLP). | ✅ Completed |
-| **[DNS Lookups & Reporting](./Reconnaissance/DNS%20LookUps)** | Reconnaissance | Conducted DNS enumeration and information gathering, resulting in a Cisco-style technical report. | ✅ Completed |
-| **[Recon-ng Framework](./Reconnaissance/Recon-ng)** | OSINT / Recon | Utilized the Recon-ng toolset to perform automated OSINT gathering against target domains. | ✅ Completed |
-| **[Introduction to Networks](./Networking/Introduction%20to%20Networks)** | Networking | Mastered the fundamentals of the OSI model, IP addressing, and basic network configuration. | ✅ Completed |
-| **[Network Representation](./Networking)** | Networking | Designed and visualized complex network topologies using Cisco Packet Tracer to map data flow. | ✅ Completed |
-| **[SpiderFoot Footprinting](./Reconnaissance)** | OSINT | Automated the footprinting process to map out external attack surfaces and identify leaks. | ✅ Completed |
+| **[Linux Command Line Fundamentals](./ICDFA%20Internship/Phase%201/Lab_01%20Linux%20OS%20Fundamentals.md)** | Linux Security & System Administration | Executed advanced Linux terminal operations to construct organized penetration testing structures, manage file permissions with octal notation, and perform automated security log analysis using command-line piping.) | ✅ Completed |
+| **[Bash Scripting Fundamentals](./ICDFA%20Internship/Phase%201/Lab_02%20Bash%20Scripting%20Fundamentals.md)** | Bash Scripting & Automation | Developed a suite of Bash scripts to automate security workflows including password validation, continuous network monitoring, and system resource tracking, through the implementation of conditional logic, loops, and custom functions. | ✅ Completed |
+| **[Web Application Reconnaissance](./ICDFA%20Internship/Phase%201/Lab_03%20Web%20Application%20Reconnaissance.md)** | Reconnaissance | Performed extensive footprinting on live and local domains by resolving IP addresses, fingerprinting web stacks, and identifying exposed directories and subdomains to map the available attack surface. | ✅ Completed |
+| **[Enterprise Network Forensic Investigation Using Wireshark](./ICDFA%20Internship/Phase%201/Lab_07%20IoT%20%26%20Enterprise%20Network%20Forensic%20Investigation%20Using%20Wireshark.md)** | Network Forensics & Incident Response | Analyzed a network packet capture to reconstruct a multi-stage attack chain involving brute-force authentication, SQL injection, and web shell execution, ultimately identifying key Indicators of Compromise (IOCs) and providing remediation strategies. | ✅ Completed |
+| **[Reverse Shell in DVWA](./ICDFA%20Internship/Phase%201/Lab_08%20Reverse%20Shell%20via%20Netcat%20Using%20DVWA%20Command%20Execution.md)** | Web Application Exploitation | Executed a command injection attack on a vulnerable web application to escalate privileges and establish a persistent interactive reverse shell using Netcat. | ✅ Completed |
+| **[Manual and Automated SQL Injection Testing](./ICDFA%20Internship/Phase%201/Lab_29%20Manual%20and%20Automated%20SQL%20Injection%20Testing.md)** | SQL Injection | Performed manual and automated SQL injection on the Mutillidae II platform, successfully executing authentication bypass, UNION-based data extraction, and error-based enumeration to retrieve cleartext user credentials. | ✅ Completed |
+| **[XSS Vulnerabilities in DVWA](./ICDFA%20Internship/Phase%201/Lab_30%20XSS%20Vulnerabilities%20in%20DVWA.md)** | Web Security | Identified and exploited multiple XSS vectors such as reflected, stored, and DOM-based across various security levels in DVWA. The investigation involved bypassing client-side length restrictions and case-sensitive server-side blocklists to achieve persistent and reflected JavaScript execution. | ✅ Completed |
+| **[File Upload Vulnerabilities in DVWA](./ICDFA%20Internship/Phase%201/Lab_31%20File%20Upload%20Vulnerabilities%20in%20DVWA.md)** | Remote Code Execution (RCE) | Exploited a series of file upload vulnerabilities in DVWA to achieve Remote Code Execution. The process involved bypassing multiple layers of server-side defense, including MIME type checks and magic byte validation using Burp Suite and Weevely to establish a persistent interactive web shell. | ✅ Completed |
+| **[Web Application Security Testing](./ICDFA%20Internship/Phase%201/Lab_06%20Web%20Application%20Security%20Testing%20with%20Burp%20Suite%20and%20OWASP%20ZAP.md)** | Application Testing | Conducted a comparative security assessment of a web application using Burp Suite and OWASP ZAP. The lab involved automated spidering to map the attack surface, followed by active scanning and manual fuzzing to identify and confirm critical vulnerabilities including Reflected Cross-Site Scripting (XSS), SQL Injection, and sensitive information disclosure through HTTP headers. | ✅ Completed |
 | **[ICDFA Ethical Hacking](./ICDFA%20Internship)** | Ethical Hacking | Specialized in vulnerability assessments and proactive security testing methodologies. | 🚀 In Progress |
-| **[Robots.txt Analysis](./Reconnaissance)** | Web Security | Analyzed web crawler directives to identify hidden directories and sensitive paths. | ✅ Completed |
 
 ---
 
@@ -29,7 +42,7 @@ The following table outlines the labs I have completed, detailing the specific t
 * **Operating Systems:** Windows Administration, Linux Command Line.
 
 ## 📈 Current Progress
-I am constantly updating this repository with new labs and projects. My current focus is on advancing my skills in **Ethical Hacking** and **Penetration Testing** through the ICDFA program.
+I am constantly updating this repository with new labs and projects. My current focus is on advancing my skills in **Ethical Hacking** and **Penetration Testing**.
 
 ---
 **GitHub Profile:** [Fabelt14](https://github.com/Fabelt14)
