@@ -32,7 +32,7 @@ manages session state across the authentication lifecycle.
 
 **In-Scope:**
 - DVWA at `http://127.0.0.1:42001/`
-- DVWA login page (`/login.php`) -- POST
+- DVWA login page (`/login.php`)
 - Session cookie (`PHPSESSID`) attribute inspection and manipulation
 - Burp Suite interception of the login POST request
 
@@ -52,13 +52,13 @@ manages session state across the authentication lifecycle.
 
 ## 4. Methodology
 
-### Phase 1 -- Cookie Attribute Inspection
+### Phase 1: Cookie Attribute Inspection
 DVWA was accessed at `http://127.0.0.1:42001/index.php` via Firefox. The
 browser's developer tools were opened and the Storage tab was selected. The
 PHPSESSID cookie and the security cookie were inspected for the presence and
 configuration of the `HttpOnly`, `Secure`, and `SameSite` attributes.
 
-### Phase 2 -- Session Fixation Simulation
+### Phase 2: Session Fixation Simulation
 After logging in normally, the active `PHPSESSID` value was recorded from the
 Storage tab. The value was then manually overwritten in the Storage tab with a
 predetermined attacker-controlled string (`deadbeefdeadbeefdeadbeefdeadbeef`),
@@ -67,7 +67,7 @@ length. The user was logged out and logged back in. The `PHPSESSID` value after
 re-authentication was observed to confirm whether the server regenerated a new
 ID or kept the attacker-set value.
 
-### Phase 3 -- Session Hijacking via Burp Suite
+### Phase 3: Session Hijacking via Burp Suite
 Burp Suite was configured as a proxy for Firefox. A login request to
 `/login.php` was intercepted before it reached the server. The `PHPSESSID`
 cookie value in the intercepted request was replaced with a custom attacker-
@@ -84,8 +84,8 @@ substituted session ID.
 |----|--------------|----------|--------------------|
 | 01 | HttpOnly Flag Not Set on Session Cookie | High | PHPSESSID Cookie |
 | 02 | Secure Flag Not Set on Session Cookie | Medium | PHPSESSID Cookie |
-| 03 | Session Fixation -- ID Not Regenerated After Login | High | /login.php Session Handling |
-| 04 | Session Hijacking -- Server Accepts Arbitrary Session IDs | Critical | /login.php POST Request |
+| 03 | Session Fixation: ID Not Regenerated After Login | High | /login.php Session Handling |
+| 04 | Session Hijacking: Server Accepts Arbitrary Session IDs | Critical | /login.php POST Request |
 
 ---
 
@@ -93,13 +93,13 @@ substituted session ID.
 
 ---
 
-### Finding 01 -- HttpOnly Flag Not Set on Session Cookie
+### Finding 01: HttpOnly Flag Not Set on Session Cookie
 
 #### Severity
 High
 
 #### Affected Component
-`PHPSESSID` cookie -- `HttpOnly` attribute
+`PHPSESSID` cookie: `HttpOnly` attribute
 
 #### Description
 Inspecting the DVWA session cookie in the Firefox developer tools Storage tab
@@ -118,7 +118,7 @@ set to `false` for both:
 
 
 
-![Firefox Storage Tab - PHPSESSID HttpOnly false and Secure false](image.jpg)
+![Firefox Storage Tab - PHPSESSID HttpOnly false and Secure false](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_01%20Firefox%20Storage%20Tab%20-%20PHPSESSID%20HttpOnly%20false%20and%20Secure%20false.jpg)
 
 
 
@@ -166,13 +166,13 @@ on every HTTP request, so normal application functionality is unaffected.
 
 ---
 
-### Finding 02 -- Secure Flag Not Set on Session Cookie
+### Finding 02: Secure Flag Not Set on Session Cookie
 
 #### Severity
 Medium
 
 #### Affected Component
-`PHPSESSID` cookie -- `Secure` attribute
+`PHPSESSID` cookie: `Secure` attribute
 
 #### Description
 The `Secure` attribute was also confirmed as `false` on the `PHPSESSID` cookie
@@ -192,7 +192,7 @@ Same Storage tab inspection confirming `Secure: false` alongside
 
 
 
-![Firefox Storage Tab - Secure Flag false on PHPSESSID Cookie](image.jpg)
+![Firefox Storage Tab - Secure Flag false on PHPSESSID Cookie](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_01%20Firefox%20Storage%20Tab%20-%20PHPSESSID%20HttpOnly%20false%20and%20Secure%20false.jpg)
 
 
 
@@ -223,13 +223,13 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 
 ---
 
-### Finding 03 -- Session Fixation via Missing Session ID Regeneration
+### Finding 03: Session Fixation via Missing Session ID Regeneration
 
 #### Severity
 High
 
 #### Affected Component
-`/login.php` -- PHP session handling post-authentication
+`/login.php`: PHP session handling post-authentication
 
 #### Description
 Before logging in, the `PHPSESSID` in the Storage tab was manually overwritten
@@ -258,7 +258,7 @@ value:
 
 
 
-![Storage Tab - PHPSESSID Overwritten to deadbeefdeadbeefdeadbeefdeadbeef](image.jpg)
+![Storage Tab - PHPSESSID Overwritten to deadbeefdeadbeefdeadbeefdeadbeef](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_3.2%20Storage%20Tab%20-%20PHPSESSID%20Overwritten%20to%20deadbeefdeadbeefdeadbeefdeadbeef.jpg)
 
 
 
@@ -270,7 +270,7 @@ PHPSESSID: deadbeefdeadbeefdeadbeefdeadbeef
 Storage tab after logging out and logging back in, confirming the fixed ID
 was not replaced:
 
-![Storage Tab - PHPSESSID Remains deadbeef After Re-Authentication](image.jpg)
+![Storage Tab - PHPSESSID Remains deadbeef After Re-Authentication](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_03.1%20Storage%20Tab%20-%20PHPSESSID%20Remains%20deadbeef%20After%20Re-Authentication.jpg)
 
 
 
@@ -301,7 +301,7 @@ any pre-login session token the attacker may have planted.
 
 ---
 
-### Finding 04 -- Session Hijacking via Arbitrary Session ID Accepted by Server
+### Finding 04: Session Hijacking via Arbitrary Session ID Accepted by Server
 
 #### Severity
 Critical
@@ -332,7 +332,7 @@ before modification:
 
 
 
-![Burp Suite Intercept - Original PHPSESSID in Login POST Request](image.jpg)
+![Burp Suite Intercept - Original PHPSESSID in Login POST Request](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_04%20Burp%20Suite%20Intercept%20-%20Original%20PHPSESSID%20in%20Login%20POST%20Request.jpg)
 
 
 
@@ -341,7 +341,7 @@ before forwarding:
 
 
 
-![Burp Suite Intercept - PHPSESSID Modified to meatsoupmeatsoupmeatsoupmeatsoup](image.jpg)
+![Burp Suite Intercept - PHPSESSID Modified to meatsoupmeatsoupmeatsoupmeatsoup](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_05%20Burp%20Suite%20Intercept%20-%20PHPSESSID%20Modified%20to%20meatsoupmeatsoupmeatsoupmeatsoup.jpg)
 
 Request details with modified cookie:
 ```
@@ -363,7 +363,7 @@ custom session ID is active on the authenticated session:
 
 
 
-![DVWA Home Page Loaded - PHPSESSID meatsoup Confirmed in Storage Tab](image.jpg)
+![DVWA Home Page Loaded - PHPSESSID meatsoup Confirmed in Storage Tab](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_06%20DVWA%20Home%20Page%20Loaded%20-%20PHPSESSID%20meatsoup%20Confirmed%20in%20Storage%20Tab.jpg)
 
 
 
@@ -407,37 +407,7 @@ $_SESSION['last_active'] = time();
 
 ## 7. Attack Chain
 
-```
-[Step 1] Reconnaissance
-DVWA session cookie inspected via Firefox Storage tab
-HttpOnly: false, Secure: false confirmed on PHPSESSID
-Cookie readable by JavaScript and transmittable over HTTP
-        |
-        v
-[Step 2] Session Fixation
-Attacker overwrites PHPSESSID to deadbeefdeadbeefdeadbeefdeadbeef
-Victim (same session) logs out and logs back in
-Server does not regenerate session ID on authentication
-PHPSESSID remains deadbeef post-login
-Attacker presents deadbeef ID in their own browser - session hijacked
-        |
-        v
-[Step 3] Session Hijacking via Burp Suite
-Login POST intercepted in Burp Suite
-PHPSESSID replaced with meatsoupmeatsoupmeatsoupmeatsoup
-Modified request forwarded
-HTTP 200 returned - authentication successful with custom ID
-Storage tab confirms meatsoup ID active on authenticated session
-DVWA home page accessible under attacker-defined session token
-        |
-        v
-[Combined Risk]
-HttpOnly: false enables XSS-based cookie theft
-Secure: false enables network interception-based cookie theft
-No session regeneration enables session fixation
-Server accepts arbitrary IDs without origin validation
-Any stolen or fixed token grants full authenticated access
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/20_07%20Attack%20Chain.jpg)
 
 ---
 
