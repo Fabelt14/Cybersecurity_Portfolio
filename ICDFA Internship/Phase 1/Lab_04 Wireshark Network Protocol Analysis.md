@@ -47,7 +47,7 @@ Displays the raw hexadecimal and ASCII representation of the selected packet. Th
 **Statistics Menu:**
 Located in the top menu bar. Contains tools for protocol hierarchy, I/O graphs, conversations, and endpoints analysis.
 
-![Wireshark interface components labeled](images/wireshark-interface.png)
+![Wireshark interface components labeled](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_01%20Wireshark%20interface%20components%20labeled.jpg)
 
 **Why this layout matters:**
 The three-pane design mirrors the OSI model workflow - see all packets first, drill into layers second, examine raw bytes third. This makes protocol analysis systematic rather than random.
@@ -59,7 +59,7 @@ I captured network traffic using both tools to understand when to use GUI vs CLI
 **Wireshark capture:**
 Started capture on eth0 interface, browsed to Mutillidae login page, stopped capture. GUI displayed packets in real-time with color-coded protocols (green for TCP, blue for DNS, black for HTTP).
 
-![Wireshark GUI capture](images/wireshark-capture.png)
+![Wireshark GUI capture](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_02%20Wireshark%20GUI%20capture.jpg)
 
 **Tshark capture:**
 ```bash
@@ -68,7 +68,7 @@ tshark -i eth0 -w capture.pcap
 
 Output scrolled in terminal showing packet summaries in text format. No visual filtering or color coding - just raw packet data streaming to console.
 
-![Tshark CLI capture](images/tshark-capture.png)
+![Tshark CLI capture](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_03%20Tshark%20CLI%20capture.jpg)
 
 **Key differences:**
 
@@ -104,7 +104,7 @@ Applied filter: `http`
 
 Result: 20 packets (10 requests + 10 responses)
 
-![HTTP filter showing 20 packets](images/filter-http.png)
+![HTTP filter showing 20 packets](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_04%20HTTP%20filter%20showing%2020%20packets.jpg)
 
 **Why 10 pairs:**
 Each HTTP transaction involves:
@@ -119,7 +119,7 @@ Applied filter: `dns`
 
 Result: 173 packets
 
-![DNS filter showing 173 packets](images/filter-dns.png)
+![DNS filter showing 173 packets](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_05%20DNS%20filter%20showing%20173%20packets.jpg)
 
 **Why so many DNS packets:**
 Web browsers perform DNS lookups for every hostname encountered:
@@ -132,13 +132,15 @@ Web browsers perform DNS lookups for every hostname encountered:
 
 **IP address identification:**
 
+```
 Applied filter: `ip.addr == 10.0.2.15 || ip.addr == 146.75.89.91`
 
 **10.0.2.15**: This is my Kali VM's internal IP (VirtualBox NAT default range). This is the client making HTTP requests.
 
 **146.75.89.91**: This is the Mutillidae web server (or external server hosting resources). This is the target responding to requests.
+```
 
-![IP address filter](images/filter-ip.png)
+![IP address filter](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_06%20IP%20address%20filter.jpg)
 
 **Security observation:**
 The IP addresses are visible in cleartext because I'm analyzing unencrypted HTTP. With HTTPS, the IP headers would still be visible (routing requirement), but the payload would be encrypted.
@@ -160,7 +162,7 @@ Frame 23 in packet list - first packet in TCP three-way handshake.
 
 **TCP Flags**: SYN set (0x002)
 
-![TCP packet dissection](images/tcp-dissection.png)
+![TCP packet dissection](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_07%20TCP%20packet%20dissection.jpg)
 
 **Expanding the layers:**
 
@@ -182,7 +184,7 @@ Frame 23 in packet list - first packet in TCP three-way handshake.
   - Window size: 64240 bytes (receive buffer size)
   - Checksum: Unverified (depends on NIC offload settings)
 
-![TCP flags detail](images/tcp-flags.png)
+![TCP flags detail](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_08%20TCP%20flags%20detail.jpg)
 
 **Why the SYN flag matters:**
 This packet initiates the TCP three-way handshake:
@@ -220,7 +222,7 @@ Referer: http://192.168.0.25/mutillidae/index.php?page=login.php
 username=user&password=user&login-php-submit-button=Login
 ```
 
-![TCP stream - HTTP POST request](images/stream-request.png)
+![TCP stream - HTTP POST request](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_09%20TCP%20stream%20-%20HTTP%20POST%20request.jpg)
 
 **Server → Client (HTTP Response):**
 ```
@@ -230,7 +232,7 @@ Server: Apache/2.4.18 (Ubuntu)
 X-Powered-By: PHP/5.3-1ubuntu4.30
 ```
 
-![TCP stream - HTTP response](images/stream-response.png)
+![TCP stream - HTTP response](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_09%20TCP%20stream%20-%20HTTP%20POST%20request.jpg)
 
 **Credentials extracted:**
 - **Username**: user
@@ -272,10 +274,10 @@ I used Statistics → Protocol Hierarchy to identify the most common protocol in
 1. Statistics → Protocol Hierarchy
 2. Examined percentage breakdown of all protocols
 
-![Protocol hierarchy statistics](images/protocol-hierarchy.png)
+![Protocol hierarchy statistics](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_10%20Protocol%20hierarchy%20statistics.jpg)
 
 **Results:**
-
+```bash
 **Frame (100%)**
 - Ethernet (100%)
   - IP (100%)
@@ -286,6 +288,7 @@ I used Statistics → Protocol Hierarchy to identify the most common protocol in
     - TCP (45 packets, 3.8%)
     - UDP (45 packets, 3.9%)
     - ICMP (924 packets, 112 bytes)
+```
 
 **What this indicates:**
 
@@ -314,7 +317,7 @@ I created an I/O graph to visualize TCP traffic patterns over time.
 4. Filter: `tcp` (show only TCP traffic)
 5. Observed the graph for spikes and anomalies
 
-![TCP I/O graph](images/io-graph.png)
+![TCP I/O graph](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_11%20TCP%20I-O%20graph.jpg)
 
 **Pattern observed:**
 
@@ -355,7 +358,7 @@ File → Save As → test.pcap
 
 **File saved:** test.pcap (packet capture file in libpcap format)
 
-![Saved capture file](images/save-pcap.png)
+![Saved capture file](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_12%20Saved%20capture%20file.jpg)
 
 **Forensic scenario:**
 
@@ -435,8 +438,6 @@ Packets/sec: Steady ~1000 packets/sec for duration of transfer
 Duration: 10 seconds for 10MB = 1MB/sec throughput
 ```
 
-![Expected I/O graph for fast transfer](images/troubleshoot-fast.png)
-
 **Actual pattern (problem scenarios):**
 
 **Scenario A: Network congestion**
@@ -446,8 +447,6 @@ Graph shows:
 - Retransmissions visible (filter: `tcp.analysis.retransmission`)
 
 Diagnosis: Network path saturated. Competing traffic (video streams, backups) consuming bandwidth.
-
-![I/O graph showing congestion](images/troubleshoot-congestion.png)
 
 **Scenario B: Server performance issue**
 Graph shows:
@@ -518,7 +517,7 @@ username=user&password=user
 - POST request with form data in plaintext
 - No encryption headers (e.g., `Strict-Transport-Security`)
 
-![Unencrypted credentials in stream](images/threat-credentials.png)
+![Unencrypted credentials in stream](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/04_09%20TCP%20stream%20-%20HTTP%20POST%20request.jpg)
 
 **Why this is a threat:**
 Any user on the same network segment can:
@@ -546,8 +545,6 @@ Observed:
 - ICMP Echo Reply packets from multiple IPs in 192.168.0.0/24 range
 - Packet rate: 35+ packets/second sustained
 - Pattern: Sequential destination IPs (.1, .2, .3, .4...)
-
-![ICMP flood pattern](images/threat-icmp.png)
 
 **Why this is suspicious:**
 
