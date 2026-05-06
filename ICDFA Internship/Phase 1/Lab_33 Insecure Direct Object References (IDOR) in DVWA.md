@@ -52,12 +52,12 @@ and the real-world implications of automated enumeration were assessed.
 
 ## 4. Methodology
 
-### Phase 1 -- Authentication as Low-Privilege User
+### Phase 1: Authentication as Low-Privilege User
 DVWA was accessed via Firefox and login was performed using the `gordonb`
 account credentials. The security level was confirmed as Low. The active session
 was established as `gordonb`, a non-administrative user.
 
-### Phase 2 -- Baseline Request Observation
+### Phase 2: Baseline Request Observation
 The SQL Injection page was loaded and a user ID was submitted through the form.
 The application returned the record for the submitted ID in the page response.
 The URL was observed to include the `id` parameter as a GET parameter:
@@ -65,20 +65,20 @@ The URL was observed to include the `id` parameter as a GET parameter:
 Surname: admin`, confirming the page queries the database using the supplied
 value and returns the result regardless of which user is currently authenticated.
 
-### Phase 3 -- Parameter Manipulation
+### Phase 3: Parameter Manipulation
 The `id` value in the URL was manually changed to `5` directly in the browser
 address bar. The page was loaded without re-authenticating or modifying any
 session-related values. The response was observed and the returned record was
 compared against the currently authenticated user to confirm unauthorized
 cross-user data access.
 
-### Phase 4 -- Validation
+### Phase 4: Validation
 The returned data for `id=5` was confirmed to belong to a different user
 (`Bob Smith`), not to the authenticated session (`gordonb`). No access control
 error, redirect, or permission denial was returned, confirming the application
 performed no ownership verification before serving the record.
 
-### Phase 5 -- Documentation
+### Phase 5: Documentation
 All URL values, application responses, and screenshots were recorded throughout
 the assessment.
 
@@ -97,13 +97,13 @@ the assessment.
 
 ---
 
-### Finding 01 -- IDOR via Sequential Integer id Parameter
+### Finding 01: IDOR via Sequential Integer id Parameter
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/vulnerabilities/sqli/?id=X&Submit=Submit#` -- GET, `id` parameter
+`/vulnerabilities/sqli/?id=X&Submit=Submit#`: GET, `id` parameter
 
 #### Description
 The DVWA SQL Injection page accepts an integer `id` value as a GET parameter
@@ -126,7 +126,7 @@ DVWA SQL Injection page with `id=1` submitted while authenticated as
 
 
 
-![DVWA SQL Injection Page - id=1 Returns admin Record While Logged in as gordonb](image.jpg)
+![DVWA SQL Injection Page - id=1 Returns admin Record While Logged in as gordonb](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/33_01%20DVWA%20SQL%20Injection%20Page%20-%20id%3D1%20Returns%20admin%20Record%20While%20Logged%20in%20as%20gordonb.jpg)
 
 
 
@@ -134,7 +134,7 @@ URL confirming `gordonb` session and `id=1` in the address bar:
 
 
 
-![URL Bar - gordonb Session Active, id=1 Returning admin Data](image.jpg)
+![URL Bar - gordonb Session Active, id=1 Returning admin Data](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/33_02%20URL%20Bar%20-%20gordonb%20Session%20Active%2C%20id%3D1%20Returning%20admin%20Data.jpg)
 
 
 
@@ -143,7 +143,7 @@ record without any session change or permission prompt:
 
 
 
-![DVWA - id=5 Returns Bob Smith Record Without Authorization Error](image.jpg)
+![DVWA - id=5 Returns Bob Smith Record Without Authorization Error](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/33_03%20DVWA%20-%20id%3D5%20Returns%20Bob%20Smith%20Record%20Without%20Authorization%20Error.jpg)
 
 
 
@@ -210,14 +210,14 @@ $_SESSION['resource_map'][$uuid] = $actual_db_id;
 
 ---
 
-### Finding 02 -- Missing Authorization Check on User Record Access
+### Finding 02: Missing Authorization Check on User Record Access
 
 #### Severity
 High
 
 #### Affected Endpoint
 
-`/vulnerabilities/sqli/?id=X&Submit=Submit#` -- Backend query logic
+`/vulnerabilities/sqli/?id=X&Submit=Submit#`: Backend query logic
 
 #### Description
 The root cause of Finding 01 is the absence of an authorization check in the
@@ -278,37 +278,7 @@ function authorizeResourceAccess($resource_id, $session_user_id) {
 
 ## 7. Attack Chain
 
-```
-[Step 1] Authentication
-gordonb logs in to DVWA at low security level
-Session established as non-administrative, low-privilege user
-        |
-        v
-[Step 2] Baseline Observation
-SQL Injection page loaded, id=1 submitted via form
-Response: First name: admin / Surname: admin
-URL reveals: ?id=1&Submit=Submit#
-id parameter is sequential integer, directly exposed in URL
-        |
-        v
-[Step 3] Parameter Manipulation - id=1
-URL modified directly in browser address bar: ?id=1&Submit=Submit#
-Application returns admin's record to gordonb session
-No authorization error returned
-        |
-        v
-[Step 4] Parameter Manipulation - id=5
-URL modified to: ?id=5&Submit=Submit#
-Application returns: First name: Bob / Surname: Smith
-No session change, no re-authentication, no permission check
-Cross-user data access confirmed
-        |
-        v
-[Step 5] Extrapolated Risk
-Sequential IDs 1 through N are all accessible via the same pattern
-A Python script looping from 1 to 100,000 would download every
-user record in the database with no special tooling required
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/33_04%20Attack%20Chain.jpg)
 
 ---
 
