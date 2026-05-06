@@ -1,11 +1,5 @@
 # DNS Query Tools and SMB Enumeration
 
-**Student Name:** Asekun Fatai
-**Student ID:** 2025/INT/12158
-**Course:** Kali Linux Tools and System Security
-**Instructor:** Mr. Aminu Idris
-**Date:** 07 January 2026
-
 ---
 
 ## 1. Engagement Overview
@@ -58,7 +52,7 @@ entirely within an isolated Kali Linux lab environment.
 
 ## 4. Methodology
 
-### Phase 1 — Reconnaissance (DNS Queries)
+### Phase 1: Reconnaissance (DNS Queries)
 DNS queries were performed against `google.com` using three tools in sequence:
 `nslookup`, `host`, and `dig`. Each tool was used to extract progressively more
 detailed information. `nslookup` was run first for basic A and AAAA record
@@ -66,28 +60,28 @@ resolution. `host` was run second to retrieve mail server (MX) records alongside
 IP addresses. `dig` was run last with explicit record type flags (`MX`, `TXT`) to
 extract TTL values, header flags, and organizational TXT records.
 
-### Phase 2 — Mapping / Spidering (SMB Service Discovery)
+### Phase 2: Mapping / Spidering (SMB Service Discovery)
 `enum4linux` was run against the Metasploitable2 target IP to perform a
 comprehensive unauthenticated SMB enumeration. The tool was used to extract the
 full user list with RID values, enumerate available shares with their types and
 comments, and fingerprint the operating system and Samba service version.
 
-### Phase 3 — Vulnerability Identification
+### Phase 3: Vulnerability Identification
 Enumerated share permissions were reviewed to identify globally accessible shares.
 The `tmp` share was identified as readable and listable without authentication. The
 full user list was assessed for accounts that could be targeted in a password
 spraying attack.
 
-### Phase 4 — Exploitation (Not Performed)
+### Phase 4: Exploitation (Not Performed)
 Exploitation was outside the defined scope of this assessment. All identified
 vulnerabilities were documented for remediation rather than active exploitation.
 
-### Phase 5 — Validation
+### Phase 5: Validation
 DNS query outputs from all three tools were cross-referenced to confirm record
 accuracy and identify information gaps between tools. SMB enumeration output
 was reviewed to confirm the completeness of the user and share lists.
 
-### Phase 6 — Documentation
+### Phase 6: Documentation
 All command outputs, screenshots, and tool results were recorded throughout
 both phases to support the findings documented in this report.
 
@@ -109,13 +103,13 @@ both phases to support the findings documented in this report.
 
 ---
 
-### Finding 01 — SMB Null Session Unauthenticated Enumeration
+### Finding 01: SMB Null Session Unauthenticated Enumeration
 
 #### Severity
 High
 
 #### Affected Endpoint
-Metasploitable2 target — TCP port 445 (SMB), TCP port 139 (NetBIOS)
+Metasploitable2 target: TCP port 445 (SMB), TCP port 139 (NetBIOS)
 
 #### Description
 The SMB service on the Metasploitable2 host accepts null session connections,
@@ -130,11 +124,11 @@ because the Samba configuration does not restrict anonymous connections.
 `enum4linux` run against the Metasploitable2 target returning full user list and
 share enumeration without any credentials supplied:
 
-![enum4linux Output - Full User List with RID Values](image.jpg)
+![enum4linux Output - Full User List with RID Values](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_01%20enum4linux%20Output%20-%20Full%20User%20List%20with%20RID%20Values.jpg)
 
 Share enumeration output from the same null session:
 
-![enum4linux Output - Share Names, Types, and Comments](image.jpg)
+![enum4linux Output - Share Names, Types, and Comments](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_02%20enum4linux%20Output%20-%20Share%20Names%2C%20Types%2C%20and%20Comments.jpg)
 
 Users extracted via unauthenticated null session (partial list):
 ```
@@ -177,13 +171,13 @@ vulnerable to critical remote code execution exploits.
 
 ---
 
-### Finding 02 — World-Readable SMB Share (tmp)
+### Finding 02: World-Readable SMB Share (tmp)
 
 #### Severity
 High
 
 #### Affected Endpoint
-`\\Metasploitable2\tmp` — Disk share, globally accessible
+`\\Metasploitable2\tmp`: Disk share, globally accessible
 
 #### Description
 The `tmp` share on the Metasploitable2 host was found to be globally readable and
@@ -197,7 +191,7 @@ by running processes or administrators.
 
 Share listing from `enum4linux` confirming `tmp` share type and accessibility:
 
-![SMB Share Listing - tmp Share World-Readable](image.jpg)
+![SMB Share Listing - tmp Share World-Readable](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_02%20enum4linux%20Output%20-%20Share%20Names%2C%20Types%2C%20and%20Comments.jpg)
 
 Shares enumerated:
 ```
@@ -228,13 +222,13 @@ execution by a privileged process.
 
 ---
 
-### Finding 03 — Full User Account List Exposed via SMB
+### Finding 03: Full User Account List Exposed via SMB
 
 #### Severity
 High
 
 #### Affected Endpoint
-Metasploitable2 — SMB RID cycling via null session
+Metasploitable2: SMB RID cycling via null session
 
 #### Description
 Through unauthenticated null session access, `enum4linux` performed RID cycling
@@ -248,7 +242,7 @@ domain accounts.
 
 Full user list returned by `enum4linux` RID cycling against the target:
 
-![enum4linux Full User List - RID Values](image.jpg)
+![enum4linux Full User List - RID Values](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_01%20enum4linux%20Output%20-%20Full%20User%20List%20with%20RID%20Values.jpg)
 
 Selected high-value accounts from the enumerated list:
 ```
@@ -279,13 +273,13 @@ immediate full administrative control.
 
 ---
 
-### Finding 04 — DNS Infrastructure and Mail Provider Disclosure
+### Finding 04: DNS Infrastructure and Mail Provider Disclosure
 
 #### Severity
 Medium
 
 #### Affected Endpoint
-`google.com` DNS records — publicly queryable
+`google.com` DNS records: publicly queryable
 
 #### Description
 Using `nslookup`, `host`, and `dig` in sequence, the following information was
@@ -299,15 +293,15 @@ identifying the exact mail platform the organization uses.
 
 `nslookup` output returning A and AAAA records for `google.com`:
 
-![nslookup Output - IPv4 and IPv6 Addresses](image.jpg)
+![nslookup Output - IPv4 and IPv6 Addresses](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_03%20nslookup%20Output%20-%20IPv4%20and%20IPv6%20Addresses.jpg)
 
 `host` output returning IP addresses and MX record:
 
-![host Output - IP Address and Mail Server](image.jpg)
+![host Output - IP Address and Mail Server](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_04%20host%20Output%20-%20IP%20Address%20and%20Mail%20Server.jpg)
 
 `dig` output returning A record with TTL value and DNS header flags:
 
-![dig Output - A Record with TTL 233 and Header Flags](image.jpg)
+![dig Output - A Record with TTL 233 and Header Flags](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_05%20dig%20Output%20-%20A%20Record%20with%20TTL%20233%20and%20Header%20Flags.jpg)
 
 Records extracted:
 ```
@@ -337,13 +331,13 @@ long a poisoned record would be cached before being refreshed.
 
 ---
 
-### Finding 05 — Organizational TXT Record Exposure
+### Finding 05: Organizational TXT Record Exposure
 
 #### Severity
 Low
 
 #### Affected Endpoint
-`google.com` TXT DNS records — publicly queryable
+`google.com` TXT DNS records: publicly queryable
 
 #### Description
 Querying TXT records for `google.com` using `dig google.com TXT` returned
@@ -357,7 +351,7 @@ verification token, confirming the use of multiple third-party SaaS platforms.
 `dig` output showing multiple TXT records including verification tokens and
 service identifiers:
 
-![dig TXT Record Output - Verification Tokens and Service Records](image.jpg)
+![dig TXT Record Output - Verification Tokens and Service Records](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_06%20dig%20TXT%20Record%20Output%20-%20Verification%20Tokens%20and%20Service%20Records.jpg)
 
 Selected TXT records observed:
 ```
@@ -371,7 +365,7 @@ google.com. 3600 IN TXT "apple-domain-verification=30afl8c..."
 TXT records confirm which third-party platforms an organization uses for
 document signing, site verification, and identity management. This intelligence
 allows an attacker to craft highly credible social engineering attacks that
-impersonate trusted services already in use by the target — for example, a
+impersonate trusted services already in use by the target for example, a
 phishing email mimicking a DocuSign document request directed at the
 organization's staff.
 
@@ -386,39 +380,7 @@ organization's staff.
 
 ## 7. Attack Chain
 
-```
-[Phase 1] External DNS Reconnaissance
-nslookup google.com
-→ IPv4: 142.251.39.206 / IPv6: 2a00:1450:4006:80f::200e identified
-
-host google.com
-→ MX record: smtp.google.com (mail provider confirmed)
-
-dig google.com TXT
-→ DocuSign, Microsoft, Apple verification tokens returned
-→ Third-party platform usage confirmed for social engineering planning
-
-dig google.com MX
-→ TTL: 233 seconds noted for DNS spoofing timing
-        ↓
-[Phase 2] SMB Enumeration (Internal Target)
-enum4linux against Metasploitable2
-→ Null session accepted — no credentials required
-→ 30+ user accounts enumerated including root and msfadmin
-→ Shares listed: print$, tmp (world-readable), opt, IPC$, ADMIN$
-→ Samba 3.0.20 version fingerprinted
-        ↓
-[Combined Intelligence Picture]
-DNS data identifies mail provider and third-party platforms
-→ Enables credible phishing email construction targeting known staff accounts
-
-SMB data provides valid username list (root, msfadmin, postgres, etc.)
-→ Enables targeted password spraying against SSH, FTP, Tomcat
-
-tmp share world-readable
-→ If write access exists: reverse shell can be planted
-→ If configuration files present: credentials can be extracted for lateral movement
-```
+![Attack Chain](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/09_07%20Attack%20Chain.jpg)
 
 ---
 
@@ -428,7 +390,7 @@ tmp share world-readable
 - `nslookup` (basic DNS A and AAAA record resolution)
 - `host` (DNS resolution with MX record and HTTP service binding output)
 - `dig` (advanced DNS query with TTL, header flags, MX, and TXT record extraction)
-- `enum4linux` (SMB enumeration — users, shares, OS fingerprinting)
+- `enum4linux` (SMB enumeration of users, shares, OS fingerprinting)
 
 ---
 
