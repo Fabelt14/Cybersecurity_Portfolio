@@ -27,35 +27,43 @@
 
 ## 👤 About Me
 
-I'm a passionate cybersecurity professional with hands-on experience in **penetration testing**, **vulnerability assessment**, **network forensics**, and **web application security**. 
+I'm a cybersecurity professional building hands-on expertise in **penetration testing**, **vulnerability assessment**, and **offensive security**. Currently pursuing my **ICDFA (International Cybersecurity and Digital Forensics Academy)** internship, where I'm documenting real-world security labs and projects to develop practical skills across the attack spectrum.
 
-Currently pursuing my **ICDFA (International Certified Digital Forensics Analyst)** internship, I document real-world security labs and projects to build expertise across the entire attack and defense spectrum.
+I learn by doing. Every lab in this portfolio represents a vulnerability I've exploited, a system I've compromised, and a lesson I've internalized. I'm obsessed with understanding *how* attacks work from initial reconnaissance to full system compromise, so I can become an undeniable penetration tester.
+
+My drive is the intersection of curiosity and execution. I'm hungry to break systems responsibly, document my findings professionally, and build a portfolio that speaks louder than certifications. I believe practical, documented experience beats theoretical knowledge every time. My goal is to become a Junior Penetration Tester and I'm actively building real-world experience through hands-on assessments and security research. 
+
+If you're building offensive security skills or hiring pentesters, I'm interested in learning from experienced professionals. Open to mentorship, collaboration, and opportunities where I can contribute real security value.
+
+<div align="center">
 
 **Career Target:** Junior Penetration Tester / SOC Analyst / Security Researcher
+
+</div>
 
 ---
 
 ## 🎯 Key Skills & Competencies
 
 ### Offensive Security
-- **Vulnerability Assessment & Penetration Testing** – Identifying, exploiting, and reporting security flaws
-- **Web Application Security** – SQL Injection, XSS, CSRF, file upload bypasses, IDOR
-- **Network Reconnaissance** – OSINT, footprinting, DNS analysis, SMB enumeration
-- **Reverse Engineering & Exploitation** – Command injection, reverse shells, privilege escalation
-- **Password Cracking** – Dictionary attacks, brute-force, hash cracking techniques
+- **Vulnerability Assessment & Penetration Testing**: Identifying, exploiting, and reporting security flaws
+- **Web Application Security**: SQL Injection, XSS, CSRF, file upload bypasses, IDOR
+- **Network Reconnaissance**: OSINT, footprinting, DNS analysis, SMB enumeration
+- **Reverse Engineering & Exploitation**: Command injection, reverse shells, privilege escalation
+- **Password Cracking**: Dictionary attacks, brute-force, hash cracking techniques
 
 ### Defensive Security
-- **Network Analysis & Forensics** – Wireshark packet analysis, network traffic investigation
-- **Intrusion Detection** – IDS/IPS configuration, anomaly detection, log analysis
-- **System Hardening** – Linux security, firewall rules, SELinux policies, access control
-- **Incident Response** – Case study analysis, forensic investigation techniques
-- **Secure Communication** – Cryptography, TLS/SSL, SSH, VPN protocols
+- **Network Analysis & Forensics**: Wireshark packet analysis, network traffic investigation
+- **Intrusion Detection**: IDS/IPS configuration, anomaly detection, log analysis
+- **System Hardening**: Linux security, firewall rules, SELinux policies, access control
+- **Incident Response**: Case study analysis, forensic investigation techniques
+- **Secure Communication**: Cryptography, TLS/SSL, SSH, VPN protocols
 
 ### Core Competencies
-- **Linux System Administration** – User management, permissions, services, automation
-- **Bash Scripting & Automation** – Security automation, log parsing, custom tools
-- **Network Protocols & Configuration** – TCP/IP, IPv4/IPv6, subnetting, routing, VLAN
-- **Security Policies & Risk Management** – Threat assessment, compliance frameworks
+- **Linux System Administration**: User management, permissions, services, automation
+- **Bash Scripting & Automation**: Security automation, log parsing, custom tools
+- **Network Protocols & Configuration**: TCP/IP, IPv4/IPv6, subnetting, routing, VLAN
+- **Security Policies & Risk Management**: Threat assessment, compliance frameworks
 
 ---
 
@@ -160,43 +168,43 @@ Explore anonymity, password cracking, and post-exploitation.
 ## 🔧 Technical Toolkit
 
 ### Penetration Testing & Exploitation
-- **Burp Suite** – Web application testing, proxy, scanner, intruder
-- **OWASP ZAP** – Automated and manual web vulnerability scanning
-- **Metasploit Framework** – Exploitation framework & payload generation
-- **Netcat** – Network communication, reverse shells, listeners
-- **sqlmap** – Automated SQL injection detection
+- **Burp Suite**: Web application testing, proxy, scanner, intruder
+- **OWASP ZAP**: Automated and manual web vulnerability scanning
+- **Metasploit Framework**: Exploitation framework & payload generation
+- **Netcat**: Network communication, reverse shells, listeners
+- **sqlmap**: Automated SQL injection detection
 
 ### Network Analysis & Forensics
-- **Wireshark** – Packet capture, traffic analysis, protocol dissection
-- **tcpdump** – Command-line packet capture
-- **Zeek** – Network security monitoring
-- **Suricata** – IDS/IPS engine
-- **tshark** – CLI Wireshark
+- **Wireshark**: Packet capture, traffic analysis, protocol dissection
+- **tcpdump**: Command-line packet capture
+- **Zeek**: Network security monitoring
+- **Suricata**: IDS/IPS engine
+- **tshark**: CLI Wireshark
 
 ### Reconnaissance & Enumeration
-- **Nmap** – Network/service discovery, vulnerability scanning
-- **Recon-ng** – Automated OSINT framework
-- **SpiderFoot** – OSINT automation
-- **whois/dig/nslookup** – DNS & domain reconnaissance
-- **enum4linux** – SMB enumeration
+- **Nmap**: Network/service discovery, vulnerability scanning
+- **Recon-ng**: Automated OSINT framework
+- **SpiderFoot**: OSINT automation
+- **whois/dig/nslookup**: DNS & domain reconnaissance
+- **enum4linux**: SMB enumeration
 
 ### Linux & System Administration
-- **bash/zsh** – Shell scripting, automation
-- **iptables/ufw** – Firewall configuration
-- **SELinux** – Mandatory access control
-- **auditd** – System audit logging
-- **systemd** – Service management
+- **bash/zsh**: Shell scripting, automation
+- **iptables/ufw**: Firewall configuration
+- **SELinux**: Mandatory access control
+- **auditd**: System audit logging
+- **systemd**: Service management
 
 ### Password & Hash Analysis
-- **John the Ripper** – Hash cracking, wordlist attacks
-- **hashcat** – GPU-accelerated hash cracking
-- **hydra** – Online password bracking
+- **John the Ripper**: Hash cracking, wordlist attacks
+- **hashcat**: GPU-accelerated hash cracking
+- **hydra**: Online password bracking
 
 ### Other Tools
-- **Cisco Packet Tracer** – Network simulation
-- **VirtualBox/VMware** – Virtual machine hypervisors
-- **Kali Linux** – Penetration testing OS
-- **Git/GitHub** – Version control, portfolio hosting
+- **Cisco Packet Tracer**: Network simulation
+- **VirtualBox/VMware**: Virtual machine hypervisors
+- **Kali Linux**: Penetration testing OS
+- **Git/GitHub**: Version control, portfolio hosting
 
 ---
 
