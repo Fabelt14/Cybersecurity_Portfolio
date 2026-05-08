@@ -49,7 +49,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 
 
-![OpenSSL certificate generation prompts and output](screenshots/openssl_cert_generation.png)
+![OpenSSL certificate generation prompts and output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_01%20OpenSSL%20certificate%20generation%20prompts%20and%20output.jpg)
 
 
 
@@ -79,7 +79,7 @@ sudo systemctl reload apache2
 
 
 
-![Apache SSL module enablement and service restart](screenshots/apache_ssl_enable.png)
+![Apache SSL module enablement and service restart](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_02%20Apache%20SSL%20module%20enablement%20and%20service%20restart.jpg)
 
 
 
@@ -90,7 +90,7 @@ SSLCertificateFile    /etc/ssl/certs/kali-selfsigned.crt
 SSLCertificateKeyFile /etc/ssl/private/kali-selfsigned.key
 ```
 
-![Apache SSL configuration file showing certificate paths](screenshots/apache_ssl_config.png)
+![Apache SSL configuration file showing certificate paths](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_03%20Apache%20SSL%20configuration%20file%20showing%20certificate%20paths.jpg)
 
 
 
@@ -98,7 +98,7 @@ SSLCertificateKeyFile /etc/ssl/private/kali-selfsigned.key
 
 
 
-![Browser security warning for self-signed certificate](screenshots/browser_ssl_warning.png)
+![Browser security warning for self-signed certificate](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_04%20Apache%20default%20page%20loaded%20over%20HTTPS%20connection.jpg)
 
 
 
@@ -106,7 +106,7 @@ After clicking "Advanced" and accepting the risk, the Apache default page loaded
 
 
 
-![Apache default page loaded over HTTPS connection](screenshots/apache_https_working.png)
+![Apache default page loaded over HTTPS connection](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_04%20Apache%20default%20page%20loaded%20over%20HTTPS%20connection.jpg)
 
 **Why the warning exists:** SSL/TLS provides two things: encryption and identity verification. My self-signed certificate provides encryption (data cannot be read in transit), but it does not prove identity (anyone can generate a certificate claiming to be any domain). A CA-signed certificate proves that the certificate owner controls the domain because the CA verifies ownership before signing. For internal testing or private networks, self-signed certificates are acceptable. For public-facing websites, CA-signed certificates are required to avoid scaring users with warnings.
 
@@ -122,7 +122,7 @@ sudo apt install openvpn
 
 
 
-![OpenVPN installation confirmation showing version 2.7.0](screenshots/openvpn_install.png)
+![OpenVPN installation confirmation showing version 2.7.0](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_05%20OpenVPN%20installation%20confirmation%20showing%20version%202.7.0.jpg)
 
 
 
@@ -140,7 +140,7 @@ cd ~/openvpn-ca
 
 
 
-![Easy-RSA PKI initialization showing directory structure](screenshots/easyrsa_init_pki.png)
+![Easy-RSA PKI initialization showing directory structure](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_06%20Easy-RSA%20PKI%20initialization%20showing%20directory%20structure.jpg)
 
 
 
@@ -156,7 +156,7 @@ The CA is the root of trust. It signs all server and client certificates, and cl
 
 
 
-![CA certificate generation prompts and completion](screenshots/easyrsa_build_ca.png)
+![CA certificate generation prompts and completion](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_07%20CA%20certificate%20generation%20prompts%20and%20completion.jpg)
 
 
 
@@ -170,7 +170,7 @@ Easy-RSA prompted for a Common Name for the CA. I entered "Prime-CA". The CA cer
 
 
 
-![Server certificate request generation](screenshots/easyrsa_gen_req_server.png)
+![Server certificate request generation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_08%20Server%20certificate%20request%20generation.jpg)
 
 
 
@@ -184,7 +184,7 @@ This created a certificate signing request (CSR) and a private key. I used "Prim
 
 
 
-![CA signing the server certificate request](screenshots/easyrsa_sign_server.png)
+![CA signing the server certificate request](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_09%20CA%20signing%20the%20server%20certificate%20request.jpg)
 
 
 
@@ -200,7 +200,7 @@ DH parameters enable perfect forward secrecy during key exchange. Even if the se
 
 
 
-![DH parameter generation showing 2048-bit prime](screenshots/easyrsa_gen_dh.png)
+![DH parameter generation showing 2048-bit prime](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_10%20DH%20parameter%20generation%20showing%202048-bit%20prime.jpg)
 
 This generated 2048-bit DH parameters and saved them to `~/openvpn-ca/pki/dh.pem`. The HMAC key (`ta.key`) provides an additional layer of authentication to prevent unauthorized connection attempts before the TLS handshake completes.
 
@@ -214,7 +214,7 @@ Each VPN client needs its own certificate to authenticate to the server.
 
 
 
-![Client certificate request generation](screenshots/easyrsa_gen_req_client.png)
+![Client certificate request generation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_11%20Client%20certificate%20request%20generation.jpg)
 
 
 
@@ -238,7 +238,7 @@ sudo openvpn --config /etc/openvpn/server.conf
 
 
 
-![OpenVPN server initialization showing multi-instance setup](screenshots/openvpn_server_start.png)
+![OpenVPN server initialization showing multi-instance setup](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_12%20OpenVPN%20server%20initialization%20showing%20multi-instance%20setup.jpg)
 
 
 
@@ -248,7 +248,7 @@ The output showed warnings about cipher negotiation and fallback behavior when c
 
 To confirm that VPN traffic is actually encrypted, I captured packets on the loopback interface while the OpenVPN server was running.
 
-![Wireshark showing OpenVPN protocol on UDP port 1194](screenshots/wireshark_openvpn_packets.png)
+![Wireshark showing OpenVPN protocol on UDP port 1194](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_13%20Wireshark%20showing%20OpenVPN%20protocol%20on%20UDP%20port%201194.jpg)
 
 
 
@@ -258,7 +258,7 @@ I then followed the UDP stream to inspect the payload:
 
 
 
-![Wireshark UDP stream showing encrypted OpenVPN payload](screenshots/wireshark_openvpn_encrypted.png)
+![Wireshark UDP stream showing encrypted OpenVPN payload](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_14%20Wireshark%20UDP%20stream%20showing%20encrypted%20OpenVPN%20payload.jpg)
 
 
 
@@ -276,7 +276,7 @@ sudo apt install openssh-server -y
 
 
 
-![OpenSSH server installation showing version 1:10.2p1-3](screenshots/openssh_install.png)
+![OpenSSH server installation showing version 1:10.2p1-3](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_15%20OpenSSH%20server%20installation%20showing%20version%201-10.2p1-3.jpg)
 
 
 
@@ -293,8 +293,7 @@ Port 2222
 #ListenAddress ::
 ```
 
-![SSH config file showing port changed to 2222](screenshots/ssh_port_config.png)
-
+![SSH config file showing port changed to 2222](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_16%20SSH%20config%20file%20showing%20port%20changed%20to%202222.jpg)
 
 
 **Hardening step 2: Disable root login**
@@ -311,7 +310,7 @@ PermitRootLogin no
 
 
 
-![SSH config file showing PermitRootLogin set to no](screenshots/ssh_disable_root.png)
+![SSH config file showing PermitRootLogin set to no](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_17%20SSH%20config%20file%20showing%20PermitRootLogin%20set%20to%20no.jpg)
 
 
 
@@ -327,7 +326,7 @@ ssh-keygen -t ed25519
 
 
 
-![SSH key generation showing ED25519 key pair creation](screenshots/ssh_keygen_ed25519.png)
+![SSH key generation showing ED25519 key pair creation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_18%20SSH%20key%20generation%20showing%20ED25519%20key%20pair%20creation.jpg)
 
 
 
@@ -347,7 +346,7 @@ I connected from the Kali system to itself (192.168.92.4) using the non-standard
 ssh -p 2222 fatai@192.168.92.4
 ```
 
-![SSH connection attempt prompting for key passphrase](screenshots/ssh_connection_test.png)
+![SSH connection attempt prompting for key passphrase](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_19%20SSH%20connection%20attempt%20prompting%20for%20key%20passphrase.jpg)
 
 
 
@@ -372,7 +371,7 @@ I built the topology in Cisco Packet Tracer with these components:
 
 
 
-![Packet Tracer topology showing RADIUS server, switch, and two PCs](screenshots/802.1x_topology.png)
+![Packet Tracer topology showing RADIUS server, switch, and two PCs](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_20%20Packet%20Tracer%20topology%20showing%20RADIUS%20server%2C%20switch%2C%20and%20two%20PCs.jpg)
 
 
 
@@ -384,7 +383,7 @@ I configured the RADIUS server with:
 - **Server Type:** Cisco
 - **User credentials:** user/root and user2/root2
 
-![RADIUS server configuration showing client and user setup](screenshots/radius_server_config.png)
+![RADIUS server configuration showing client and user setup](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_21%20RADIUS%20server%20configuration%20showing%20client%20and%20user%20setup.jpg)
 
 
 
@@ -410,7 +409,7 @@ Switch(config-if)#exit
 
 
 
-![Switch configuration commands for 802.1X on FastEthernet 0/1](screenshots/switch_config_fa01.png)
+![Switch configuration commands for 802.1X on FastEthernet 0/1](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_22%20Switch%20configuration%20commands%20for%20802.1X%20on%20FastEthernet%200-1.jpg)
 
 **Configuration breakdown:**
 - `aaa new-model`: Enables AAA (Authentication, Authorization, Accounting) framework
@@ -432,7 +431,7 @@ Switch(config-if)#dot1x pae authenticator
 Switch(config-if)#exit
 ```
 
-![Switch configuration commands for 802.1X on FastEthernet 0/2](screenshots/switch_config_fa02.png)
+![Switch configuration commands for 802.1X on FastEthernet 0/2](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_23%20Switch%20configuration%20commands%20for%20802.1X%20on%20FastEthernet%200-2.jpg)
 
 
 
@@ -447,7 +446,7 @@ To verify that 802.1X is actually blocking unauthorized access, I configured PC1
 
 
 
-![PC1 configured with incorrect password](screenshots/pc1_wrong_password.png)
+![PC1 configured with incorrect password](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_24%20PC1%20configured%20with%20incorrect%20password.jpg)
 
 
 
@@ -467,7 +466,7 @@ Ping statistics for 192.168.1.10:
     Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),
 ```
 
-![Ping results showing 100% packet loss due to failed authentication](screenshots/pc1_ping_failure.png)
+![Ping results showing 100% packet loss due to failed authentication](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_25%20Ping%20results%20showing%20100%25%20packet%20loss%20due%20to%20failed%20authentication.jpg)
 
 
 
@@ -481,7 +480,7 @@ I corrected PC1's configuration with the right password:
 
 
 
-![PC1 configured with correct credentials](screenshots/pc1_correct_password.png)
+![PC1 configured with correct credentials](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_26%20PC1%20configured%20with%20correct%20credentials.jpg)
 
 
 
@@ -503,7 +502,7 @@ Approximate round trip times in milli-seconds:
     Minimum = 0ms, Maximum = 1ms, Average = 0ms
 ```
 
-![Ping results showing successful connectivity after authentication](screenshots/pc1_ping_success.png)
+![Ping results showing successful connectivity after authentication](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_27%20Ping%20results%20showing%20successful%20connectivity%20after%20authentication.jpg)
 
 
 
@@ -515,49 +514,49 @@ The final topology shows all green indicators, confirming both PC1 and PC2 succe
 
 
 
-![Final 802.1X topology with all connections authenticated](screenshots/802.1x_final_topology.png)
+![Final 802.1X topology with all connections authenticated](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/19_28%20Final%20802.1X%20topology%20with%20all%20connections%20authenticated.jpg)
 
 
 
 ## Findings
 
-**SSL/TLS provides encryption without requiring third-party trust infrastructure.** Self-signed certificates encrypt traffic just as effectively as CA-signed certificates. The difference is identity verification. Browsers warn about self-signed certificates because they cannot verify the server's identity, but the encryption itself is equally strong. For internal systems or development environments, self-signed certificates are acceptable. For public-facing websites, CA-signed certificates are required to avoid user warnings.
+- **SSL/TLS provides encryption without requiring third-party trust infrastructure.** Self-signed certificates encrypt traffic just as effectively as CA-signed certificates. The difference is identity verification. Browsers warn about self-signed certificates because they cannot verify the server's identity, but the encryption itself is equally strong. For internal systems or development environments, self-signed certificates are acceptable. For public-facing websites, CA-signed certificates are required to avoid user warnings.
 
-**OpenVPN's PKI creates a complete trust chain for VPN authentication.** The CA signs both server and client certificates, ensuring mutual authentication. Clients trust the server because it presents a certificate signed by the trusted CA. The server trusts clients because they present certificates also signed by the CA. This prevents rogue devices from connecting to the VPN even if they know the server's IP address and port.
+- **OpenVPN's PKI creates a complete trust chain for VPN authentication.** The CA signs both server and client certificates, ensuring mutual authentication. Clients trust the server because it presents a certificate signed by the trusted CA. The server trusts clients because they present certificates also signed by the CA. This prevents rogue devices from connecting to the VPN even if they know the server's IP address and port.
 
-**Wireshark confirms encryption at the packet level.** Inspecting the UDP stream of OpenVPN traffic showed high-entropy random data instead of readable content. This proves AES-256-GCM encryption is functioning correctly. Without packet capture verification, there is no way to know if configuration errors caused the VPN to fall back to weaker encryption or transmit plaintext.
+- **Wireshark confirms encryption at the packet level.** Inspecting the UDP stream of OpenVPN traffic showed high-entropy random data instead of readable content. This proves AES-256-GCM encryption is functioning correctly. Without packet capture verification, there is no way to know if configuration errors caused the VPN to fall back to weaker encryption or transmit plaintext.
 
-**SSH hardening requires multiple defensive layers.** Changing the port alone does not stop determined attackers, but it eliminates automated scans. Disabling root login forces use of sudo, creating an audit trail. Key-based authentication eliminates password brute-force attacks entirely. All three measures combined reduce the SSH attack surface by over 99%.
+- **SSH hardening requires multiple defensive layers.** Changing the port alone does not stop determined attackers, but it eliminates automated scans. Disabling root login forces use of sudo, creating an audit trail. Key-based authentication eliminates password brute-force attacks entirely. All three measures combined reduce the SSH attack surface by over 99%.
 
-**802.1X enforces authentication before network access.** The switch port remains in an unauthorized state until RADIUS validates the credentials. This prevents unauthorized devices from even receiving an IP address via DHCP. Traditional MAC address filtering can be bypassed by spoofing. 802.1X requires valid credentials, which are much harder to compromise.
+- **802.1X enforces authentication before network access.** The switch port remains in an unauthorized state until RADIUS validates the credentials. This prevents unauthorized devices from even receiving an IP address via DHCP. Traditional MAC address filtering can be bypassed by spoofing. 802.1X requires valid credentials, which are much harder to compromise.
 
-**RADIUS centralizes authentication for multiple network devices.** Instead of configuring credentials on every switch individually, the RADIUS server stores all credentials in one location. Adding or removing users requires updating only the RADIUS database. This scales to enterprise networks with hundreds of switches and thousands of users.
+- **RADIUS centralizes authentication for multiple network devices.** Instead of configuring credentials on every switch individually, the RADIUS server stores all credentials in one location. Adding or removing users requires updating only the RADIUS database. This scales to enterprise networks with hundreds of switches and thousands of users.
 
-**MD5 authentication is weak but demonstrates the protocol.** Production 802.1X deployments use EAP-TLS with certificates instead of MD5 with passwords. MD5 is vulnerable to offline dictionary attacks if an attacker captures the authentication exchange. EAP-TLS requires both the client and server to present certificates, providing mutual authentication and resistance to credential theft.
+- **MD5 authentication is weak but demonstrates the protocol.** Production 802.1X deployments use EAP-TLS with certificates instead of MD5 with passwords. MD5 is vulnerable to offline dictionary attacks if an attacker captures the authentication exchange. EAP-TLS requires both the client and server to present certificates, providing mutual authentication and resistance to credential theft.
 
 ## Challenges Faced
 
-**OpenVPN initialization errors related to cipher negotiation:** The server logs showed warnings about cipher fallback behavior when clients use older OpenVPN versions. This is not a failure, but it required understanding the difference between negotiated ciphers and fallback ciphers. Modern OpenVPN negotiates the strongest mutually supported cipher. If negotiation fails, it falls back to a predefined cipher specified in the configuration file.
+- **OpenVPN initialization errors related to cipher negotiation:** The server logs showed warnings about cipher fallback behavior when clients use older OpenVPN versions. This is not a failure, but it required understanding the difference between negotiated ciphers and fallback ciphers. Modern OpenVPN negotiates the strongest mutually supported cipher. If negotiation fails, it falls back to a predefined cipher specified in the configuration file.
 
-**Packet Tracer does not support EAP-TLS:** The simulator only implements MD5-based 802.1X authentication. In a real network, I would configure EAP-TLS with client certificates for stronger security. MD5 authentication is sufficient to demonstrate the port-based access control concept, but it is not recommended for production use.
+- **Packet Tracer does not support EAP-TLS:** The simulator only implements MD5-based 802.1X authentication. In a real network, I would configure EAP-TLS with client certificates for stronger security. MD5 authentication is sufficient to demonstrate the port-based access control concept, but it is not recommended for production use.
 
-**Self-signed certificate warning interpretation:** Initially, the browser warning looked like a failure. I had to verify that the certificate itself was correctly installed by checking the certificate details in the browser's security tab. The warning exists because the browser cannot validate the chain of trust, not because the encryption is broken. This distinction is critical for understanding the difference between encryption and authentication.
+- **Self-signed certificate warning interpretation:** Initially, the browser warning looked like a failure. I had to verify that the certificate itself was correctly installed by checking the certificate details in the browser's security tab. The warning exists because the browser cannot validate the chain of trust, not because the encryption is broken. This distinction is critical for understanding the difference between encryption and authentication.
 
-**Switch configuration syntax in Packet Tracer:** The command `authentication port-control auto` is specific to newer Cisco IOS versions. Older syntax used `dot1x port-control auto`. Packet Tracer accepts both, but real hardware may require one or the other depending on the IOS version. Knowing multiple syntax variations prevents confusion when working with different equipment.
+- **Switch configuration syntax in Packet Tracer:** The command `authentication port-control auto` is specific to newer Cisco IOS versions. Older syntax used `dot1x port-control auto`. Packet Tracer accepts both, but real hardware may require one or the other depending on the IOS version. Knowing multiple syntax variations prevents confusion when working with different equipment.
 
 ## Key Takeaways
 
-**Encryption and authentication are separate security properties.** SSL/TLS and OpenVPN both provide encryption, but they require additional mechanisms (CA signatures, certificate chains) to prove identity. An encrypted connection to the wrong server is still a security failure. Always verify both encryption and identity.
+- **Encryption and authentication are separate security properties.** SSL/TLS and OpenVPN both provide encryption, but they require additional mechanisms (CA signatures, certificate chains) to prove identity. An encrypted connection to the wrong server is still a security failure. Always verify both encryption and identity.
 
-**PKI infrastructure requires careful key management.** The CA private key is the root of trust. If it is compromised, an attacker can sign certificates for any domain or user, completely bypassing the trust model. The CA key should be generated offline, stored encrypted, and backed up securely. In production environments, the CA key should never reside on the VPN server itself.
+- **PKI infrastructure requires careful key management.** The CA private key is the root of trust. If it is compromised, an attacker can sign certificates for any domain or user, completely bypassing the trust model. The CA key should be generated offline, stored encrypted, and backed up securely. In production environments, the CA key should never reside on the VPN server itself.
 
-**Defense in depth prevents single points of failure.** SSH hardening uses three layers: non-standard port, no root login, and key-based authentication. If an attacker discovers the port, they still cannot log in as root. If they compromise a user account, they still need the private key. Each layer provides independent protection.
+- **Defense in depth prevents single points of failure.** SSH hardening uses three layers: non-standard port, no root login, and key-based authentication. If an attacker discovers the port, they still cannot log in as root. If they compromise a user account, they still need the private key. Each layer provides independent protection.
 
-**Network access control stops unauthorized devices at Layer 2.** Firewalls operate at Layer 3 and above, blocking traffic after devices already have network access. 802.1X operates at Layer 2, preventing unauthorized devices from even receiving an IP address. This is particularly important for preventing rogue devices from being plugged into wall jacks.
+- **Network access control stops unauthorized devices at Layer 2.** Firewalls operate at Layer 3 and above, blocking traffic after devices already have network access. 802.1X operates at Layer 2, preventing unauthorized devices from even receiving an IP address. This is particularly important for preventing rogue devices from being plugged into wall jacks.
 
-**Packet capture validates configuration instead of assumptions.** Configuration files can contain typos or incorrect paths. Packet capture shows what is actually happening on the wire. The OpenVPN encrypted payload confirmed that AES-256-GCM was active, not just configured.
+- **Packet capture validates configuration instead of assumptions.** Configuration files can contain typos or incorrect paths. Packet capture shows what is actually happening on the wire. The OpenVPN encrypted payload confirmed that AES-256-GCM was active, not just configured.
 
-**RADIUS centralizes authentication for scalability.** Managing credentials on individual switches does not scale beyond a few devices. RADIUS allows one database to authenticate users across hundreds of switches, wireless access points, and VPN concentrators. Changes to user accounts take effect immediately across the entire network.
+- **RADIUS centralizes authentication for scalability.** Managing credentials on individual switches does not scale beyond a few devices. RADIUS allows one database to authenticate users across hundreds of switches, wireless access points, and VPN concentrators. Changes to user accounts take effect immediately across the entire network.
 
 ## Disclaimer
 
