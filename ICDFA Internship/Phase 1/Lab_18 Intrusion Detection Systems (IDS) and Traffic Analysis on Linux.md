@@ -38,7 +38,7 @@ I installed Snort using the package manager rather than compiling from source. T
 sudo apt-get install snort
 ```
 
-![Snort installation via apt-get showing dependency resolution](screenshots/snort_installation.png)
+![Snort installation via apt-get showing dependency resolution](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_01%20Snort%20installation%20via%20apt-get%20showing%20dependency%20resolution.jpg)
 
 
 
@@ -54,7 +54,7 @@ I edited `/etc/snort/snort.lua` to define the protected network:
 
 
 
-![Snort configuration showing HOME_NET set to 192.168.92.3](screenshots/snort_home_net_config.png)
+![Snort configuration showing HOME_NET set to 192.168.92.3](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_02%20Snort%20configuration%20showing%20HOME_NET%20set%20to%20192.168.92.3.jpg)
 
 
 
@@ -76,9 +76,9 @@ sudo snort -L alert_fast -c /etc/snort/snort.lua -i eth1
 
 
 
-![Snort startup showing version 3.10.2.0 and loaded rule sets](screenshots/snort_startup.png)
+![Snort startup showing version 3.10.2.0 and loaded rule sets](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_03.1%20Snort%20startup%20showing%20version%203.10.2.0%20and%20loaded%20rule%20sets.jpg)
 
-
+![Snort startup showing version 3.10.2.0 and loaded rule sets](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_03.2%20Snort%20startup%20showing%20version%203.10.2.0%20and%20loaded%20rule%20sets.jpg)
 
 **Command breakdown:**
 - `-L alert_fast` writes alerts to a fast-format log file (one line per alert instead of full packet dumps)
@@ -101,7 +101,7 @@ sudo hping3 -S -p 80 192.168.92.3
 
 
 
-![hping3 generating TCP SYN flood to port 80 on target](screenshots/hping3_syn_flood.png)
+![hping3 generating TCP SYN flood to port 80 on target](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_04%20hping3%20generating%20TCP%20SYN%20flood%20to%20port%2080%20on%20target.jpg)
 
 
 
@@ -117,7 +117,7 @@ While Snort was monitoring for attacks, I captured the same traffic with Wiresha
 
 
 
-![Wireshark capture showing TCP packets with SYN flags to port 80](screenshots/wireshark_syn_flood_capture.png)
+![Wireshark capture showing TCP packets with SYN flags to port 80](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_05%20Wireshark%20capture%20showing%20TCP%20packets%20with%20SYN%20flags%20to%20port%2080.jpg)
 
 
 
@@ -133,7 +133,7 @@ After stopping the hping3 flood, I checked Snort's alert output to see if it det
 
 
 
-![Snort alerts showing ATTACK DETECTED messages with source and destination IPs](screenshots/snort_attack_alerts.png)
+![Snort alerts showing ATTACK DETECTED messages with source and destination IPs](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/18_06%20Snort%20alerts%20showing%20ATTACK%20DETECTED%20messages%20with%20source%20and%20destination%20IPs.jpg)
 
 
 
@@ -158,39 +158,39 @@ After stopping the hping3 flood, I checked Snort's alert output to see if it det
 
 ## Findings
 
-**Custom Snort rule successfully detected TCP flood attack.** The rule matched on TCP traffic to port 80 from external sources and generated alerts with priority 0. The rule triggered multiple times per second during the attack, confirming it was sensitive enough to catch flood-style attacks without requiring every single packet to trigger an alert.
+- **Custom Snort rule successfully detected TCP flood attack.** The rule matched on TCP traffic to port 80 from external sources and generated alerts with priority 0. The rule triggered multiple times per second during the attack, confirming it was sensitive enough to catch flood-style attacks without requiring every single packet to trigger an alert.
 
-**Correlation between IDS alerts and packet captures proves attack validity.** Snort alerts showed attack traffic from 192.168.92.4 to 192.168.92.3:80, and Wireshark captures confirmed TCP SYN packets from the same source to the same destination. This eliminates the possibility of false positives and provides evidence for incident response.
+- **Correlation between IDS alerts and packet captures proves attack validity.** Snort alerts showed attack traffic from 192.168.92.4 to 192.168.92.3:80, and Wireshark captures confirmed TCP SYN packets from the same source to the same destination. This eliminates the possibility of false positives and provides evidence for incident response.
 
-**HOME_NET configuration determines what Snort protects.** Setting HOME_NET to 192.168.92.3 meant Snort treated inbound traffic to that IP as potentially malicious. If HOME_NET had been misconfigured to include the attacker's IP, the alerts would not have triggered because Snort would consider the traffic internal.
+- **HOME_NET configuration determines what Snort protects.** Setting HOME_NET to 192.168.92.3 meant Snort treated inbound traffic to that IP as potentially malicious. If HOME_NET had been misconfigured to include the attacker's IP, the alerts would not have triggered because Snort would consider the traffic internal.
 
-**Alert priority 0 indicates highest severity.** Snort's priority system is inverse - 0 is most critical, higher numbers are less urgent. The custom rule assigned priority 0, which means security analysts should respond immediately. In a production SOC, priority 0 alerts would trigger paging or automated response workflows.
+- **Alert priority 0 indicates highest severity.** Snort's priority system is inverse - 0 is most critical, higher numbers are less urgent. The custom rule assigned priority 0, which means security analysts should respond immediately. In a production SOC, priority 0 alerts would trigger paging or automated response workflows.
 
-**TCP SYN flood exhausts server connection tables.** The flood sent hundreds of SYN packets without completing the handshake. Each SYN packet forces the server to allocate memory for a half-open connection. After several thousand SYN packets, the server runs out of connection tracking slots and stops accepting legitimate connections. This is why IDS detection matters - it gives you warning before the server fails.
+- **TCP SYN flood exhausts server connection tables.** The flood sent hundreds of SYN packets without completing the handshake. Each SYN packet forces the server to allocate memory for a half-open connection. After several thousand SYN packets, the server runs out of connection tracking slots and stops accepting legitimate connections. This is why IDS detection matters - it gives you warning before the server fails.
 
-**Signature-based detection requires rule maintenance.** Snort detected this attack because a custom rule explicitly matched the traffic pattern. If the attack used a new technique not covered by existing rules, Snort would not alert. This is the limitation of signature-based IDS - you can only detect attacks you have signatures for.
+- **Signature-based detection requires rule maintenance.** Snort detected this attack because a custom rule explicitly matched the traffic pattern. If the attack used a new technique not covered by existing rules, Snort would not alert. This is the limitation of signature-based IDS - you can only detect attacks you have signatures for.
 
 ## Challenges Faced
 
-**Snort configuration file syntax is different from traditional snort.conf.** The new snort.lua format uses Lua scripting instead of the old keyword-based syntax. This meant I could not copy rules directly from older Snort tutorials without adapting them. The Lua format is more flexible but requires learning a new syntax.
+- **Snort configuration file syntax is different from traditional snort.conf.** The new snort.lua format uses Lua scripting instead of the old keyword-based syntax. This meant I could not copy rules directly from older Snort tutorials without adapting them. The Lua format is more flexible but requires learning a new syntax.
 
-**Writing effective IDS rules requires balancing sensitivity and false positives.** A rule that triggers on any TCP traffic to port 80 would generate alerts for every legitimate web request. A rule that requires 100 SYN packets in 1 second would miss slower floods. Finding the right threshold requires understanding normal traffic patterns on the network.
+- **Writing effective IDS rules requires balancing sensitivity and false positives.** A rule that triggers on any TCP traffic to port 80 would generate alerts for every legitimate web request. A rule that requires 100 SYN packets in 1 second would miss slower floods. Finding the right threshold requires understanding normal traffic patterns on the network.
 
-**Alert output format requires correlation with packet captures.** The alert log showed source IPs, destination IPs, and timestamps, but it did not show the actual packet contents. Without Wireshark running simultaneously, I would not have been able to confirm the alerts matched real SYN packets. This is why security operations centers run both IDS and full packet capture systems.
+- **Alert output format requires correlation with packet captures.** The alert log showed source IPs, destination IPs, and timestamps, but it did not show the actual packet contents. Without Wireshark running simultaneously, I would not have been able to confirm the alerts matched real SYN packets. This is why security operations centers run both IDS and full packet capture systems.
 
-**hping3 output showed ICMP instead of TCP despite -S flag.** The screenshot shows ICMP echo requests, but the Wireshark capture and Snort alerts both show TCP SYN packets. This suggests either a screenshot mismatch or hping3 switching protocols mid-test. In real incident response, this kind of inconsistency requires investigation to confirm what actually happened.
+- **hping3 output showed ICMP instead of TCP despite -S flag.** The screenshot shows ICMP echo requests, but the Wireshark capture and Snort alerts both show TCP SYN packets. This suggests either a screenshot mismatch or hping3 switching protocols mid-test. In real incident response, this kind of inconsistency requires investigation to confirm what actually happened.
 
 ## Key Takeaways
 
-**IDS provides early warning but not prevention.** Snort detected the attack and logged it, but it did not block the traffic. The flood packets still reached the target server. An Intrusion Prevention System (IPS) would drop the packets before they reach the server, but IDS only alerts. Production networks need both detection and prevention.
+- **IDS provides early warning but not prevention.** Snort detected the attack and logged it, but it did not block the traffic. The flood packets still reached the target server. An Intrusion Prevention System (IPS) would drop the packets before they reach the server, but IDS only alerts. Production networks need both detection and prevention.
 
-**Custom rules let you detect business-specific attack patterns.** The default Snort rules detect common attacks, but every business has unique assets and threats. Writing custom rules for your critical services (payment processing, customer databases, authentication systems) catches attacks that generic rules would miss.
+- **Custom rules let you detect business-specific attack patterns.** The default Snort rules detect common attacks, but every business has unique assets and threats. Writing custom rules for your critical services (payment processing, customer databases, authentication systems) catches attacks that generic rules would miss.
 
-**Correlation is the difference between data and evidence.** An IDS alert by itself is just a log entry. A packet capture by itself is just network traffic. Combining them proves the attack happened and provides forensic evidence for incident response or legal action.
+- **Correlation is the difference between data and evidence.** An IDS alert by itself is just a log entry. A packet capture by itself is just network traffic. Combining them proves the attack happened and provides forensic evidence for incident response or legal action.
 
-**Alert priority guides response workflow.** Not every IDS alert requires immediate action. Priority 0 alerts (active attacks on critical systems) need instant response. Priority 3 alerts (reconnaissance scans) can be reviewed during normal business hours. Setting priorities correctly prevents alert fatigue.
+- **Alert priority guides response workflow.** Not every IDS alert requires immediate action. Priority 0 alerts (active attacks on critical systems) need instant response. Priority 3 alerts (reconnaissance scans) can be reviewed during normal business hours. Setting priorities correctly prevents alert fatigue.
 
-**Signature-based IDS cannot detect zero-day attacks.** If an attacker uses a new exploit technique that no existing Snort rule covers, the attack will not generate alerts. This is why modern security operations combine signature-based IDS (Snort) with anomaly-based detection (machine learning) and threat intelligence feeds.
+- **Signature-based IDS cannot detect zero-day attacks.** If an attacker uses a new exploit technique that no existing Snort rule covers, the attack will not generate alerts. This is why modern security operations combine signature-based IDS (Snort) with anomaly-based detection (machine learning) and threat intelligence feeds.
 
 ## Disclaimer
 
