@@ -37,13 +37,15 @@ I started by installing Tor and Proxychains using apt. Both were already at the 
 
 
 
-![Tor and Proxychains installation confirmation](screenshots/tor_proxychains_install.png)
+![Tor and Proxychains installation confirmation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_01.1%20Tor%20installation%20confirmation.jpg)
+
+![Tor and Proxychains installation confirmation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_01.2%20Proxychains%20installation%20confirmation.jpg)
 
 
 
 After installation, I started the Tor service with `sudo service tor start` and checked its status with `systemctl status tor`. The output showed "active (exited)" with process 3197, which means Tor successfully initialized and is running in the background.
 
-![Tor service status showing active state](screenshots/tor_service_status.png)
+![Tor service status showing active state](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_02%20Tor%20service%20status%20showing%20active%20state.jpg)
 
 
 
@@ -55,7 +57,9 @@ Before using Proxychains, I examined the three chain modes in `/etc/proxychains.
 
 
 
-![Proxychains configuration showing chain mode options](screenshots/proxychains_config.png)
+![Proxychains configuration showing chain mode options](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_03.1%20Proxychains%20configuration%20showing%20chain%20mode%20options.jpg)
+
+![Proxychains configuration showing chain mode options](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_03.1%20Proxychains%20configuration%20showing%20chain%20mode%20options.jpg)
 
 
 
@@ -77,7 +81,7 @@ curl https://httpbin.org/ip
 
 
 
-![Real IP address shown as 102.89.68.117](screenshots/baseline_real_ip.png)
+![Real IP address shown as 102.89.68.117](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_04%20Real%20IP%20address%20shown%20as%20102.89.68.117.jpg)
 
 
 
@@ -93,7 +97,7 @@ proxychains curl https://httpbin.org/ip
 
 
 
-![Proxychains showing Tor exit IP as 109.70.100.6](screenshots/proxychains_tor_ip.png)
+![Proxychains showing Tor exit IP as 109.70.100.6](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_05%20Proxychains%20showing%20Tor%20exit%20IP%20as%20109.70.100.6.jpg)
 
 
 
@@ -116,7 +120,7 @@ proxychains curl https://httpbin.org/ip
 
 
 
-![Multiple requests showing IP rotation](screenshots/tor_circuit_rotation.png)
+![Multiple requests showing IP rotation](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_06%20Multiple%20requests%20showing%20IP%20rotation.jpg)
 
 
 
@@ -146,7 +150,7 @@ I configured Firefox to use a SOCKS5 proxy at 127.0.0.1:9050, then navigated to 
 
 
 
-![Firefox showing Tor exit IP matching curl results](screenshots/firefox_tor_ip.png)
+![Firefox showing Tor exit IP matching curl results](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_07%20Firefox%20showing%20Tor%20exit%20IP%20matching%20curl%20results.jpg)
 
 
 
@@ -172,7 +176,7 @@ proxychains nmap -sT -Pn 44.228.249.3
 
 
 
-![Nmap scan through Tor taking 31.43 seconds](screenshots/nmap_tor_scan_time.png)
+![Nmap scan through Tor taking 31.43 seconds](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/10_08%20Nmap%20scan%20through%20Tor%20taking%2031.43%20seconds.jpg)
 
 
 
