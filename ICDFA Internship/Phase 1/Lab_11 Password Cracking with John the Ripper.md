@@ -54,13 +54,13 @@ additional exercise generating and cracking a custom MD5 hash using Python.
 
 ## 4. Methodology
 
-### Phase 1 — Hash Identification
+### Phase 1: Hash Identification
 John the Ripper was used to identify hash types both by format prefix (`$1$`
 for MD5Crypt, `$y$` for Yescrypt, `$6$` for SHA-512) and by raw hash length
 for unsalted MD5 and SHA1 values. Yescrypt was noted as non-auto-detectable
 in raw format due to its mathematical construction.
 
-### Phase 2 — Wordlist Attack (rockyou.txt)
+### Phase 2: Wordlist Attack (rockyou.txt)
 A raw MD5 hash file (`hash.txt`) was targeted using:
 ```
 
@@ -69,12 +69,12 @@ john --wordlist=/usr/share/wordlists/rockyou.txt --format=raw-md5 hash.txt
 The rockyou.txt wordlist contains over 14 million entries sourced from real
 credential breaches. The attack completed in approximately 3 seconds.
 
-### Phase 3 — Custom Wordlist Attack
+### Phase 3: Custom Wordlist Attack
 A custom wordlist (`custom_wordlist.txt`) containing 7 targeted entries was run
 against `hash.txt` using the same raw-md5 format. This tested whether a small
 but well-targeted list could crack multiple hashes without a full dictionary scan.
 
-### Phase 4 — Brute Force (Incremental Mode)
+### Phase 4: Brute Force (Incremental Mode)
 Incremental mode was run against a 4-hash MD5 file using:
 ```
 john --incremental --format=raw-md5 hash.txt
@@ -83,7 +83,7 @@ To keep the brute force within a practical time window, the hash file was
 pre-populated with hashes of short, common values (`1234`, `123`, `abcd`).
 The attack completed in 4 seconds and cracked 3 hashes.
 
-### Phase 5 — NTLM Hash Cracking
+### Phase 5: NTLM Hash Cracking
 A Windows NTLM hash stored in `win_hash.txt` was attacked using:
 ```
 
@@ -91,7 +91,7 @@ john --format=nt --wordlist=/usr/share/wordlists/rockyou.txt win_hash.txt
 ```
 NTLM is the hash format used by Windows to store local account credentials.
 
-### Phase 6 — Rule-Based Attack
+### Phase 6: Rule-Based Attack
 A rule-based attack using John's built-in `ShiftToggle` ruleset was applied
 against `hash.txt` with `wordlist.txt` as the base:
 ```
@@ -100,7 +100,7 @@ john --wordlist=wordlist.txt --rules=ShiftToggle --format=raw-md5 hash.txt
 ShiftToggle generates case-alternated mutations of every wordlist entry,
 targeting passwords where users have manually modified capitalisation.
 
-### Phase 7 — Custom Hash Generation and Cracking
+### Phase 7: Custom Hash Generation and Cracking
 A raw MD5 hash of the word `mypassword` was generated using Python:
 ```bash
 python3 -c "import hashlib; print(hashlib.md5(b'mypassword').hexdigest())" \
@@ -132,7 +132,7 @@ workflow from hash generation to recovery.
 
 ---
 
-### Finding 01 — Common Password Cracked via Wordlist Attack
+### Finding 01: Common Password Cracked via Wordlist Attack
 
 #### Severity
 High
@@ -143,7 +143,7 @@ Raw-MD5 (`hash.txt`)
 #### Description
 A raw MD5 hash was cracked using the rockyou.txt wordlist in under 3 seconds.
 MD5 is an unsalted, fast hashing algorithm not designed for password storage.
-Its speed makes it practical for high-throughput wordlist attacks — the session
+Its speed makes it practical for high-throughput wordlist attacks, the session
 reached a sustained rate of approximately 3,622 kilo-candidates per second. The
 recovered password was a single common dictionary word, which appeared
 directly in rockyou.txt without any mutation needed.
@@ -154,7 +154,7 @@ John the Ripper command and terminal output confirming successful crack:
 
 
 
-![John Wordlist Attack - rockyou.txt Against Raw-MD5 Hash](image.jpg)
+![John Wordlist Attack - rockyou.txt Against Raw-MD5 Hash](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_01%20John%20Wordlist%20Attack%20-%20rockyou.txt%20Against%20Raw-MD5%20Hash.jpg)
 
 
 
@@ -188,7 +188,7 @@ within minutes.
 
 ---
 
-### Finding 02 — Multiple Passwords Cracked via Custom Wordlist
+### Finding 02: Multiple Passwords Cracked via Custom Wordlist
 
 #### Severity
 High
@@ -210,7 +210,7 @@ John the Ripper run with custom wordlist against the same hash file:
 
 
 
-![John Custom Wordlist Attack - 4 of 7 Hashes Cracked](image.jpg)
+![John Custom Wordlist Attack - 4 of 7 Hashes Cracked](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_02%20John%20Custom%20Wordlist%20Attack%20-%204%20of%207%20Hashes%20Cracked.jpg)
 
 
 
@@ -247,7 +247,7 @@ documentation, and previous breach data would achieve far higher coverage.
 
 ---
 
-### Finding 03 — Short Passwords Cracked via Brute Force in 4 Seconds
+### Finding 03: Short Passwords Cracked via Brute Force in 4 Seconds
 
 #### Severity
 High
@@ -270,7 +270,7 @@ John the Ripper incremental mode output:
 
 
 
-![John Incremental Brute Force - 3 Hashes Cracked in 4 Seconds](image.jpg)
+![John Incremental Brute Force - 3 Hashes Cracked in 4 Seconds](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_03%20John%20Incremental%20Brute%20Force%20-%203%20Hashes%20Cracked%20in%204%20Seconds.jpg)
 
 
 
@@ -294,7 +294,7 @@ Session completed.
 Brute force against MD5 is theoretically 100% successful given enough time.
 Against short passwords of 4 characters or fewer, it is practically instantaneous
 on standard hardware. This means any 4-character or shorter password stored
-as MD5 provides no meaningful protection — the hash is effectively equivalent
+as MD5 provides no meaningful protection, the hash is effectively equivalent
 to storing the password in plaintext for an attacker with the hash file.
 
 #### Remediation
@@ -309,7 +309,7 @@ to storing the password in plaintext for an attacker with the hash file.
 
 ---
 
-### Finding 04 — NTLM Hash Cracked via Wordlist (Password123)
+### Finding 04: NTLM Hash Cracked via Wordlist (Password123)
 
 #### Severity
 High
@@ -333,7 +333,7 @@ John the Ripper NTLM crack against win_hash.txt:
 
 
 
-![John NTLM Wordlist Attack - Password123 Recovered](image.jpg)
+![John NTLM Wordlist Attack - Password123 Recovered](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_04%20John%20NTLM%20Wordlist%20Attack%20-%20Password123%20Recovered.jpg)
 
 Command used:
 ```
@@ -368,7 +368,7 @@ provide a false sense of security.
 
 ---
 
-### Finding 05 — Case-Modified Passwords Cracked via Rule-Based Attack
+### Finding 05: Case-Modified Passwords Cracked via Rule-Based Attack
 
 #### Severity
 Medium
@@ -392,7 +392,7 @@ John the Ripper rule-based attack using ShiftToggle:
 
 
 
-![John Rule-Based Attack - ShiftToggle Cracking FaTaI and PassWord](image.jpg)
+![John Rule-Based Attack - ShiftToggle Cracking FaTaI and PassWord](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_05%20John%20Rule-Based%20Attack%20-%20ShiftToggle%20Cracking%20FaTaI%20and%20PassWord.jpg)
 
 
 
@@ -413,7 +413,7 @@ Session completed.
 #### Impact
 Rule-based attacks systematically apply every known human capitalisation
 pattern to a wordlist. Any password that is a transformed version of a dictionary
-word — regardless of how unusual the capitalisation pattern appears — is
+word regardless of how unusual the capitalisation pattern appears is
 vulnerable. Common rules cover `l33t` substitutions, digit appending, reversed
 strings, and mixed-case alternation. A complete ruleset attack recovers the
 majority of passwords that pass standard complexity requirements.
@@ -429,7 +429,7 @@ majority of passwords that pass standard complexity requirements.
 
 ---
 
-### Finding 06 — Custom MD5 Hash of Common Word Cracked in 0 Seconds
+### Finding 06: Custom MD5 Hash of Common Word Cracked in 0 Seconds
 
 #### Severity
 High
@@ -465,7 +465,7 @@ Hash file contents confirmed via `cat`:
 
 
 
-![Python MD5 Hash Generation and cat Output](image.jpg)
+![Python MD5 Hash Generation and cat Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_06%20Python%20MD5%20Hash%20Generation%20and%20cat%20Output.jpg)
 
 
 
@@ -473,7 +473,7 @@ John cracking the custom hash:
 
 
 
-![John Cracking Custom MD5 Hash - mypassword Recovered in Under 1 Second](image.jpg)
+![John Cracking Custom MD5 Hash - mypassword Recovered in Under 1 Second](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/11_07%20John%20Cracking%20Custom%20MD5%20Hash%20-%20mypassword%20Recovered%20in%20Under%201%20Second.jpg)
 
 
 
@@ -557,7 +557,7 @@ hash = bcrypt.hashpw(b'mypassword', bcrypt.gensalt(rounds=12))
 - **Salts defeat precomputed attacks but not targeted cracking:** If the accounts
   table from Finding 05 of the previous SQL injection lab had used salted hashes
   instead of plaintext, rainbow tables would have been useless. However, John
-  would still crack individual hashes given the hash file — salts slow attackers
+  would still crack individual hashes given the hash file, salts slow attackers
   down but do not stop them if the underlying password is weak.
 - **Password length is the most durable defence:** Adding characters to a
   password increases the search space exponentially. A 4-character password
