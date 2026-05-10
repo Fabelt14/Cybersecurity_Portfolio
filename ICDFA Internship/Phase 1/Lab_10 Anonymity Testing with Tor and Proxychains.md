@@ -217,47 +217,47 @@ Logging into personal accounts (Gmail, Facebook, bank) while using Tor creates a
 
 **Successful IP Masking**
 
-Real IP (102.89.68.117) was successfully hidden behind Tor exit nodes (109.70.100.6, 185.220.101.24, 192.42.116.210). External services only saw the exit node's IP, not my actual location or ISP.
+- Real IP (102.89.68.117) was successfully hidden behind Tor exit nodes (109.70.100.6, 185.220.101.24, 192.42.116.210). External services only saw the exit node's IP, not my actual location or ISP.
 
 **Circuit Rotation Behavior**
 
-Tor automatically rotates exit IPs over time to prevent long-term tracking, but maintains circuits for approximately 10 minutes to preserve session stability. Manual circuit renewal (service restart or NEWNYM signal) forces immediate IP change.
+- Tor automatically rotates exit IPs over time to prevent long-term tracking, but maintains circuits for approximately 10 minutes to preserve session stability. Manual circuit renewal (service restart or NEWNYM signal) forces immediate IP change.
 
 **Performance Degradation**
 
-Nmap scans through Tor are 474% slower than direct scans (31.43 seconds vs 6.63 seconds for two ports). This makes Tor impractical for large-scale reconnaissance.
+- Nmap scans through Tor are 474% slower than direct scans (31.43 seconds vs 6.63 seconds for two ports). This makes Tor impractical for large-scale reconnaissance.
 
 **Protocol Limitations**
 
-Tor only supports TCP traffic through SOCKS5. UDP scans, ICMP pings, and raw packet crafting are impossible through Proxychains. Nmap must use TCP Connect scan (`-sT`) instead of stealth SYN scan.
+- Tor only supports TCP traffic through SOCKS5. UDP scans, ICMP pings, and raw packet crafting are impossible through Proxychains. Nmap must use TCP Connect scan (`-sT`) instead of stealth SYN scan.
 
 **Exit Node Visibility**
 
-Exit nodes can see all unencrypted (HTTP) traffic. HTTPS is mandatory to protect data from exit node operators.
+- Exit nodes can see all unencrypted (HTTP) traffic. HTTPS is mandatory to protect data from exit node operators.
 
 **DNS Leak Potential**
 
-Without proper configuration, DNS queries bypass Tor and expose browsing history to ISP. The `proxy_dns` option in Proxychains configuration prevents this leak.
+- Without proper configuration, DNS queries bypass Tor and expose browsing history to ISP. The `proxy_dns` option in Proxychains configuration prevents this leak.
 
 ## Challenges Faced
 
-**Proxychains debug output confusion:** When running Proxychains for the first time, the terminal displayed several lines of debug information (config file path, DLL init messages, proxy chain selection) before showing the actual curl output. I initially thought these were errors, but they are normal status messages. The actual command output appeared after the "127.0.0.1:9050" connection confirmation. Reading the output carefully revealed that `[proxychains]` prefixes indicate debug messages, not errors.
+- **Proxychains debug output confusion:** When running Proxychains for the first time, the terminal displayed several lines of debug information (config file path, DLL init messages, proxy chain selection) before showing the actual curl output. I initially thought these were errors, but they are normal status messages. The actual command output appeared after the "127.0.0.1:9050" connection confirmation. Reading the output carefully revealed that `[proxychains]` prefixes indicate debug messages, not errors.
 
-**Nmap compatibility with Tor:** My first attempt to scan through Tor used `proxychains nmap -sS` (SYN scan), which failed with "socket operation failed" errors. I learned that Tor only supports TCP, not raw sockets required for SYN scans. The solution was switching to `-sT` (TCP Connect scan), but this made the scan slower and easier to detect. This taught me that anonymity tools constrain attack techniques.
+- **Nmap compatibility with Tor:** My first attempt to scan through Tor used `proxychains nmap -sS` (SYN scan), which failed with "socket operation failed" errors. I learned that Tor only supports TCP, not raw sockets required for SYN scans. The solution was switching to `-sT` (TCP Connect scan), but this made the scan slower and easier to detect. This taught me that anonymity tools constrain attack techniques.
 
-**Browser proxy configuration persistence:** After testing with Firefox, I forgot to remove the SOCKS5 proxy settings. When I tried to browse normally later, websites timed out because Tor was no longer running. Firefox gave no clear error about the proxy failure. I had to manually check Network Settings and clear the SOCKS proxy configuration. Lesson: Always document configuration changes and revert them after testing.
+- **Browser proxy configuration persistence:** After testing with Firefox, I forgot to remove the SOCKS5 proxy settings. When I tried to browse normally later, websites timed out because Tor was no longer running. Firefox gave no clear error about the proxy failure. I had to manually check Network Settings and clear the SOCKS proxy configuration. Lesson: Always document configuration changes and revert them after testing.
 
 ## Key Takeaways
 
-**Anonymity requires verification at every layer.** Testing with both curl and Firefox confirmed no leaks occurred. If I had only tested curl, a browser DNS leak would have gone undetected. Always validate anonymity across all applications that will be used during operations.
+- **Anonymity requires verification at every layer.** Testing with both curl and Firefox confirmed no leaks occurred. If I had only tested curl, a browser DNS leak would have gone undetected. Always validate anonymity across all applications that will be used during operations.
 
-**Circuit persistence balances anonymity and functionality.** Tor does not rotate IPs on every request because constant IP changes break authenticated sessions and trigger security alerts. Understanding this trade-off helps set realistic expectations for anonymity tools.
+- **Circuit persistence balances anonymity and functionality.** Tor does not rotate IPs on every request because constant IP changes break authenticated sessions and trigger security alerts. Understanding this trade-off helps set realistic expectations for anonymity tools.
 
-**Exit nodes are trusted third parties.** The Tor network provides excellent anonymity from the target and from my ISP, but the exit node operator is a blind spot. Always use HTTPS to protect data in transit from the exit node to the destination.
+- **Exit nodes are trusted third parties.** The Tor network provides excellent anonymity from the target and from my ISP, but the exit node operator is a blind spot. Always use HTTPS to protect data in transit from the exit node to the destination.
 
-**Anonymity adds significant overhead.** A 474% increase in scan time is acceptable for targeted reconnaissance where stealth matters more than speed, but Tor is unsuitable for large-scale network mapping. Anonymity tools should be used strategically, not universally.
+- **Anonymity adds significant overhead.** A 474% increase in scan time is acceptable for targeted reconnaissance where stealth matters more than speed, but Tor is unsuitable for large-scale network mapping. Anonymity tools should be used strategically, not universally.
 
-**DNS leaks break anonymity silently.** Without `proxy_dns` enabled, my ISP sees every domain I look up even though HTTP traffic is hidden. DNS logging creates timing correlation opportunities that can de-anonymize Tor users.
+- **DNS leaks break anonymity silently.** Without `proxy_dns` enabled, my ISP sees every domain I look up even though HTTP traffic is hidden. DNS logging creates timing correlation opportunities that can de-anonymize Tor users.
 
 ## Disclaimer
 
