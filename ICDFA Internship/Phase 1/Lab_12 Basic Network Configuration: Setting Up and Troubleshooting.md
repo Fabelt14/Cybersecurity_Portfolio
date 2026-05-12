@@ -73,7 +73,7 @@ ping -c 5 192.168.92.3
 
 
 
-![Ping results showing 5 successful replies from OWASP VM](screenshots/ping_owasp_vm.png)
+![Ping results showing 5 successful replies from OWASP VM](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_01%20Ping%20results%20showing%205%20successful%20replies%20from%20OWASP%20VM.jpg)
 
 **Result:** All 5 packets transmitted, all 5 received, 0% packet loss. Round-trip times ranged from 0.409ms to 0.677ms with an average of 0.478ms.
 
@@ -95,7 +95,7 @@ traceroute 192.168.92.3
 
 
 
-![Traceroute showing single hop to OWASP VM](screenshots/traceroute_single_hop.png)
+![Traceroute showing single hop to OWASP VM](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_02%20Traceroute%20showing%20single%20hop%20to%20OWASP%20VM.jpg)
 
 
 
@@ -107,9 +107,9 @@ traceroute 192.168.92.3
 
 Traceroute pinpoints exactly where connectivity breaks. If you can reach hop 5 but hop 6 shows asterisks (* * *), hop 6 is either down or blocking ICMP. This tells you the failure point is at that specific router, not your machine or the destination.
 
-**Routing loops:** If traceroute shows the same two IP addresses repeating indefinitely (hop 8: 10.0.1.1, hop 9: 10.0.2.1, hop 10: 10.0.1.1, hop 11: 10.0.2.1), packets are bouncing between two routers that have incorrect routing tables. This is called a routing loop and causes packets to circulate until TTL expires.
+- **Routing loops:** If traceroute shows the same two IP addresses repeating indefinitely (hop 8: 10.0.1.1, hop 9: 10.0.2.1, hop 10: 10.0.1.1, hop 11: 10.0.2.1), packets are bouncing between two routers that have incorrect routing tables. This is called a routing loop and causes packets to circulate until TTL expires.
 
-**Asymmetric routing:** Sometimes the path to a destination is different from the return path. Traceroute only shows the forward path. If responses come back through different routers, troubleshooting becomes more complex.
+- **Asymmetric routing:** Sometimes the path to a destination is different from the return path. Traceroute only shows the forward path. If responses come back through different routers, troubleshooting becomes more complex.
 
 ### Step 4: Active Connection Analysis with Netstat
 
@@ -121,7 +121,7 @@ netstat -an | grep 192.168.92.3
 
 
 
-![Netstat showing TCP connections in ESTABLISHED and TIME_WAIT states](screenshots/netstat_connections.png)
+![Netstat showing TCP connections in ESTABLISHED and TIME_WAIT states](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_03%20Netstat%20showing%20TCP%20connections%20in%20ESTABLISHED%20and%20TIME_WAIT%20states.jpg)
 
 
 
@@ -138,11 +138,11 @@ netstat -an | grep 192.168.92.3
 
 **Connection states explained:**
 
-**ESTABLISHED:** The connection is active and transferring data. Both machines have completed the three-way handshake and are exchanging HTTP traffic. These are my active browser tabs communicating with the web server.
+- **ESTABLISHED:** The connection is active and transferring data. Both machines have completed the three-way handshake and are exchanging HTTP traffic. These are my active browser tabs communicating with the web server.
 
-**TIME_WAIT:** The connection recently closed but is being kept in a temporary state for 30-120 seconds. This prevents old packets from interfering with new connections using the same port numbers. After the timeout expires, the connection disappears from netstat output.
+- **TIME_WAIT:** The connection recently closed but is being kept in a temporary state for 30-120 seconds. This prevents old packets from interfering with new connections using the same port numbers. After the timeout expires, the connection disappears from netstat output.
 
-**How the Transport Layer manages this communication:**
+- **How the Transport Layer manages this communication:**
 
 The Network Layer (Layer 3) finds the IP address (192.168.92.3), but the Transport Layer (Layer 4) determines which specific application receives the data. Port 80 ensures packets go to the web server software, not SSH (port 22) or another service.
 
@@ -165,7 +165,7 @@ nmap -sT 192.168.92.3
 
 
 
-![Nmap TCP scan completing in 7.99 seconds](screenshots/nmap_tcp_scan.png)
+![Nmap TCP scan completing in 7.99 seconds](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_04%20Nmap%20TCP%20scan%20completing%20in%207.99%20seconds.jpg)
 
 
 
@@ -178,7 +178,7 @@ sudo nmap -sU 192.168.92.3
 
 
 
-![Nmap UDP scan taking 17 minutes 52 seconds](screenshots/nmap_udp_scan.png)
+![Nmap UDP scan taking 17 minutes 52 seconds](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_05%20Nmap%20UDP%20scan%20taking%2017%20minutes%2052%20seconds.jpg)
 
 
 
@@ -186,8 +186,8 @@ sudo nmap -sU 192.168.92.3
 
 **TCP vs UDP speed comparison:**
 
-TCP scan: 7.99 seconds  
-UDP scan: 1024.46 seconds  
+- TCP scan: 7.99 seconds  
+- UDP scan: 1024.46 seconds  
 **UDP is 128x slower than TCP**
 
 **Why UDP scans are so slow:**
@@ -204,15 +204,15 @@ Most UDP ports are filtered by firewalls and never respond. Nmap must wait sever
 
 **Reliability comparison:**
 
-**TCP is reliable:** Three-way handshake confirms both sides are ready. Every packet is numbered and acknowledged. Lost packets are automatically retransmitted. Data arrives in order.
+- **TCP is reliable:** Three-way handshake confirms both sides are ready. Every packet is numbered and acknowledged. Lost packets are automatically retransmitted. Data arrives in order.
 
-**UDP is unreliable:** No handshake, no acknowledgments, no retransmission. Packets can be lost, duplicated, or arrive out of order. The application must handle all error correction.
+- **UDP is unreliable:** No handshake, no acknowledgments, no retransmission. Packets can be lost, duplicated, or arrive out of order. The application must handle all error correction.
 
 **When to use each protocol:**
 
-**TCP use cases:** Web browsing (HTTP/HTTPS), email (SMTP/IMAP), file transfer (FTP/SSH), anything requiring guaranteed delivery.
+- **TCP use cases:** Web browsing (HTTP/HTTPS), email (SMTP/IMAP), file transfer (FTP/SSH), anything requiring guaranteed delivery.
 
-**UDP use cases:** DNS queries (speed over reliability), video streaming (late packets are useless), online gaming (current state matters more than old positions), VoIP calls (real-time audio cannot wait for retransmission).
+- **UDP use cases:** DNS queries (speed over reliability), video streaming (late packets are useless), online gaming (current state matters more than old positions), VoIP calls (real-time audio cannot wait for retransmission).
 
 **Services discovered per protocol:**
 
@@ -238,7 +238,7 @@ arp -a | grep 192.168.92.3
 
 
 
-![ARP showing MAC address C8:f7:33:67:d6:17 for OWASP VM](screenshots/arp_mac_address.png)
+![ARP showing MAC address C8:f7:33:67:d6:17 for OWASP VM](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_06%20ARP%20showing%20MAC%20address%20for%20OWASP%20VM.jpg)
 
 
 
@@ -270,7 +270,7 @@ I started Wireshark, selected the eth1 interface, and began capturing. Then I na
 
 
 
-![Wireshark protocol hierarchy showing captured protocols](screenshots/wireshark_protocol_hierarchy.png)
+![Wireshark protocol hierarchy showing captured protocols](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_07%20Wireshark%20protocol%20hierarchy%20showing%20captured%20protocols.jpg)
 
 **Protocols observed in capture:**
 
@@ -290,7 +290,7 @@ I started Wireshark, selected the eth1 interface, and began capturing. Then I na
 
 I filtered the capture for TCP traffic to/from port 80 and found the handshake sequence:
 
-![Wireshark showing TCP three-way handshake and HTTP transaction](screenshots/wireshark_tcp_handshake.png)
+![Wireshark showing TCP three-way handshake and HTTP transaction](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/12_08%20Wireshark%20showing%20TCP%20three-way%20handshake%20and%20HTTP%20transaction.jpg)
 
 
 
@@ -301,15 +301,15 @@ I filtered the capture for TCP traffic to/from port 80 and found the handshake s
 
 **Handshake breakdown:**
 
-**SYN packet:** My machine initiates connection with Seq=0 (starting sequence number) and Win=64240 (receive window size in bytes). This tells the server "I want to connect and I can receive up to 64KB of data at once."
+- **SYN packet:** My machine initiates connection with Seq=0 (starting sequence number) and Win=64240 (receive window size in bytes). This tells the server "I want to connect and I can receive up to 64KB of data at once."
 
-**SYN-ACK packet:** Server accepts with its own Seq=0 and Ack=1 (acknowledging my SYN). Win=5792 means the server can receive 5.7KB at once. The server is ready to communicate.
+- **SYN-ACK packet:** Server accepts with its own Seq=0 and Ack=1 (acknowledging my SYN). Win=5792 means the server can receive 5.7KB at once. The server is ready to communicate.
 
-**ACK packet:** My machine acknowledges the server's SYN with Ack=1. Connection is now fully established (ESTABLISHED state in netstat).
+- **ACK packet:** My machine acknowledges the server's SYN with Ack=1. Connection is now fully established (ESTABLISHED state in netstat).
 
-**HTTP GET packet:** Now that the TCP connection is open, the actual HTTP request flows. This requests the root page (/) from the web server.
+- **HTTP GET packet:** Now that the TCP connection is open, the actual HTTP request flows. This requests the root page (/) from the web server.
 
-**Subsequent packets:** The server responds with HTTP 200 OK and sends the HTML page. Wireshark shows the page content, images, CSS, and JavaScript files transferred over the established TCP connection.
+- **Subsequent packets:** The server responds with HTTP 200 OK and sends the HTML page. Wireshark shows the page content, images, CSS, and JavaScript files transferred over the established TCP connection.
 
 **What Wireshark reveals that other tools miss:**
 
@@ -325,51 +325,51 @@ Ping only tells you if a host responds. Traceroute only shows routing paths. Net
 
 **OSI to TCP/IP Mapping**
 
-The OSI model provides a detailed theoretical framework, but TCP/IP is the practical implementation. TCP/IP combines OSI's top three layers (Application, Presentation, Session) into a single Application layer because most protocols handle their own presentation and session management. The bottom two layers (Data Link, Physical) are combined into Network Access because the interface driver handles both.
+- The OSI model provides a detailed theoretical framework, but TCP/IP is the practical implementation. TCP/IP combines OSI's top three layers (Application, Presentation, Session) into a single Application layer because most protocols handle their own presentation and session management. The bottom two layers (Data Link, Physical) are combined into Network Access because the interface driver handles both.
 
 **ICMP Operates at Layer 3**
 
-Ping uses ICMP, which has no concept of ports (Layer 4 feature). This makes ping useful for testing basic IP connectivity independent of higher-layer services. A host can respond to ping even if all TCP/UDP services are blocked.
+- Ping uses ICMP, which has no concept of ports (Layer 4 feature). This makes ping useful for testing basic IP connectivity independent of higher-layer services. A host can respond to ping even if all TCP/UDP services are blocked.
 
 **Traceroute Identifies Routing Failures**
 
-Single-hop result (directly connected network) versus multi-hop internet paths. Asterisks in traceroute output indicate routers dropping ICMP or timing out. This pinpoints network failures to specific router hops.
+- Single-hop result (directly connected network) versus multi-hop internet paths. Asterisks in traceroute output indicate routers dropping ICMP or timing out. This pinpoints network failures to specific router hops.
 
 **TCP Connection States Reflect Communication Lifecycle**
 
-ESTABLISHED = active data transfer, TIME_WAIT = recently closed connection held in temporary state. The Transport Layer manages this state machine automatically. Applications do not need to manually track connection status.
+- ESTABLISHED = active data transfer, TIME_WAIT = recently closed connection held in temporary state. The Transport Layer manages this state machine automatically. Applications do not need to manually track connection status.
 
 **TCP Provides Reliability at the Cost of Speed**
 
-TCP scan completed in 7.99 seconds with guaranteed accurate results. UDP scan took 1024.46 seconds (128x slower) because lack of acknowledgments forces timeout-based detection. For security scanning, TCP is practical while UDP is prohibitively slow for large networks.
+- TCP scan completed in 7.99 seconds with guaranteed accurate results. UDP scan took 1024.46 seconds (128x slower) because lack of acknowledgments forces timeout-based detection. For security scanning, TCP is practical while UDP is prohibitively slow for large networks.
 
 **ARP Bridges IP and MAC Addressing**
 
-Network Layer routing uses IP addresses, but local delivery requires MAC addresses. ARP resolves this translation automatically. Without ARP, packets would reach the correct network but never find the destination host.
+- Network Layer routing uses IP addresses, but local delivery requires MAC addresses. ARP resolves this translation automatically. Without ARP, packets would reach the correct network but never find the destination host.
 
 **Wireshark Captures Protocol Details Invisible to Other Tools**
 
-Observed TCP three-way handshake (SYN, SYN-ACK, ACK) before HTTP GET request. Saw HTTP 200 OK response with full page content. Protocol hierarchy showed 99.2% TCP traffic, 26.1% HTTP application data, and 0.8% DHCP for network configuration. This level of detail is impossible with ping, traceroute, or netstat alone.
+- Observed TCP three-way handshake (SYN, SYN-ACK, ACK) before HTTP GET request. Saw HTTP 200 OK response with full page content. Protocol hierarchy showed 99.2% TCP traffic, 26.1% HTTP application data, and 0.8% DHCP for network configuration. This level of detail is impossible with ping, traceroute, or netstat alone.
 
 ## Challenges Faced
 
-**TCP vs UDP timing confusion:** I initially thought UDP was faster than TCP because UDP does not have handshake overhead. The scan results showed the opposite. UDP scans are massively slower because filtered ports (most UDP ports) never respond, forcing Nmap to wait for timeouts. TCP immediately receives RST (reset) packets from closed ports, so detection is instant. This taught me that protocol simplicity does not equal practical speed.
+- **TCP vs UDP timing confusion:** I initially thought UDP was faster than TCP because UDP does not have handshake overhead. The scan results showed the opposite. UDP scans are massively slower because filtered ports (most UDP ports) never respond, forcing Nmap to wait for timeouts. TCP immediately receives RST (reset) packets from closed ports, so detection is instant. This taught me that protocol simplicity does not equal practical speed.
 
-**Netstat connection state interpretation:** When I first saw TIME_WAIT in the output, I thought it meant the connection was stuck or broken. After researching, I learned TIME_WAIT is normal and prevents port number collisions. TCP keeps the connection in this state for 30-120 seconds after closing to ensure no delayed packets from the old connection interfere with new connections using the same port numbers. This is a safeguard, not an error.
+- **Netstat connection state interpretation:** When I first saw TIME_WAIT in the output, I thought it meant the connection was stuck or broken. After researching, I learned TIME_WAIT is normal and prevents port number collisions. TCP keeps the connection in this state for 30-120 seconds after closing to ensure no delayed packets from the old connection interfere with new connections using the same port numbers. This is a safeguard, not an error.
 
-**Wireshark filter syntax for TCP handshake:** Finding the three-way handshake in thousands of captured packets was difficult initially. I tried filtering by "tcp" which showed too many results. The correct approach was using "tcp.flags.syn==1 and tcp.flags.ack==0" to isolate SYN packets, then following the TCP stream for that specific connection. This showed me the importance of learning proper Wireshark display filters.
+- **Wireshark filter syntax for TCP handshake:** Finding the three-way handshake in thousands of captured packets was difficult initially. I tried filtering by "tcp" which showed too many results. The correct approach was using "tcp.flags.syn==1 and tcp.flags.ack==0" to isolate SYN packets, then following the TCP stream for that specific connection. This showed me the importance of learning proper Wireshark display filters.
 
 ## Key Takeaways
 
-**Layer isolation helps troubleshooting.** If ping works (Layer 3) but web browsing fails (Layer 7), the problem is not network connectivity. The issue is with the web server application or HTTP protocol. Knowing which layer is failing saves hours of debugging.
+- **Layer isolation helps troubleshooting.** If ping works (Layer 3) but web browsing fails (Layer 7), the problem is not network connectivity. The issue is with the web server application or HTTP protocol. Knowing which layer is failing saves hours of debugging.
 
-**Traceroute maps the path, not just the destination.** A single asterisk in a 15-hop trace tells you exactly where packets are being dropped. This is far more useful than "connection failed" errors that do not indicate location.
+- **Traceroute maps the path, not just the destination.** A single asterisk in a 15-hop trace tells you exactly where packets are being dropped. This is far more useful than "connection failed" errors that do not indicate location.
 
-**TCP reliability is not free.** The three-way handshake, acknowledgments, and retransmissions add overhead. For applications where speed matters more than perfect delivery (video streaming, online gaming), UDP's unreliable nature is actually an advantage.
+- **TCP reliability is not free.** The three-way handshake, acknowledgments, and retransmissions add overhead. For applications where speed matters more than perfect delivery (video streaming, online gaming), UDP's unreliable nature is actually an advantage.
 
-**ARP has no authentication and is trivially spoofed.** Any device on the local network can claim to be any IP address by sending fake ARP replies. This enables man-in-the-middle attacks on LANs. Switched networks do not prevent ARP spoofing.
+- **ARP has no authentication and is trivially spoofed.** Any device on the local network can claim to be any IP address by sending fake ARP replies. This enables man-in-the-middle attacks on LANs. Switched networks do not prevent ARP spoofing.
 
-**Wireshark is the ground truth for network behavior.** Tools like ping and netstat show summaries, but Wireshark shows exactly what is on the wire. When documentation conflicts with packet captures, trust the packets.
+- **Wireshark is the ground truth for network behavior.** Tools like ping and netstat show summaries, but Wireshark shows exactly what is on the wire. When documentation conflicts with packet captures, trust the packets.
 
 ## Disclaimer
 
