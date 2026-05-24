@@ -1,4 +1,4 @@
 title: Cybersecurity Portfolio
 description: This repository is a dedicated space where I document my hands-on experience, technical labs, and the continuous growth of my skills in the field of information security.
-remote_theme: pages-themes/architect@v0.2.0
+theme: jekyll-theme-minimal
 show_downloads: true
