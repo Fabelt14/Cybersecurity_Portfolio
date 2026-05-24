@@ -1,4 +1,4 @@
-<div align="center">
+
 
 # 🛡️ Fatai Asekun Cybersecurity Portfolio
 
@@ -11,7 +11,6 @@
 [![X](https://img.shields.io/badge/X-000000?style=flat&logo=x&logoColor=white)](https://x.com/Prime_shell)
 [![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white)](asekunfatai14@gmail.com)
 
-</div>
 
 ---
 
@@ -35,11 +34,9 @@ My drive is the intersection of curiosity and execution. I'm hungry to break sys
 
 If you're building offensive security skills or hiring pentesters, I'm interested in learning from experienced professionals. Open to mentorship, collaboration, and opportunities where I can contribute real security value.
 
-<div align="center">
 
 **Career Target:** Junior Penetration Tester / SOC Analyst / Security Researcher
 
-</div>
 
 ---
 
