@@ -1,228 +1,157 @@
-Lab 01: Navigate Cisco IOS Using Console Connectivity
+# Navigate the IOS Using a Terminal Client for Console Connectivity - Physical Mode
 
-Overview
+## Objective
 
-This lab focused on accessing Cisco networking devices through console connections and navigating the Cisco IOS Command-Line Interface (CLI). The objective was to establish out-of-band management access to both a Cisco 2960 switch and a Cisco 4321 router using console cables and a terminal client.
-
-Learning Objectives
-
-- Access a Cisco switch through a serial console connection
-- Access a Cisco router through a Mini-USB console connection
-- Navigate Cisco IOS command modes
-- Display device information using IOS commands
-- Configure basic device settings
-- Understand out-of-band management concepts
+The goal of this lab was to establish console connectivity between end devices and Cisco network equipment using physical cable connections. This covered two connection types: a rollover console cable between a PC and a Cisco 2960 switch, and a mini-USB cable between a laptop and a Cisco 4321 router. Once connected, basic IOS navigation and device configuration were performed through the CLI.
 
 ---
 
-Lab Topology
+## Topology
 
-Switch Console Connection
+**Part 1 — PC to Cisco 2960 Switch (Rollover Console Cable)**
 
-+-----------+       Console Cable       +-------------+
-|    PC     | ------------------------> | Cisco 2960  |
-| (RS-232)  |                           |   Switch    |
-+-----------+                           +-------------+
+![PC connected to 2960 Switch via RS-232 rollover console cable](images/topology-pc-switch-rollover.png)
 
-Router Console Connection
+*Source Device: PC | Source Port: RS 232 | Dest. Device: 2960 | Dest. Port: Console | Cable Type: Copper Roll-Over*
 
-+-----------+       Mini USB Cable      +-------------+
-|  Laptop   | ------------------------> | Cisco 4321  |
-|           |                           |   Router    |
-+-----------+                           +-------------+
+**Part 3 — Laptop to Cisco 4321 Router (Mini-USB Cable)**
+
+![Laptop connected to 4321 Router via USB Console cable](images/topology-laptop-router-usb.png)
+
+*Source Device: Laptop | Source Port: USB0 | Dest. Device: 4321 | Dest. Port: USB Console | Cable Type: USB*
 
 ---
 
-Devices Used
+## Devices Used
 
-Cisco Devices
-
-- Cisco Catalyst 2960 Switch
-- Cisco ISR 4321 Router
-
-End Devices
-
-- PC
-- Laptop
-
-Cables
-
-- Rollover Console Cable
+- Cisco Catalyst 2960-24TT Switch
+- Cisco 4321 Router
+- PC (with RS-232 and USB ports)
+- Laptop (with RS-232 and USB ports)
+- Rollover Console Cable (Copper Roll-Over)
 - Mini-USB Console Cable
 
 ---
 
-Part 1: Accessing a Cisco Switch Through the Console Port
+## Configuration
 
-Device Inspection
+### Part 1: Cisco 2960 Switch — Physical Inspection
 
-After installing the Cisco 2960 switch, the following interfaces were identified:
+**Front view of the 2960 Switch:**
 
-Front Panel
+![Front view of Cisco 2960 Switch showing FastEthernet and GigabitEthernet ports](images/switch-2960-front.png)
 
-- FastEthernet 0/1 - 0/24
-- GigabitEthernet 0/1 - 0/2
+Ports identified: FastEthernet 0/1 – 0/24 and GigabitEthernet 0/1 – 0/2.
 
-Rear Panel
+**Rear view of the 2960 Switch:**
 
-- Console Port
+![Rear view of Cisco 2960 Switch showing the Console Port](images/switch-2960-rear.png)
 
-PC Inspection
-
-The following interfaces were identified on the PC:
-
-- FastEthernet Port
-- RS-232 Serial Port
-- USB Ports
-
-Console Connection
-
-A rollover console cable was used to connect:
-
-PC RS-232 Port --> Cisco 2960 Console Port
-
-Outcome
-
-Successfully established console access to the switch.
+The console port used for out-of-band management access was identified on the rear panel.
 
 ---
 
-Part 2: Displaying and Configuring Basic Device Settings
+### Part 1: PC — Physical Inspection
 
-Display IOS Version
+**Front view of the PC:**
 
-Command used:
+![Front view of PC showing RS-232 port, FastEthernet port, and 2 USB Console ports](images/pc-front.png)
 
-show version
-
-Observation
-
-The switch was running Cisco IOS Version 12.2.
-
-Configure Device Clock
-
-The system clock was found to be incorrect.
-
-Steps performed:
-
-1. Entered Privileged EXEC mode
-2. Configured the correct date and time
-
-Outcome
-
-Successfully updated the switch clock settings.
+Ports identified: FastEthernet port, RS-232 port, and 2 USB ports for console access.
 
 ---
 
-Part 3: Accessing a Router Through a Mini-USB Console Connection
+### Part 2: IOS Version — show version Output
 
-Router Inspection
+After establishing the console session, the `show version` command was run to confirm the IOS version running on the switch.
 
-The following interfaces and components were identified:
+![show version output confirming Cisco IOS Version 12.2 on the 2960 switch](images/show-version-output.png)
 
-- Power Button
-- USB Console Port
-- Auxiliary Port
-- Console Port
-- GigabitEthernet Interfaces
-
-Laptop Inspection
-
-The following interfaces were identified:
-
-- RS-232 Port
-- FastEthernet Port
-- USB Ports
-
-Console Connection
-
-A Mini-USB cable was used to connect:
-
-Laptop USB Port --> Cisco 4321 USB Console Port
-
-Establish Terminal Session
-
-After connecting the cable, a terminal session was launched.
-
-Successful access was confirmed by the router prompt:
-
-Router>
-
-Outcome
-
-Successfully established console access to the router.
+IOS version confirmed: **12.2** (C2960-LANBASE-M image, WS-C2960-24TT model).
 
 ---
 
-Verification
+### Part 2: Clock Configuration
 
-Switch Verification
+The switch clock was set to the correct date and time after observing that the default clock was incorrect (showing March 1, 1993).
 
-show version
+```
+Switch> show clock
+*0:15:20.898 UTC Mon Mar 1 1993
 
-Verified:
+Switch> enable
+Switch# clock set 01:10:55 19 May 2026
+Switch# show clock
+1:11:0.731 UTC Tue May 19 2026
+```
 
-- IOS Version
-- Device Information
-
-Router Verification
-
-Router>
-
-Verified:
-
-- Successful console connectivity
-- Access to IOS CLI
+![Clock configuration output on the 2960 switch showing corrected date and time](images/clock-config-output.png)
 
 ---
 
-Key Concepts Learned
+### Part 3: Cisco 4321 Router — Physical Inspection
 
-Out-of-Band Management
+**Front view of the 4321 Router:**
 
-Out-of-band management allows administrators to access network devices through a dedicated management connection instead of relying on network connectivity.
+![Front view of Cisco 4321 Router showing power button, USB console port, AUX port, Console port, and 3 GigabitEthernet ports](images/router-4321-front.png)
 
-Cisco IOS Modes
-
-- User EXEC Mode (">")
-- Privileged EXEC Mode ("#")
-- Configuration Modes
-
-Console Access
-
-Console connections provide direct access to networking devices for initial configuration, troubleshooting, and recovery.
+Components identified: power button, USB console port, auxiliary port, console port, and 3 GigabitEthernet ports (GE0/0/0, GE0/0/1, GE0/0/2).
 
 ---
 
-Challenges Encountered
+### Part 3: Laptop — Physical Inspection
 
-- Identifying the correct console ports on each device
-- Understanding the difference between console access and normal network access
-- Navigating between IOS command modes
+**Rear view of the Laptop:**
 
----
+![Rear view of Laptop showing RS-232 port, FastEthernet port, and 2 USB ports](images/laptop-rear.png)
 
-Lessons Learned
-
-1. Cisco devices can be managed without an active network connection using console access.
-2. The "show version" command provides valuable information about a device's software and hardware.
-3. Understanding IOS command modes is essential for network administration.
-4. Console connectivity is often the first step when configuring a new Cisco device.
+Ports identified: RS-232 port, FastEthernet port, and 2 USB ports.
 
 ---
 
-Skills Practiced
+### Part 3: Router Console Session
 
-- Cisco IOS Navigation
-- Console Connectivity
-- Device Inspection
-- Basic Switch Management
-- Basic Router Management
-- Network Device Administration
-- Out-of-Band Access
+After connecting the laptop to the 4321 router via mini-USB, the terminal was opened. The `Router>` prompt confirmed a successful console session.
+
+![Terminal output showing Router> prompt after successful console connection via mini-USB](images/router-console-session.png)
 
 ---
 
-Lab Status
+## Verification
 
-✅ Successfully Completed
+**Lab Score: 10/10**
+
+![Packet Tracer Activity Results showing 10/10 score with all assessment items marked Correct](images/activity-results-score.png)
+
+All assessment items passed under the Physical component category, covering correct cable connections, physical locations, and power states for the 2960 switch, 4321 router, laptop, and PC.
+
+---
+
+## Key Concepts Learned
+
+- A rollover console cable connects a PC's RS-232 port to a switch's console port for out-of-band management
+- A mini-USB cable connects a laptop's USB port to a router's USB console port for the same purpose
+- Out-of-band access through the console port does not depend on the network being operational — this matters during initial device setup or recovery
+- The `show version` command returns IOS version, model number, memory, and uptime — all relevant for assessing the device's current state
+- The `show clock` command exposes incorrect time settings; accurate timestamps matter for log correlation during incident response
+- Privilege EXEC mode (`enable`) is required before making any configuration changes
+
+---
+
+## Challenges Faced
+
+No major blockers were encountered during this lab. The default clock on the switch showed an incorrect date (March 1, 1993), which was corrected by switching to Privilege EXEC mode and using the `clock set` command with the accurate date and time.
+
+---
+
+## Lessons Learned
+
+Console access is the foundation of device management. Before any network configuration happens, an administrator must be able to reach the device directly — and that happens through the console port. Understanding which cable type matches which port (rollover vs. mini-USB) prevents wasted time during real deployments or emergency recovery.
+
+Seeing an incorrect system clock on a live switch would be a problem. Logs use timestamps. If the clock is wrong, log entries during an incident become unreliable, and correlating events across devices becomes harder. Correcting the clock is not a minor housekeeping task — it has a direct impact on forensic accuracy.
+
+---
+
+## Disclaimer
+
+This lab was performed in a controlled Cisco Packet Tracer environment for educational purposes only. No unauthorized systems were accessed or tested.
