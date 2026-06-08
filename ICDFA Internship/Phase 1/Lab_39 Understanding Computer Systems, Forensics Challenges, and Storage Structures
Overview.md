@@ -1,9 +1,3 @@
-Looking at the lab content, this is a conceptual/theory-based lab rather than a hands-on technical lab. It covers computer architecture, forensics challenges, HDD components, disk partitions, boot process, and file systems. No tools were used, no commands were run. This needs a slightly different structure from the usual labs.
-
-Let me read the GitHub template to confirm the right approach.
-
----
-
 # Understanding Computer Systems, Forensics Challenges, and Storage Structures
 
 ## Overview
