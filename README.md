@@ -1,4 +1,4 @@
-
+<div align="center">
 
 # 🛡️ Fatai Asekun Cybersecurity Portfolio
 
@@ -11,6 +11,7 @@
 [![X](https://img.shields.io/badge/X-000000?style=flat&logo=x&logoColor=white)](https://x.com/Prime_shell)
 [![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white)](asekunfatai14@gmail.com)
 
+</div>
 
 ---
 
