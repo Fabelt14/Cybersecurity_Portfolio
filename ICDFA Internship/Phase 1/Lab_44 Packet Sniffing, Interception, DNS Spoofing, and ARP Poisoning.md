@@ -161,25 +161,25 @@ Having executed the full attack chain, the next step was reflecting on what make
 
 **Breaking down the three components:**
 
-Man-in-the-Middle is the overarching concept, not a specific technique. It just means an attacker has positioned themselves between two parties who believe they are talking directly to each other. ARP poisoning and DNS spoofing are two specific techniques that achieve this goal, but they operate at completely different layers.
+- Man-in-the-Middle is the overarching concept, not a specific technique. It just means an attacker has positioned themselves between two parties who believe they are talking directly to each other. ARP poisoning and DNS spoofing are two specific techniques that achieve this goal, but they operate at completely different layers.
 
-ARP poisoning works at Layer 2 (Data Link). Its only job is to corrupt the victim's understanding of which MAC address belongs to the gateway, forcing traffic to physically route through the attacker's network card.
+- ARP poisoning works at Layer 2 (Data Link). Its only job is to corrupt the victim's understanding of which MAC address belongs to the gateway, forcing traffic to physically route through the attacker's network card.
 
-DNS spoofing works at Layer 7 (Application). Its job is to corrupt which IP address a domain name resolves to, redirecting the victim's browser to a server the attacker controls.
+- DNS spoofing works at Layer 7 (Application). Its job is to corrupt which IP address a domain name resolves to, redirecting the victim's browser to a server the attacker controls.
 
 **Why the chain only works in this order:** ARP poisoning has to happen first because DNS spoofing depends on the attacker being able to see the victim's DNS query before the real DNS server responds. Without the physical interception ARP poisoning provides, the attacker has no visibility into the query at all and cannot win the race to respond first. This is why the lab structured the attacks sequentially rather than treating them as independent.
 
 **Technical prevention measures:**
 
-For ARP poisoning, the strongest network-level defense is Dynamic ARP Inspection (DAI) on managed switches. DAI cross-references every ARP packet against a trusted DHCP snooping binding table and drops anything that does not match a known, legitimate IP-to-MAC pairing. For smaller or more static environments, administrators can hardcode static ARP entries for critical infrastructure like the default gateway, which prevents that specific mapping from ever being dynamically overwritten regardless of how many forged replies an attacker sends.
+- For ARP poisoning, the strongest network-level defense is Dynamic ARP Inspection (DAI) on managed switches. DAI cross-references every ARP packet against a trusted DHCP snooping binding table and drops anything that does not match a known, legitimate IP-to-MAC pairing. For smaller or more static environments, administrators can hardcode static ARP entries for critical infrastructure like the default gateway, which prevents that specific mapping from ever being dynamically overwritten regardless of how many forged replies an attacker sends.
 
-For DNS spoofing, the equivalent defense is DNSSEC. It adds cryptographic signatures to DNS records so the resolver can verify a response actually came from the authoritative server rather than being forged in transit. DNS over HTTPS and DNS over TLS add a different layer of protection by encrypting the query itself, which prevents an on-path attacker from even reading the query well enough to respond to it, regardless of whether they can intercept the packets.
+- For DNS spoofing, the equivalent defense is DNSSEC. It adds cryptographic signatures to DNS records so the resolver can verify a response actually came from the authoritative server rather than being forged in transit. DNS over HTTPS and DNS over TLS add a different layer of protection by encrypting the query itself, which prevents an on-path attacker from even reading the query well enough to respond to it, regardless of whether they can intercept the packets.
 
 **User-level and application precautions:**
 
-Even if ARP poisoning and DNS spoofing both succeed, SSL/TLS certificates provide a last line of defense. The attacker can redirect the victim to their own server, but they cannot present a valid certificate for a domain they do not own. A browser enforcing strict certificate validation will throw a warning the moment the victim lands on the fake page, assuming the user does not click through it.
+- Even if ARP poisoning and DNS spoofing both succeed, SSL/TLS certificates provide a last line of defense. The attacker can redirect the victim to their own server, but they cannot present a valid certificate for a domain they do not own. A browser enforcing strict certificate validation will throw a warning the moment the victim lands on the fake page, assuming the user does not click through it.
 
-HSTS closes a related gap. Without it, an attacker performing the MITM can strip the connection down to plain HTTP before the victim ever gets the chance to see a certificate warning at all. HSTS forces the browser to refuse anything except HTTPS for that domain, removing the attacker's ability to downgrade the connection in the first place.
+- HSTS closes a related gap. Without it, an attacker performing the MITM can strip the connection down to plain HTTP before the victim ever gets the chance to see a certificate warning at all. HSTS forces the browser to refuse anything except HTTPS for that domain, removing the attacker's ability to downgrade the connection in the first place.
 
 ### Part 6: Forensic Verification and Real-World Risk Assessment
 
@@ -192,23 +192,25 @@ Before drawing conclusions from the traffic, I documented the exact addresses in
 - Attacker IP: 192.168.42.135
 - Attacker MAC: 08:00:27:c5:94:f1
 
+![Attacker MAC address](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/44_13%20Attacker%20MAC%20address.jpg)
+
 **Three ways to tell a spoofed DNS response from a legitimate one:**
 
-The first and most reliable method is checking for a Layer 2/Layer 3 mismatch. A legitimate DNS response from the gateway will have the Ethernet frame's source MAC address match the gateway's actual hardware address. In the spoofed packet, the source IP claimed to be the gateway (192.168.42.129) but the source MAC address belonged to the Kali machine. This mismatch cannot occur naturally and is the strongest single indicator of a forged packet.
+- The first and most reliable method is checking for a Layer 2/Layer 3 mismatch. A legitimate DNS response from the gateway will have the Ethernet frame's source MAC address match the gateway's actual hardware address. In the spoofed packet, the source IP claimed to be the gateway (192.168.42.129) but the source MAC address belonged to the Kali machine. This mismatch cannot occur naturally and is the strongest single indicator of a forged packet.
 
-![Ethernet frame showing claimed gateway IP paired with attacker MAC address](screenshots/layer2_layer3_mismatch.png)
+![Ethernet frame showing claimed gateway IP paired with attacker MAC address](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/44_14%20Ethernet%20frame%20showing%20claimed%20gateway%20IP%20paired%20with%20attacker%20MAC%20address.jpg)
 
-The second method is payload analysis. A spoofed response resolved vulnbank.org to an internal, local network address (192.168.42.135), while a real public domain should resolve to a publicly routable internet address. Seeing a private RFC 1918 address in the answer field for what should be a public-facing domain is itself a red flag independent of any MAC address check.
+- The second method is payload analysis. A spoofed response resolved vulnbank.org to an internal, local network address (192.168.42.135), while a real public domain should resolve to a publicly routable internet address. Seeing a private RFC 1918 address in the answer field for what should be a public-facing domain is itself a red flag independent of any MAC address check.
 
-The third method is timing and duplication. Because the attacker sits on the local network, their forged response arrives almost instantly after the query goes out. The legitimate response, traveling across the actual internet, arrives slightly later carrying the same transaction ID but a completely different resolved IP. Seeing two responses to the same query with different answers is direct evidence that one of them is fraudulent, regardless of which one arrived first.
+- The third method is timing and duplication. Because the attacker sits on the local network, their forged response arrives almost instantly after the query goes out. The legitimate response, traveling across the actual internet, arrives slightly later carrying the same transaction ID but a completely different resolved IP. Seeing two responses to the same query with different answers is direct evidence that one of them is fraudulent, regardless of which one arrived first.
 
 **Reflection on sensitive data extraction:**
 
-No credentials, session tokens, or cookies were extracted during the live DNS spoofing portion of this lab. This was intentional. The fake login page included a JavaScript `preventDefault()` call that blocked the actual form submission from firing, so even though the victim was successfully redirected to the spoofed page, nothing typed into it ever left the browser. This was a deliberate safety boundary to keep the live exercise non-destructive while still proving the redirection itself worked. The earlier passive sniffing exercise in Part 1 already demonstrated what real credential extraction looks like against unencrypted traffic, so this second exercise focused specifically on proving the MITM and spoofing mechanics rather than repeating the harvesting step.
+- No credentials, session tokens, or cookies were extracted during the live DNS spoofing portion of this lab. This was intentional. The fake login page included a JavaScript `preventDefault()` call that blocked the actual form submission from firing, so even though the victim was successfully redirected to the spoofed page, nothing typed into it ever left the browser. This was a deliberate safety boundary to keep the live exercise non-destructive while still proving the redirection itself worked. The earlier passive sniffing exercise in Part 1 already demonstrated what real credential extraction looks like against unencrypted traffic, so this second exercise focused specifically on proving the MITM and spoofing mechanics rather than repeating the harvesting step.
 
 **Ethical and legal considerations:**
 
-In a real attack where the failsafe was not present, the consequences scale quickly. Stolen usernames and passwords lead directly to account takeover, giving an attacker access to banking, corporate, or personal accounts without needing to break any further security controls. If the attacker captures an active session token instead of (or alongside) the password, they can hijack the session entirely, impersonating the victim without ever needing to log in themselves. Because people frequently reuse passwords across services, credentials harvested from one spoofed site often get tested against unrelated accounts through credential stuffing, which means the damage from a single successful attack rarely stays contained to the one application that was targeted.
+- In a real attack where the failsafe was not present, the consequences scale quickly. Stolen usernames and passwords lead directly to account takeover, giving an attacker access to banking, corporate, or personal accounts without needing to break any further security controls. If the attacker captures an active session token instead of (or alongside) the password, they can hijack the session entirely, impersonating the victim without ever needing to log in themselves. Because people frequently reuse passwords across services, credentials harvested from one spoofed site often get tested against unrelated accounts through credential stuffing, which means the damage from a single successful attack rarely stays contained to the one application that was targeted.
 
 
 ## Findings
