@@ -151,6 +151,19 @@ All six tests passed, confirming end-to-end reachability between both PCs and bo
 - A banner is a legal control, not a technical one. It doesn't stop an attacker, but it removes any ambiguity about whether access was authorized.
 - VLAN 1 interface addressing gives a switch a management IP, which is separate from the data-plane switching it does by default at Layer 2.
 
+---
+
+## Challenges Faced
+
+When the instructions said to configure all lines on the switch, I only set the password on the vty lines and moved on. The assessment still came back incorrect, which is what made me go back and check what I had missed. Vty lines handle remote access, but the console line is its own separate line and needs its own password command. I went back in and added the password to console 0 on both switches, and the check cleared after that. It was a reminder that "all lines" on a switch means more than the lines you use most often.
+
+---
+
+## Lessons Learned
+
+The first problem I ran into had nothing to do with IOS commands. I clicked directly on the switches to open their CLI and got nothing, the way my instructor had set up the Packet Tracer file blocked that kind of direct access. I worked around it by connecting each PC to its switch with a console cable, then opened the terminal from the PC side instead. That's how I ended up configuring both switches.
+
+I didn't know beforehand that you could reach a switch's CLI through a PC connected to it over a console cable. It makes sense once you think about it: console access doesn't care which physical device the terminal session is running on, it just needs a cable and a terminal emulator. But it wasn't something I had pictured before being forced to find another way in.
 
 ---
 
