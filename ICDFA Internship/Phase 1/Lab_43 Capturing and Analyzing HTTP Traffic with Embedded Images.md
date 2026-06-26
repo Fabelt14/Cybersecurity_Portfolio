@@ -38,24 +38,12 @@ Before opening the browser, I started Wireshark and selected the loopback interf
 
 I applied the `http` display filter to exclude TCP handshake packets, ARP broadcasts, and other noise. Only application-layer HTTP traffic remained visible.
 
-![Wireshark started on loopback interface with HTTP filter applied](screenshots/wireshark_http_filter.png)
-
+![Wireshark started on loopback interface with HTTP filter applied](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_01%20Wireshark%20started%20on%20loopback%20interface%20with%20HTTP%20filter%20applied.jpg)
 
 
 I then navigated to http://127.0.0.1 in Firefox. The page loaded with a visible embedded image, which triggered two separate HTTP GET requests: one for the HTML page and one for the image file.
 
-
-
-![Locally hosted portfolio page showing embedded profile image](screenshots/portfolio_page_browser.png)
-
-
-
 The Wireshark packet list immediately showed HTTP traffic between 127.0.0.1 (source) and 127.0.0.1 (destination). Because both client and server run on the same machine, all traffic flows through the loopback interface rather than any physical network card.
-
-
-
-![Wireshark packet list showing captured HTTP packets on loopback](screenshots/wireshark_packet_list.png)
-
 
 
 ### Part 2: Analyzing the HTTP GET Request for the Image
@@ -66,7 +54,7 @@ I clicked the second GET request to expand its details in the packet dissection 
 
 
 
-![Wireshark showing second HTTP GET request for profile.jpg](screenshots/http_get_request_image.png)
+![Wireshark showing second HTTP GET request for profile.jpg](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_02%20Wireshark%20showing%20second%20HTTP%20GET%20request%20for%20profile.jpg)
 
 
 
@@ -91,10 +79,7 @@ Every header is visible in plaintext because this is HTTP, not HTTPS. Anyone wit
 
 I located the corresponding HTTP response packet immediately after the GET request in the packet list.
 
-
-
-![Wireshark showing HTTP 200 response for profile.jpg](screenshots/http_response_image.png)
-
+![Wireshark showing HTTP 200 response for profile.jpg](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_03%20Wireshark%20showing%20HTTP%20200%20response%20for%20profile.jpg)
 
 
 **Status code: 200 OK** confirms the server found the file and returned it successfully. If the file did not exist, the response would show 404. If the server encountered an error, 500.
@@ -110,7 +95,7 @@ I located the corresponding HTTP response packet immediately after the GET reque
 
 
 
-![Wireshark hex pane showing JPEG start marker FF D8](screenshots/wireshark_jpeg_hex_markers.png)
+![Wireshark hex pane showing JPEG start marker FF D8](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_04%20Wireshark%20hex%20pane%20showing%20JPEG%20start%20marker%20FF%20D8.jpg)
 
 
 
@@ -122,16 +107,17 @@ To practice extraction outside of Wireshark, I used wget to download the traffic
 wget https://raw.githubusercontent.com/frankwxu/digital-forensics-lab/main/Illegal_Possession_Images/lab_files/traffic/image2.log
 ```
 
-![wget downloading image2.log from GitHub](screenshots/wget_download_log.png)
-
+![wget downloading image2.log from GitHub](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_05%20wget%20downloading%20image2.log%20from%20GitHub.jpg)
 
 
 **Inspecting the log file:** I opened image2.log in nano to examine its contents. The file contained three separate HTTP responses mixed together. Two had `Content-Type: text/html` (HTML page responses) and one had `Content-Type: image/jpeg` (the actual image data).
 
 
+![nano showing image2.log with three Content-Type headers visible](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_06A%20nano%20showing%20image2.log%20with%20three%20Content-Type%20headers%20visible.jpg)
 
-![nano showing image2.log with three Content-Type headers visible](screenshots/nano_log_three_files.png)
+![nano showing image2.log with three Content-Type headers visible](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_06B%20nano%20showing%20image2.log%20with%20three%20Content-Type%20headers%20visible.jpg)
 
+![nano showing image2.log with three Content-Type headers visible](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_06C%20nano%20showing%20image2.log%20with%20three%20Content-Type%20headers%20visible.jpg)
 
 
 Reading the file in a text editor showed mostly garbled, unreadable characters where the binary image data was. The text/html sections were readable, but the JPEG bytes rendered as meaningless symbols because they are binary data, not ASCII text.
@@ -144,11 +130,11 @@ hexdump -C image2.log | head -n 30
 
 
 
-![hexdump output showing binary data as hexadecimal values](screenshots/hexdump_output.png)
+![hexdump output showing binary data as hexadecimal values](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_07%20hexdump%20output%20showing%20binary%20data%20as%20hexadecimal%20values.jpg)
 
-Hexdump converted every byte in the file to its hexadecimal equivalent. The left column shows the byte offset from the start of the file. The middle columns show the hex values. The right column attempts to show printable ASCII equivalents, displaying a dot for any byte that has no printable representation.
+- Hexdump converted every byte in the file to its hexadecimal equivalent. The left column shows the byte offset from the start of the file. The middle columns show the hex values. The right column attempts to show printable ASCII equivalents, displaying a dot for any byte that has no printable representation.
 
-This is the same view Wireshark shows in its bytes pane. The JPEG section of the log file would start at the offset where `FF D8` appears and end where `FF D9` appears. A forensic investigator looking for an illegally possessed image in network traffic uses exactly this technique to locate and extract the file from a raw packet capture.
+- This is the same view Wireshark shows in its bytes pane. The JPEG section of the log file would start at the offset where `FF D8` appears and end where `FF D9` appears. A forensic investigator looking for an illegally possessed image in network traffic uses exactly this technique to locate and extract the file from a raw packet capture.
 
 ### Part 5: IP Packet vs TCP Payload Size Calculation
 
@@ -157,19 +143,14 @@ The final part required measuring the difference between the IP packet's total s
 **Reading the IP header in Wireshark:**
 
 
-
-![Wireshark Internet Protocol section showing Total Length 6371](screenshots/wireshark_ip_total_length.png)
-
+![Wireshark Internet Protocol section showing Total Length 6371](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_08%20Wireshark%20Internet%20Protocol%20section%20showing%20Total%20Length%206371.jpg)
 
 
 The IP header field "Total Length: 6371" means the entire IP packet, including the IP header, the TCP header inside it, and all payload data, is 6371 bytes.
 
 **Reading the TCP payload size:**
 
-
-
-![Wireshark TCP section showing TCP payload 6319 bytes](screenshots/wireshark_tcp_payload_size.png)
-
+![Wireshark TCP section showing TCP payload 6319 bytes](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/43_09%20Wireshark%20TCP%20section%20showing%20TCP%20payload%206319%20bytes.jpg)
 
 
 The TCP section showed "TCP payload (6319 bytes)". This is the data the TCP segment carried after stripping out the TCP header itself.
@@ -184,39 +165,39 @@ The TCP section showed "TCP payload (6319 bytes)". This is the data the TCP segm
 
 **Why the 52-byte difference exists:**
 
-The IP packet total length includes everything: the IP header, the TCP header, and the actual data. The TCP payload is only the data portion. The 52-byte gap accounts for the IP header (20 bytes) and the TCP header (32 bytes, which includes options in this case). These headers are overhead added by the TCP/IP stack to route and deliver the packet reliably.
+- The IP packet total length includes everything: the IP header, the TCP header, and the actual data. The TCP payload is only the data portion. The 52-byte gap accounts for the IP header (20 bytes) and the TCP header (32 bytes, which includes options in this case). These headers are overhead added by the TCP/IP stack to route and deliver the packet reliably.
 
-Every packet on every network carries this overhead. On a standard connection without TCP options, the overhead is 40 bytes (20 bytes IP + 20 bytes TCP). The extra 12 bytes here come from TCP options negotiated during the three-way handshake, such as window scaling and selective acknowledgment.
+- Every packet on every network carries this overhead. On a standard connection without TCP options, the overhead is 40 bytes (20 bytes IP + 20 bytes TCP). The extra 12 bytes here come from TCP options negotiated during the three-way handshake, such as window scaling and selective acknowledgment.
 
 ## Findings
 
-**HTTP exposes complete request and response details in plaintext.** Every header, including User-Agent (revealing browser version and OS), Host, and Accept-Encoding, is readable without any decryption. An attacker on the same network captures this information instantly. Any web traffic still running on HTTP rather than HTTPS is fully visible to passive interception.
+- **HTTP exposes complete request and response details in plaintext.** Every header, including User-Agent (revealing browser version and OS), Host, and Accept-Encoding, is readable without any decryption. An attacker on the same network captures this information instantly. Any web traffic still running on HTTP rather than HTTPS is fully visible to passive interception.
 
-**HTTP response headers leak server configuration.** The Apache version (2.4.67 Debian) appeared in the Server header of every response. Combined with the PHP version disclosure seen in other labs, this gives an attacker a detailed picture of the server software stack to search for known CVEs.
+- **HTTP response headers leak server configuration.** The Apache version (2.4.67 Debian) appeared in the Server header of every response. Combined with the PHP version disclosure seen in other labs, this gives an attacker a detailed picture of the server software stack to search for known CVEs.
 
-**Binary files in network captures are identifiable by file signatures.** JPEG files always start with `FF D8` and end with `FF D9`. These magic bytes appear in the raw packet data regardless of what filename the server used. Forensic tools use these signatures to extract files from network captures, disk images, or memory dumps without relying on file extensions.
+- **Binary files in network captures are identifiable by file signatures.** JPEG files always start with `FF D8` and end with `FF D9`. These magic bytes appear in the raw packet data regardless of what filename the server used. Forensic tools use these signatures to extract files from network captures, disk images, or memory dumps without relying on file extensions.
 
-**Log files containing binary data require hex tools to inspect properly.** Opening image2.log in a text editor showed unreadable characters for the JPEG data. Hexdump made the binary data interpretable by converting every byte to its hexadecimal value, matching exactly what Wireshark displays in its packet bytes pane.
+- **Log files containing binary data require hex tools to inspect properly.** Opening image2.log in a text editor showed unreadable characters for the JPEG data. Hexdump made the binary data interpretable by converting every byte to its hexadecimal value, matching exactly what Wireshark displays in its packet bytes pane.
 
-**IP and TCP headers consume 52 bytes of overhead per packet.** Every packet carries this fixed cost regardless of payload size. Small payloads waste a proportionally large amount of bandwidth on headers. Large payloads like the 6032-byte JPEG are more efficient because the 52-byte header overhead is a tiny fraction of the total transfer.
+- **IP and TCP headers consume 52 bytes of overhead per packet.** Every packet carries this fixed cost regardless of payload size. Small payloads waste a proportionally large amount of bandwidth on headers. Large payloads like the 6032-byte JPEG are more efficient because the 52-byte header overhead is a tiny fraction of the total transfer.
 
 ## Challenges Faced
 
-**HTTPS blocking the capture:** The first attempt used a Facebook profile image linked directly in the HTML. Firefox immediately upgraded the connection to HTTPS because Facebook forces HTTPS on all its resources. Wireshark captured the encrypted TLS packets but could not show the HTTP content inside them. The HTTP GET request for the image never appeared in the filtered view.
+- **HTTPS blocking the capture:** The first attempt used a Facebook profile image linked directly in the HTML. Firefox immediately upgraded the connection to HTTPS because Facebook forces HTTPS on all its resources. Wireshark captured the encrypted TLS packets but could not show the HTTP content inside them. The HTTP GET request for the image never appeared in the filtered view.
 
-The fix was to download the image locally and serve it from the Apache web server at 127.0.0.1. Local HTTP traffic does not use TLS by default, so Wireshark captured the full unencrypted conversation. This is also why the loopback interface was the right capture target: the traffic never touched a physical network card.
+- The fix was to download the image locally and serve it from the Apache web server at 127.0.0.1. Local HTTP traffic does not use TLS by default, so Wireshark captured the full unencrypted conversation. This is also why the loopback interface was the right capture target: the traffic never touched a physical network card.
 
-**Reading binary data in a text editor:** Opening image2.log in nano initially looked like the file was corrupted because most of the content rendered as symbols and question marks. The JPEG binary data is not ASCII text, so a text editor cannot display it meaningfully. Switching to hexdump resolved this immediately.
+- **Reading binary data in a text editor:** Opening image2.log in nano initially looked like the file was corrupted because most of the content rendered as symbols and question marks. The JPEG binary data is not ASCII text, so a text editor cannot display it meaningfully. Switching to hexdump resolved this immediately.
 
 ## Key Takeaways
 
-**HTTP is a forensic goldmine.** Every request and response is readable without decryption. Browser fingerprints, server versions, file names, content types, and the actual file bytes are all visible to anyone on the network path. In a forensic investigation, a PCAP file containing HTTP traffic can reconstruct the entire browsing session.
+- **HTTP is a forensic goldmine.** Every request and response is readable without decryption. Browser fingerprints, server versions, file names, content types, and the actual file bytes are all visible to anyone on the network path. In a forensic investigation, a PCAP file containing HTTP traffic can reconstruct the entire browsing session.
 
-**File signatures matter more than file extensions.** The JPEG was identifiable as an image not because of its name but because of its `FF D8` start marker in the hex data. Attackers sometimes rename files to hide their type, but the magic bytes cannot be faked without corrupting the file. Forensic investigators rely on signatures, not extensions.
+- **File signatures matter more than file extensions.** The JPEG was identifiable as an image not because of its name but because of its `FF D8` start marker in the hex data. Attackers sometimes rename files to hide their type, but the magic bytes cannot be faked without corrupting the file. Forensic investigators rely on signatures, not extensions.
 
-**Serving traffic over HTTP for testing requires intentional setup.** Modern browsers and websites default to HTTPS. Testing plaintext HTTP requires deliberate choices: local hosting, HTTP-only server configuration, and capturing on the right interface. The Facebook image link failure was a useful reminder that the real web rarely gives you unencrypted traffic anymore.
+- **Serving traffic over HTTP for testing requires intentional setup.** Modern browsers and websites default to HTTPS. Testing plaintext HTTP requires deliberate choices: local hosting, HTTP-only server configuration, and capturing on the right interface. The Facebook image link failure was a useful reminder that the real web rarely gives you unencrypted traffic anymore.
 
-**The overhead gap between IP packet size and TCP payload is fixed protocol cost.** The 52-byte difference is not wasted in a concerning way. It is the price of reliable, routable delivery. IP headers enable routing across networks. TCP headers enable reliability, ordering, and flow control. Understanding this cost matters when designing systems where efficiency is critical, such as IoT devices or high-frequency trading networks where every byte counts.
+- **The overhead gap between IP packet size and TCP payload is fixed protocol cost.** The 52-byte difference is not wasted in a concerning way. It is the price of reliable, routable delivery. IP headers enable routing across networks. TCP headers enable reliability, ordering, and flow control. Understanding this cost matters when designing systems where efficiency is critical, such as IoT devices or high-frequency trading networks where every byte counts.
 
 ## Disclaimer
 
