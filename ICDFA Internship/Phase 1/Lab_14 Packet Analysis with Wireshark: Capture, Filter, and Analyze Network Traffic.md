@@ -52,10 +52,6 @@ The TCP/IP model prioritizes efficiency. Combining layers means fewer encapsulat
 
 To see how TCP establishes connections, I captured traffic while browsing to the OWASP VM's web interface. Wireshark showed the three-way handshake that precedes every HTTP request.
 
-![TCP three-way handshake showing SYN, SYN-ACK, ACK packets](screenshots/tcp_handshake.png)
-
-
-
 **Handshake breakdown:**
 
 1. **SYN (Synchronize):** Kali sends a packet with the SYN flag set, requesting a connection. This includes an initial sequence number that the server will use to track data order.
@@ -75,26 +71,19 @@ To see how TCP establishes connections, I captured traffic while browsing to the
 
 **How TCP maintains reliability:**
 
+![TCP sequence numbers and acknowledgments in packet capture](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_01%20TCP%20sequence%20numbers%20and%20acknowledgments%20in%20packet%20capture.jpg)
 
+- Every byte transmitted gets a unique sequence number. If Kali sends bytes 1-1000 in one packet and bytes 1001-2000 in the next, the OWASP VM can detect if the second packet arrives before the first. The VM holds packet 2 in a buffer while it waits for packet 1, then assembles them in the correct order.
 
-![TCP sequence numbers and acknowledgments in packet capture](screenshots/tcp_sequence_numbers.png)
+- **Retransmission timer:** After sending a packet, Kali starts a timer. If no ACK arrives before the timer expires, Kali assumes the packet was lost and retransmits it. This creates reliability without requiring the underlying network to guarantee delivery. Even on unreliable networks with 10% packet loss, TCP applications work correctly because lost packets are automatically resent.
 
-
-
-Every byte transmitted gets a unique sequence number. If Kali sends bytes 1-1000 in one packet and bytes 1001-2000 in the next, the OWASP VM can detect if the second packet arrives before the first. The VM holds packet 2 in a buffer while it waits for packet 1, then assembles them in the correct order.
-
-**Retransmission timer:** After sending a packet, Kali starts a timer. If no ACK arrives before the timer expires, Kali assumes the packet was lost and retransmits it. This creates reliability without requiring the underlying network to guarantee delivery. Even on unreliable networks with 10% packet loss, TCP applications work correctly because lost packets are automatically resent.
-
-**Why this matters:** Downloaded files arrive intact, not corrupted. Web pages load completely, not with missing images. SSH commands execute in the order typed, not scrambled. TCP's complexity at the transport layer simplifies application development because programmers can assume reliable, ordered delivery.
+- **Why this matters:** Downloaded files arrive intact, not corrupted. Web pages load completely, not with missing images. SSH commands execute in the order typed, not scrambled. TCP's complexity at the transport layer simplifies application development because programmers can assume reliable, ordered delivery.
 
 ### Exercise 3: IP Packet Header Analysis
 
 To understand Layer 3 routing, I inspected the IP header of packets sent to the OWASP VM.
 
-
-
-![IP packet header showing source, destination, TTL, and protocol fields](screenshots/ip_header_fields.png)
-
+![IP packet header showing source, destination, TTL, and protocol fields](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_02%20IP%20packet%20header%20showing%20source%2C%20destination%2C%20TTL%2C%20and%20protocol%20fields.jpg)
 
 
 **Key header fields:**
@@ -103,11 +92,13 @@ To understand Layer 3 routing, I inspected the IP header of packets sent to the 
 - **Destination IP:** 192.168.92.3 (OWASP VM)
 - **TTL (Time to Live):** 64
 
-**Source and Destination IPs** tell routers where the packet is going and where replies should be sent. Without these, the internet would be impossible. Every router along the path examines the destination IP, consults its routing table, and forwards the packet toward the next hop.
+---
 
-**TTL prevents routing loops:** Every time a packet passes through a router, the TTL decrements by 1. If TTL reaches 0, the router discards the packet and sends an ICMP Time Exceeded message back to the source. This prevents packets from circulating forever if routing tables contain errors.
+- **Source and Destination IPs** tell routers where the packet is going and where replies should be sent. Without these, the internet would be impossible. Every router along the path examines the destination IP, consults its routing table, and forwards the packet toward the next hop.
 
-**Routing in this lab:** Both machines are on the same subnet (192.168.92.0/24), so there are zero hops between them. Kali's routing table shows that 192.168.92.3 is directly reachable via the eth1 interface. No gateway is needed. The packet goes straight from Kali's network interface to the OWASP VM's network interface over the virtual switch.
+- **TTL prevents routing loops:** Every time a packet passes through a router, the TTL decrements by 1. If TTL reaches 0, the router discards the packet and sends an ICMP Time Exceeded message back to the source. This prevents packets from circulating forever if routing tables contain errors.
+
+- **Routing in this lab:** Both machines are on the same subnet (192.168.92.0/24), so there are zero hops between them. Kali's routing table shows that 192.168.92.3 is directly reachable via the eth1 interface. No gateway is needed. The packet goes straight from Kali's network interface to the OWASP VM's network interface over the virtual switch.
 
 This direct routing means TTL doesn't change because no routers are involved. If I were accessing a website on the internet, the TTL might start at 64 and arrive at the destination with a TTL of 50 after passing through 14 routers.
 
@@ -117,11 +108,7 @@ Wireshark reveals what happens at Layer 7 when applications communicate. I compa
 
 **HTTP analysis - complete exposure:**
 
-
-
-![HTTP request showing cleartext URL, headers, and cookies](screenshots/http_request_cleartext.png)
-
-
+![HTTP request showing cleartext URL, headers, and cookies](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_03%20HTTP%20request%20showing%20cleartext%20URL%2C%20headers%2C%20and%20cookies.jpg)
 
 The HTTP request to /WebGoat/attack exposed everything:
 
@@ -129,10 +116,6 @@ The HTTP request to /WebGoat/attack exposed everything:
 - **User-Agent:** Mozilla/5.0 (X11; Linux x86_64) Firefox/140.0 - reveals my operating system and browser version
 - **Cookies:** JSESSIONID and PHPSESSID - session identifiers that could be stolen for session hijacking
 - **Referrer:** Previous page visited, creating a browsing history trail
-
-![HTTP response showing 401 Unauthorized with authentication realm](screenshots/http_response_401.png)
-
-
 
 The server's 401 Unauthorized response included:
 
@@ -145,23 +128,15 @@ The server's 401 Unauthorized response included:
 
 **SSH analysis - encrypted payload protection:**
 
+![SSH key exchange showing negotiated encryption method](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_04%20SSH%20key%20exchange%20showing%20negotiated%20encryption%20method.jpg)
 
+- SSH traffic starts with an unencrypted Key Exchange where both sides agree on encryption parameters. Wireshark can dissect this initial handshake, showing the negotiated algorithm (diffie-hellman-group-exchange-sha256). This is not a vulnerability because no sensitive data is transmitted yet.
 
-![SSH key exchange showing negotiated encryption method](screenshots/ssh_key_exchange.png)
+- After key exchange completes, all subsequent SSH traffic appears as random hex data. Wireshark shows "Encrypted packet (len=XXX)" but cannot decrypt the contents. The actual commands typed, server responses, and any data transferred are protected.
 
+- **Why encryption works:** The SSH key exchange uses Diffie-Hellman to establish a shared secret without transmitting it over the network. Both sides independently derive the same symmetric encryption key, then use it to encrypt all traffic with AES. An eavesdropper sees the key exchange parameters but cannot compute the final key without access to the private keys stored on each machine.
 
-
-SSH traffic starts with an unencrypted Key Exchange where both sides agree on encryption parameters. Wireshark can dissect this initial handshake, showing the negotiated algorithm (diffie-hellman-group-exchange-sha256). This is not a vulnerability because no sensitive data is transmitted yet.
-
-![SSH encrypted payload appearing as random hex data](screenshots/ssh_encrypted_payload.png)
-
-
-
-After key exchange completes, all subsequent SSH traffic appears as random hex data. Wireshark shows "Encrypted packet (len=XXX)" but cannot decrypt the contents. The actual commands typed, server responses, and any data transferred are protected.
-
-**Why encryption works:** The SSH key exchange uses Diffie-Hellman to establish a shared secret without transmitting it over the network. Both sides independently derive the same symmetric encryption key, then use it to encrypt all traffic with AES. An eavesdropper sees the key exchange parameters but cannot compute the final key without access to the private keys stored on each machine.
-
-**Application Layer's role:** This layer translates user actions into network protocols. Clicking a link becomes an HTTP GET request. Typing a command in an SSH terminal becomes encrypted SSH protocol messages. The Application Layer also handles authentication (401 Unauthorized in HTTP, password prompts in SSH) and data formatting (gzip compression, HTML rendering).
+- **Application Layer's role:** This layer translates user actions into network protocols. Clicking a link becomes an HTTP GET request. Typing a command in an SSH terminal becomes encrypted SSH protocol messages. The Application Layer also handles authentication (401 Unauthorized in HTTP, password prompts in SSH) and data formatting (gzip compression, HTML rendering).
 
 ### Exercise 5: TCP Error Handling and Retransmission
 
@@ -178,23 +153,19 @@ Every TCP packet sent starts a retransmission timer. If the timer expires before
 **Sequence number recovery:**
 
 
-
-![TCP retransmission showing duplicate sequence numbers](screenshots/tcp_retransmission.png)
-
+![TCP retransmission showing duplicate sequence numbers](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_05%20TCP%20retransmission%20showing%20duplicate%20sequence%20numbers.jpg)
 
 
-Sequence numbers enable the receiver to detect missing packets. If bytes 1-500 arrive, then bytes 1001-1500 arrive, the receiver knows bytes 501-1000 are missing. Instead of discarding packet 2, the receiver buffers it and sends an ACK specifically requesting bytes 501-1000. This selective acknowledgment tells the sender exactly what to retransmit.
+- Sequence numbers enable the receiver to detect missing packets. If bytes 1-500 arrive, then bytes 1001-1500 arrive, the receiver knows bytes 501-1000 are missing. Instead of discarding packet 2, the receiver buffers it and sends an ACK specifically requesting bytes 501-1000. This selective acknowledgment tells the sender exactly what to retransmit.
 
-**Why reliability matters:** TCP guarantees ordered delivery. If a web page requires three packets (HTML, CSS, JavaScript), they might arrive out of order over the internet. TCP's sequence numbers ensure the browser receives them in the correct order, preventing rendering errors. Database transactions using TCP maintain ACID properties because SQL commands execute in the exact order sent.
+- **Why reliability matters:** TCP guarantees ordered delivery. If a web page requires three packets (HTML, CSS, JavaScript), they might arrive out of order over the internet. TCP's sequence numbers ensure the browser receives them in the correct order, preventing rendering errors. Database transactions using TCP maintain ACID properties because SQL commands execute in the exact order sent.
 
 ### Exercise 6: ICMP for Network Diagnostics
 
 ICMP operates at Layer 3 alongside IP. It doesn't carry application data. It carries network status messages.
 
 
-
-![ICMP echo request and reply packets showing Type and Code fields](screenshots/icmp_ping_packets.png)
-
+![ICMP echo request and reply packets showing Type and Code fields](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_06%20ICMP%20echo%20request%20and%20reply%20packets%20showing%20Type%20and%20Code%20fields.jpg)
 
 
 **ICMP packet structure:**
@@ -217,35 +188,34 @@ In normal IP packets, TTL prevents routing loops. In ICMP specifically, TTL enab
 
 UDP removes all of TCP's reliability mechanisms to minimize latency and overhead.
 
+![UDP packet structure showing minimal header with only ports and length](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_07%20UDP%20packet%20structure%20showing%20minimal%20header%20with%20only%20ports%20and%20length.jpg)
 
-
-![UDP packet structure showing minimal header with only ports and length](screenshots/udp_packet_structure.png)
 
 **TCP vs UDP packet structure comparison:**
 
-**TCP header:** Source port, destination port, sequence number, acknowledgment number, header length, flags (SYN/ACK/FIN/RST/PSH/URG), window size, checksum, urgent pointer, options. Total minimum size: 20 bytes.
+- **TCP header:** Source port, destination port, sequence number, acknowledgment number, header length, flags (SYN/ACK/FIN/RST/PSH/URG), window size, checksum, urgent pointer, options. Total minimum size: 20 bytes.
 
-**UDP header:** Source port, destination port, length, checksum. Total size: 8 bytes.
+- **UDP header:** Source port, destination port, length, checksum. Total size: 8 bytes.
 
 TCP's header is more than twice as large because it carries all the state information needed for reliable delivery. UDP discards this overhead because it doesn't guarantee delivery.
 
 **Why UDP doesn't ensure reliability:**
 
-UDP has no concept of acknowledgments. It sends the packet to the IP layer and forgets about it. If the packet gets lost, UDP doesn't know and doesn't care. The application must detect packet loss and handle it, if loss matters.
+- UDP has no concept of acknowledgments. It sends the packet to the IP layer and forgets about it. If the packet gets lost, UDP doesn't know and doesn't care. The application must detect packet loss and handle it, if loss matters.
 
-UDP has no sequence numbers. Packets can arrive out of order and the receiver has no way to reorder them. Again, the application must handle this if order matters.
+- UDP has no sequence numbers. Packets can arrive out of order and the receiver has no way to reorder them. Again, the application must handle this if order matters.
 
-UDP has no retransmission timer. There is nothing to time and nothing to retransmit.
+- UDP has no retransmission timer. There is nothing to time and nothing to retransmit.
 
 **When UDP is the right choice:**
 
-**Live streaming:** If a video frame is lost, retransmitting it three seconds later is useless because the video has already moved on. Better to skip the frame and continue with newer data. TCP's retransmission would cause buffering and stuttering.
+- **Live streaming:** If a video frame is lost, retransmitting it three seconds later is useless because the video has already moved on. Better to skip the frame and continue with newer data. TCP's retransmission would cause buffering and stuttering.
 
-**Online gaming:** A player's position update that is 500ms old is worthless. The player has already moved. Retransmitting stale position data causes rubber-banding where characters jump around the screen. UDP delivers the latest position immediately, discarding outdated packets.
+- **Online gaming:** A player's position update that is 500ms old is worthless. The player has already moved. Retransmitting stale position data causes rubber-banding where characters jump around the screen. UDP delivers the latest position immediately, discarding outdated packets.
 
-**VoIP (Voice over IP):** Human ears tolerate occasional audio dropouts better than delayed speech. A missing 20ms audio packet causes a brief click. Retransmitting that packet 200ms later creates echoes and makes conversation impossible.
+- **VoIP (Voice over IP):** Human ears tolerate occasional audio dropouts better than delayed speech. A missing 20ms audio packet causes a brief click. Retransmitting that packet 200ms later creates echoes and makes conversation impossible.
 
-**DNS queries:** A single DNS query fits in one UDP packet. The client sends a query, waits a few seconds, and retransmits if no response arrives. No need for TCP's connection overhead for this simple request-response.
+- **DNS queries:** A single DNS query fits in one UDP packet. The client sends a query, waits a few seconds, and retransmits if no response arrives. No need for TCP's connection overhead for this simple request-response.
 
 **How UDP manages transmission without reliability guarantees:**
 
@@ -255,63 +225,52 @@ UDP doesn't manage transmission. It delivers packets to the IP layer and immedia
 
 Different operating systems implement the TCP/IP stack with subtle variations. Nmap exploits these differences to identify what OS a target is running without ever logging in.
 
-
-
-![Nmap scan results showing OS detection based on network responses](screenshots/nmap_os_detection.png)
-
+![Nmap scan results showing OS detection based on network responses](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_08%20Nmap%20scan%20results%20showing%20OS%20detection%20based%20on%20network%20responses.jpg)
 
 
 **Key fingerprinting indicators:**
 
-**TTL values:** Linux typically uses 64, Windows uses 128, some network equipment uses 255. The OWASP VM's packets arrived with TTL=64, strongly suggesting a Linux-based system.
+- **TTL values:** Linux typically uses 64, Windows uses 128, some network equipment uses 255. The OWASP VM's packets arrived with TTL=64, strongly suggesting a Linux-based system.
 
-**TCP window size:** The SYN-ACK packet showed Win=5840 in one case and Win=1024 in another. Different operating systems and versions use different default window sizes. Windows 10 often uses 8192, older Linux kernels use 5840. These values are hardcoded in the kernel and change only with OS updates.
+- **TCP window size:** The SYN-ACK packet showed Win=5840 in one case and Win=1024 in another. Different operating systems and versions use different default window sizes. Windows 10 often uses 8192, older Linux kernels use 5840. These values are hardcoded in the kernel and change only with OS updates.
 
-![TCP window size variations in captured packets](screenshots/tcp_window_sizes.png)
+![TCP window size variations in captured packets](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_09%20TCP%20window%20size%20variations%20in%20captured%20packets.jpg)
 
 
+- **TCP options and flag handling:** Nmap sends unusual flag combinations (SYN+FIN+URG+PSH) that standard traffic never uses. Each OS responds differently. Some ignore invalid combinations, some send RST, some respond normally. The specific response pattern maps to a known OS fingerprint database.
 
-**TCP options and flag handling:** Nmap sends unusual flag combinations (SYN+FIN+URG+PSH) that standard traffic never uses. Each OS responds differently. Some ignore invalid combinations, some send RST, some respond normally. The specific response pattern maps to a known OS fingerprint database.
-
-**Closed port responses:** When Nmap probes a closed port, the target sends [RST, ACK] to reject the connection. The exact timing and additional TCP options in this rejection vary by OS.
+- **Closed port responses:** When Nmap probes a closed port, the target sends [RST, ACK] to reject the connection. The exact timing and additional TCP options in this rejection vary by OS.
 
 **Why OS detection matters in security assessments:**
 
-**Vulnerability mapping:** If Nmap identifies "Linux 2.6.x," an attacker can search CVE databases for Linux 2.6 kernel vulnerabilities. Windows RDP exploits won't work against a Linux target. Knowing the OS focuses the attack.
+- **Vulnerability mapping:** If Nmap identifies "Linux 2.6.x," an attacker can search CVE databases for Linux 2.6 kernel vulnerabilities. Windows RDP exploits won't work against a Linux target. Knowing the OS focuses the attack.
 
-**Patch verification:** If a network scan shows "Windows Server 2008," but the organization claims all systems are updated to Server 2019, either the scan is wrong or an undocumented legacy system exists. OS fingerprinting validates asset inventories.
+- **Patch verification:** If a network scan shows "Windows Server 2008," but the organization claims all systems are updated to Server 2019, either the scan is wrong or an undocumented legacy system exists. OS fingerprinting validates asset inventories.
 
-**Intrusion detection tuning:** IDS rules can be written for specific OS behaviors. A Windows machine sending packets with TTL=64 is suspicious and might indicate a compromised system running Linux malware or a misconfigured VM.
+- **Intrusion detection tuning:** IDS rules can be written for specific OS behaviors. A Windows machine sending packets with TTL=64 is suspicious and might indicate a compromised system running Linux malware or a misconfigured VM.
 
 ### Exercise 9: ARP - Bridging IP and MAC Addressing
 
 ARP solves the problem that IP addresses identify hosts logically, but Ethernet requires MAC addresses physically.
 
-
-
-![ARP request broadcast asking who has a specific IP](screenshots/arp_request.png)
-
+![ARP request broadcast asking who has a specific IP](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%201/Screenshots/14_10%20ARP%20request%20and%20reply.jpg)
 
 
 **ARP operation:**
 
 When Kali needs to send a packet to 192.168.92.3, it checks its ARP cache. If no MAC address is cached, it broadcasts an ARP Request: "Who has 192.168.92.3? Tell 192.168.92.4." This broadcast reaches every device on the local network segment.
 
-![ARP reply providing MAC address for requested IP](screenshots/arp_reply.png)
+- The OWASP VM recognizes its own IP in the request and sends a unicast ARP Reply: "192.168.92.3 is at c8:f7:33:67:d6:17." This reply goes directly to Kali, not to the entire network.
 
-
-
-The OWASP VM recognizes its own IP in the request and sends a unicast ARP Reply: "192.168.92.3 is at c8:f7:33:67:d6:17." This reply goes directly to Kali, not to the entire network.
-
-Kali stores this mapping in its ARP cache for several minutes. Subsequent packets to 192.168.92.3 skip the ARP query and directly use the cached MAC address.
+- Kali stores this mapping in its ARP cache for several minutes. Subsequent packets to 192.168.92.3 skip the ARP query and directly use the cached MAC address.
 
 **Layer 2 vs Layer 3 addressing:**
 
-IP addresses (Layer 3) identify hosts across different networks. Routers use IP addresses to make forwarding decisions.
+- IP addresses (Layer 3) identify hosts across different networks. Routers use IP addresses to make forwarding decisions.
 
-MAC addresses (Layer 2) identify network interfaces on the same physical segment. Switches use MAC addresses to forward frames to the correct port.
+- MAC addresses (Layer 2) identify network interfaces on the same physical segment. Switches use MAC addresses to forward frames to the correct port.
 
-ARP translates between these two addressing schemes. Without ARP, the Ethernet frame would have no destination MAC address and the switch wouldn't know which port to send it to.
+- ARP translates between these two addressing schemes. Without ARP, the Ethernet frame would have no destination MAC address and the switch wouldn't know which port to send it to.
 
 **ARP's role in the lab environment:**
 
@@ -335,19 +294,9 @@ Since no gateway exists on this isolated network, all packets failed with "Netwo
 
 **Layer-by-layer diagnosis:**
 
+- **Layer 3 (Network Layer):** Running `route -n` showed that the destination IP no longer matched the directly connected route. Kali interpreted 192.168.92.3 as remote and tried to send packets to a default gateway that doesn't exist.
 
-
-![Routing table showing incorrect subnet causing remote routing attempt](screenshots/route_table_error.png)
-
-**Layer 3 (Network Layer):** Running `route -n` showed that the destination IP no longer matched the directly connected route. Kali interpreted 192.168.92.3 as remote and tried to send packets to a default gateway that doesn't exist.
-
-
-
-![ARP cache showing no MAC address resolution for target](screenshots/arp_cache_empty.png)
-
-
-
-**Layer 2 (Link Layer):** Running `arp -n` showed no MAC address for 192.168.92.3. ARP requests are broadcast only on the local segment. Since Kali's routing table said the VM was remote, it never broadcast an ARP request. Without a MAC address, the Ethernet frame cannot be constructed.
+- **Layer 2 (Link Layer):** Running `arp -n` showed no MAC address for 192.168.92.3. ARP requests are broadcast only on the local segment. Since Kali's routing table said the VM was remote, it never broadcast an ARP request. Without a MAC address, the Ethernet frame cannot be constructed.
 
 **Resolution:**
 
@@ -381,43 +330,43 @@ This bottom-up approach isolates failures. If ping fails but ARP works, the prob
 
 ## Findings
 
-**TCP reliability comes from continuous feedback loops.** Every packet sent triggers a timer. Every packet received sends an ACK. Sequence numbers detect missing or reordered data. This overhead makes TCP unsuitable for latency-sensitive applications but perfect for data integrity requirements.
+- **TCP reliability comes from continuous feedback loops.** Every packet sent triggers a timer. Every packet received sends an ACK. Sequence numbers detect missing or reordered data. This overhead makes TCP unsuitable for latency-sensitive applications but perfect for data integrity requirements.
 
-**UDP sacrifices reliability for minimal latency.** By eliminating handshakes, acknowledgments, and retransmission timers, UDP reduces per-packet overhead from 20+ bytes to 8 bytes. Applications that can tolerate packet loss gain significant performance improvements.
+- **UDP sacrifices reliability for minimal latency.** By eliminating handshakes, acknowledgments, and retransmission timers, UDP reduces per-packet overhead from 20+ bytes to 8 bytes. Applications that can tolerate packet loss gain significant performance improvements.
 
-**Unencrypted protocols expose everything.** HTTP transmits URLs, cookies, credentials, and content in plaintext. Anyone with packet capture access sees the complete conversation. This includes network administrators, ISP employees, and attackers on the same WiFi network. SSH encryption renders the payload unreadable even with full packet captures.
+- **Unencrypted protocols expose everything.** HTTP transmits URLs, cookies, credentials, and content in plaintext. Anyone with packet capture access sees the complete conversation. This includes network administrators, ISP employees, and attackers on the same WiFi network. SSH encryption renders the payload unreadable even with full packet captures.
 
-**OS fingerprinting works because implementations differ.** TTL values, window sizes, and TCP option ordering vary between Windows, Linux, BSD, and network appliances. These variations are implementation details, not protocol requirements. Nmap's fingerprint database maps these patterns to specific OS versions.
+- **OS fingerprinting works because implementations differ.** TTL values, window sizes, and TCP option ordering vary between Windows, Linux, BSD, and network appliances. These variations are implementation details, not protocol requirements. Nmap's fingerprint database maps these patterns to specific OS versions.
 
-**ARP is the invisible translator between IP and Ethernet.** Users think in IP addresses, but network hardware only understands MAC addresses. ARP requests are broadcast to all devices, replies are unicast to minimize network noise. ARP cache poisoning exploits the lack of authentication in this translation process.
+- **ARP is the invisible translator between IP and Ethernet.** Users think in IP addresses, but network hardware only understands MAC addresses. ARP requests are broadcast to all devices, replies are unicast to minimize network noise. ARP cache poisoning exploits the lack of authentication in this translation process.
 
-**Subnet masks change routing behavior without changing IPs.** A /30 mask makes 192.168.92.3 appear remote from 192.168.92.4, even though they're numerically adjacent. The routing table recalculates based on the mask, causing packets to route through nonexistent gateways instead of going direct.
+- **Subnet masks change routing behavior without changing IPs.** A /30 mask makes 192.168.92.3 appear remote from 192.168.92.4, even though they're numerically adjacent. The routing table recalculates based on the mask, causing packets to route through nonexistent gateways instead of going direct.
 
-**Layer-by-layer troubleshooting isolates failures efficiently.** Starting at the Physical layer and working up prevents wasting time debugging application issues when the problem is a misconfigured subnet mask. Each layer depends on the layers below it, so failures propagate upward.
+- **Layer-by-layer troubleshooting isolates failures efficiently.** Starting at the Physical layer and working up prevents wasting time debugging application issues when the problem is a misconfigured subnet mask. Each layer depends on the layers below it, so failures propagate upward.
 
 ## Challenges Faced
 
-**Distinguishing between protocol theory and implementation behavior:** The OSI model teaches seven layers, but TCP/IP combines three of them into one Application layer. Initially, I expected to see Session layer activity in Wireshark, but real protocols don't separate session management from application logic. Understanding that TCP/IP is the practical implementation while OSI is the conceptual model clarified this confusion.
+- **Distinguishing between protocol theory and implementation behavior:** The OSI model teaches seven layers, but TCP/IP combines three of them into one Application layer. Initially, I expected to see Session layer activity in Wireshark, but real protocols don't separate session management from application logic. Understanding that TCP/IP is the practical implementation while OSI is the conceptual model clarified this confusion.
 
-**Interpreting encrypted SSH payloads:** When SSH traffic appeared as random hex data in Wireshark, I initially thought the capture was corrupted. Realizing that this randomness is proof that encryption works shifted my perspective. The inability to analyze encrypted payloads is a feature, not a bug. It demonstrates that even with full network access, an attacker gains nothing from capturing SSH traffic.
+- **Interpreting encrypted SSH payloads:** When SSH traffic appeared as random hex data in Wireshark, I initially thought the capture was corrupted. Realizing that this randomness is proof that encryption works shifted my perspective. The inability to analyze encrypted payloads is a feature, not a bug. It demonstrates that even with full network access, an attacker gains nothing from capturing SSH traffic.
 
-**Understanding why ARP is necessary:** If both machines already have IP addresses, why do they need MAC addresses too? The answer is that IP addresses identify hosts globally across networks, while MAC addresses identify interfaces locally on a single segment. Routers need both: IP to route packets between networks, MAC to deliver frames within a network. ARP is the bridge between these two addressing schemes.
+- **Understanding why ARP is necessary:** If both machines already have IP addresses, why do they need MAC addresses too? The answer is that IP addresses identify hosts globally across networks, while MAC addresses identify interfaces locally on a single segment. Routers need both: IP to route packets between networks, MAC to deliver frames within a network. ARP is the bridge between these two addressing schemes.
 
-**Recognizing that sequence numbers are byte counts, not packet counts:** TCP sequence numbers increment by the number of bytes sent, not by the number of packets. Sending 1000 bytes advances the sequence number by 1000, regardless of whether those bytes were split into one packet or ten packets. This allows receivers to detect missing bytes, not just missing packets.
+- **Recognizing that sequence numbers are byte counts, not packet counts:** TCP sequence numbers increment by the number of bytes sent, not by the number of packets. Sending 1000 bytes advances the sequence number by 1000, regardless of whether those bytes were split into one packet or ten packets. This allows receivers to detect missing bytes, not just missing packets.
 
 ## Key Takeaways
 
-**TCP and UDP solve different problems.** TCP guarantees reliability at the cost of latency. UDP minimizes latency at the cost of reliability. Neither is better. They serve different use cases. File transfers need TCP. Live video needs UDP. Choosing the wrong protocol creates problems the application can't solve.
+- **TCP and UDP solve different problems.** TCP guarantees reliability at the cost of latency. UDP minimizes latency at the cost of reliability. Neither is better. They serve different use cases. File transfers need TCP. Live video needs UDP. Choosing the wrong protocol creates problems the application can't solve.
 
-**Encryption must happen before transmission.** HTTP sends data, then SSL/TLS encrypts it. But HTTP by itself is cleartext. SSH encrypts from the start. The protocol, not the application, determines security. A web app can implement perfect authentication, but if it runs over HTTP, the passwords are visible in Wireshark.
+- **Encryption must happen before transmission.** HTTP sends data, then SSL/TLS encrypts it. But HTTP by itself is cleartext. SSH encrypts from the start. The protocol, not the application, determines security. A web app can implement perfect authentication, but if it runs over HTTP, the passwords are visible in Wireshark.
 
-**Packet analysis reveals what applications hide.** The browser shows "Connection refused," but Wireshark shows whether the SYN packet was sent, whether the server responded with RST, or whether the packet never left the network interface. Applications abstract away the protocol details. Packet captures expose those details.
+- **Packet analysis reveals what applications hide.** The browser shows "Connection refused," but Wireshark shows whether the SYN packet was sent, whether the server responded with RST, or whether the packet never left the network interface. Applications abstract away the protocol details. Packet captures expose those details.
 
-**Every layer adds headers.** HTTP data gets wrapped in a TCP header, which gets wrapped in an IP header, which gets wrapped in an Ethernet frame. Each layer encapsulates the layer above it. Receivers strip headers in reverse order. This encapsulation allows each layer to operate independently without knowing what the other layers are doing.
+- **Every layer adds headers.** HTTP data gets wrapped in a TCP header, which gets wrapped in an IP header, which gets wrapped in an Ethernet frame. Each layer encapsulates the layer above it. Receivers strip headers in reverse order. This encapsulation allows each layer to operate independently without knowing what the other layers are doing.
 
-**TTL prevents infinite loops but also enables traceroute.** A single field serves two purposes: preventing routing loops by decrementing to zero, and revealing the network path by intentionally expiring packets at each hop. This dual use demonstrates why protocol design is about trade-offs, not absolutes.
+- **TTL prevents infinite loops but also enables traceroute.** A single field serves two purposes: preventing routing loops by decrementing to zero, and revealing the network path by intentionally expiring packets at each hop. This dual use demonstrates why protocol design is about trade-offs, not absolutes.
 
-**OS fingerprinting is passive reconnaissance.** Nmap identifies the operating system without authenticating, without exploiting vulnerabilities, without sending any malicious traffic. Just by observing how the target responds to standard network traffic, an attacker learns what exploits might work. This is why defense-in-depth matters. Even if the OS can't be hidden, hardening the OS prevents exploitation.
+- **OS fingerprinting is passive reconnaissance.** Nmap identifies the operating system without authenticating, without exploiting vulnerabilities, without sending any malicious traffic. Just by observing how the target responds to standard network traffic, an attacker learns what exploits might work. This is why defense-in-depth matters. Even if the OS can't be hidden, hardening the OS prevents exploitation.
 
 ## Disclaimer
 
