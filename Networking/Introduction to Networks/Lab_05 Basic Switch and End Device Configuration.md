@@ -8,7 +8,7 @@ Configure two Cisco switches with secure initial settings using the Cisco IOS, t
 
 ## Topology
 
-![Network topology showing Class-A switch connected to Student-1 PC and Class-B switch, which connects to Student-2 PC](images/basic-switch-and-end-device-configuration/network-topology.png)
+![Network topology showing Class-A switch connected to Student-1 PC and Class-B switch, which connects to Student-2 PC](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_01%20Network%20topology%20showing%20Class-A%20switch%20connected%20to%20Student-1%20PC%20and%20Class-B%20switch%2C%20which%20connects%20to%20Student-2%20PC.jpg)
 
 Two switches, Class-A and Class-B, are connected to each other. Student-1 connects to Class-A and Student-2 connects to Class-B. Console cables run from each PC to its switch for initial configuration access.
 
@@ -29,7 +29,7 @@ Two switches, Class-A and Class-B, are connected to each other. Student-1 connec
 
 Access to both switches started through a console connection rather than Telnet or SSH, since neither switch had any remote management configured yet. Console access is the only option on a switch fresh out of the box, and it's also the safest way to make initial changes since it requires physical access to the device.
 
-![Console connection established to Class-A and Class-B switches](images/basic-switch-and-end-device-configuration/console-connection.png)
+---
 
 ### Hostname Configuration
 
@@ -41,7 +41,11 @@ Switch(config)#hostname Class-A
 
 Default hostnames are one of the first things an attacker checks for during a network walk-through. A device still showing `Switch>` or `Router>` is an easy signal that nobody has touched its configuration since it left the factory. Naming devices isn't just organizational, it removes that signal.
 
-![Hostname changed from Switch to Class-A and Class-B](images/basic-switch-and-end-device-configuration/hostname-configuration.png)
+![Hostname changed from Switch to Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_02A%20Hostname%20changed%20from%20Switch%20to%20Class-A.jpg)
+
+![Hostname changed from Switch to Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_02B%20Hostname%20changed%20from%20Switch%20to%20Class-B.jpg)
+
+---
 
 ### Line Security
 
@@ -58,7 +62,11 @@ Class-A(config-line)#login
 
 Leaving vty lines without a password is a common misconfiguration that turns Telnet or SSH into an open door. Setting `login` without a password locks an admin out, and setting a password without `login` doesn't actually enforce it, so both commands had to be present together to work as intended.
 
-![Console and vty lines configured with password on Class-A and Class-B](images/basic-switch-and-end-device-configuration/line-password-configuration.png)
+![Console and vty lines configured with password on Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_03A%20Console%20and%20vty%20lines%20configured%20with%20password%20on%20Class-A.jpg)
+
+![Console and vty lines configured with password on Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_03B%20Console%20and%20vty%20lines%20configured%20with%20password%20on%20Class-B.jpg)
+
+---
 
 ### Enable Secret
 
@@ -70,7 +78,11 @@ Class-A(config)#enable secret 6EBUp
 
 The enable secret is hashed by default in the running configuration, unlike the plain `enable password` command, which stores the value in clear text. Using `secret` instead of `password` for privileged access is a small choice with a real difference in how exposed that credential is if someone gets a look at the config file.
 
-![Enable secret configured on Class-A and Class-B](images/basic-switch-and-end-device-configuration/enable-secret-configuration.png)
+![Enable secret configured on Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_04A%20Enable%20secret%20configured%20on%20Class-A.jpg)
+
+![Enable secret configured on Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_04B%20Enable%20secret%20configured%20on%20Class-B.jpg)
+
+---
 
 ### Password Encryption
 
@@ -80,7 +92,11 @@ Class-A(config)#service password-encryption
 
 This command encrypts the line passwords (console and vty) that would otherwise sit in plain text in the configuration file. It's a weak, reversible encryption by modern standards, but it still beats leaving credentials fully readable to anyone who can view the config, whether that's over the shoulder, in a backup file, or in a config pasted into a support ticket.
 
-![Service password-encryption applied to Class-A and Class-B](images/basic-switch-and-end-device-configuration/password-encryption.png)
+![Service password-encryption applied to Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_05A%20Service%20password-encryption%20applied%20to%20Class-A.jpg)
+
+![Service password-encryption applied to Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_05B%20Service%20password-encryption%20applied%20to%20Class-B.jpg)
+
+---
 
 ### MOTD Banner
 
@@ -90,7 +106,11 @@ Class-A(config)#banner motd #Authorized Access Only!!!#
 
 A message-of-the-day banner displays before login. Its real value is legal, not technical: it puts anyone connecting on notice that access is restricted, which matters if an organization ever needs to pursue action against unauthorized access. It's a small step that gets skipped more often than it should.
 
-![MOTD banner displayed on Class-A and Class-B before login](images/basic-switch-and-end-device-configuration/motd-banner.png)
+![MOTD banner displayed on Class-A and Class-B before login](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_06A%20MOTD%20banner%20displayed%20on%20Class-A.jpg)
+
+![MOTD banner displayed on Class-A and Class-B before login](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_06B%20MOTD%20banner%20displayed%20on%20Class-B.jpg)
+
+---
 
 ### IP Addressing
 
@@ -109,7 +129,11 @@ Class-A(config-if)#no shutdown
 | Student-1 | NIC | *[fill in: IP not visible in lab screenshots]* | 255.255.255.0 |
 | Student-2 | NIC | 128.107.20.30 | 255.255.255.0 |
 
-![IP address and subnet mask assigned to Class-A and Class-B VLAN 1 interfaces](images/basic-switch-and-end-device-configuration/ip-addressing-configuration.png)
+![IP address and subnet mask assigned to Class-A and Class-B VLAN 1 interfaces](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_07A%20IP%20address%20and%20subnet%20mask%20assigned%20to%20Class-A%20VLAN%201%20interfaces.jpg)
+
+![IP address and subnet mask assigned to Class-A and Class-B VLAN 1 interfaces](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_07B%20IP%20address%20and%20subnet%20mask%20assigned%20to%20Class-B%20VLAN%201%20interfaces.jpg)
+
+---
 
 ### Saving the Configuration
 
@@ -119,7 +143,9 @@ Class-A#copy running-config startup-config
 
 Running configuration only lives in memory. If a switch loses power or reboots before this command runs, every change made in the session is gone. Saving to startup-config is the step that actually makes the work persistent.
 
-![Running configuration saved to startup configuration on Class-A and Class-B](images/basic-switch-and-end-device-configuration/save-configuration.png)
+![Running configuration saved to startup configuration on Class-A and Class-B](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_08%20Running%20configuration%20saved%20to%20startup%20configuration%20on%20Class-A%20and%20Class-B.jpg)
+
+
 
 ---
 
@@ -138,9 +164,9 @@ Connectivity was tested with ICMP pings between every device pair in the topolog
 
 All six tests passed, confirming end-to-end reachability between both PCs and both switches.
 
-![Connectivity test results showing all ICMP tests successful](images/basic-switch-and-end-device-configuration/connectivity-verification.png)
+![Connectivity test results showing all ICMP tests successful](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_09%20Connectivity%20test%20results%20showing%20all%20ICMP%20tests%20successful.jpg)
 
-![Final assessment results showing completed activity score](images/basic-switch-and-end-device-configuration/assessment-results.png)
+![Final assessment results showing completed activity score](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/Networking/Screenshots/05_10%20Final%20assessment%20results%20showing%20completed%20activity%20score.jpg)
 
 ---
 
