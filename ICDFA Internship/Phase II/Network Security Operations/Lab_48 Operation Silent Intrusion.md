@@ -187,17 +187,9 @@ returned data in the visible response body, making extraction trivial with
 no blind injection techniques required.
 
 #### Remediation
-Replace all raw query construction with prepared parameterized statements.
-The application must not pass `$_GET['search']` directly into a SQL string:
-```php
-// Replace:
-$query = "SELECT * FROM books WHERE title LIKE '%" . $_GET['search'] . "%'";
-
-// With:
-$stmt = $pdo->prepare("SELECT * FROM books WHERE title LIKE ?");
-$stmt->execute(['%' . $_GET['search'] . '%']);
-```
-Deploy a Web Application Firewall configured to detect and block requests
+- Replace all raw query construction with prepared parameterized statements.
+The application must not pass `$_GET['search']` directly into a SQL string.
+- Deploy a Web Application Firewall configured to detect and block requests
 containing SQL keywords (`UNION`, `SELECT`, `INFORMATION_SCHEMA`) in GET
 parameters. The WAF provides a detection and blocking layer while the code
 fix is implemented.
@@ -303,18 +295,12 @@ found, the login page becomes the target for credential attacks, as
 demonstrated in Finding 04.
 
 #### Remediation
-Move the admin interface to a non-predictable path that is not guessable
-by a standard wordlist. Additionally, restrict access to the admin path
+- Move the admin interface to a non-predictable path that is not guessable
+by a standard wordlist. 
+- Additionally, restrict access to the admin path
 by IP address at the web server configuration level, allowing only traffic
-from known administrative source IPs:
-
-```apache
-<Directory /var/www/html/admin>
-    Require ip 10.0.0.0/8
-    Require ip 192.168.0.0/16
-</Directory>
-```
-Disable directory listing with `Options -Indexes` to prevent the web server
+from known administrative source IPs.
+- Disable directory listing with `Options -Indexes` to prevent the web server
 from confirming directory existence through redirect behavior.
 
 ---
@@ -371,13 +357,10 @@ enumerated in Finding 01 may contain stored passwords accessible via SQLi,
 meaning the two findings may chain directly.
 
 #### Remediation
-Change the admin password immediately to a randomly generated string of at
-least 20 characters. Implement multi-factor authentication on all admin
-accounts before any other access is permitted. Apply rate limiting and account
-lockout after 5 failed login attempts on the admin login endpoint. Consider
-removing the admin interface from the web-facing application entirely and
-managing the application through a separate, network-restricted management
-interface.
+- Change the admin password immediately to a randomly generated string of at least 20 characters. 
+- Implement multi-factor authentication on all admin accounts before any other access is permitted. Apply rate limiting and account
+lockout after 5 failed login attempts on the admin login endpoint.
+- Consider removing the admin interface from the web-facing application entirely and managing the application through a separate, network-restricted management interface.
 
 ---
 
@@ -434,7 +417,7 @@ The file NVri2vhp.php has been uploaded.
 ```
 
 #### Impact
-An uploaded PHP reverse shell provides the attacker with persistent,
+An uploaded PHP reverse shell could provides the attacker with persistent,
 interactive remote access to the web server without needing to re-exploit
 any prior vulnerability. The shell connects back to the attacker's machine,
 bypassing inbound firewall rules. From this position, the attacker can read
@@ -445,26 +428,12 @@ password changes, session termination, and even application patching unless
 the file itself is removed.
 
 #### Remediation
-Validate all uploaded files using server-side magic byte inspection before
+- Validate all uploaded files using server-side magic byte inspection before
 storage. Reject any file whose content signature does not match a permitted
-image type:
-```php
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $_FILES['fileToUpload']['tmp_name']);
-$allowed = ['image/jpeg', 'image/png', 'image/gif'];
-if (!in_array($mime, $allowed)) {
-    die("File type not permitted.");
-}
-```
-Store uploaded files outside the web root and rename them to randomly
+image type.
+- Store uploaded files outside the web root and rename them to randomly
 generated strings with a forced safe extension. Disable PHP execution in
-all upload directories:
-```apache
-<Directory /var/www/html/uploads>
-    php_flag engine off
-    Options -ExecCGI
-</Directory>
-```
+all upload directories.
 
 ---
 
