@@ -1,13 +1,6 @@
 # Operation Silent Intrusion
-## Multi-Stage Web Application Intrusion -- bookworldstore.com Forensic Investigation
 
-**Student Name:** Asekun Fatai
-**Student ID:** 2025/INT/12158
-**Course:** Network Security Operations
-**Instructor:** Mr. Aminu Idris
-**Date:** 24 July 2026
-
----
+## Multi-Stage Web Application Intrusion: bookworldstore.com Forensic Investigation
 
 ## 1. Engagement Overview
 
@@ -67,7 +60,7 @@ confirmed via ASN lookup against the attacker's address.
 
 ## 4. Methodology
 
-### Phase 1 -- Attacker Identification
+### Phase 1: Attacker Identification
 Wireshark conversation statistics were opened (Statistics > Conversations >
 TCP tab). The IP pair `111.224.250.131` and `73.124.22.98` accounted for
 94.22% of total packets (83,368 packets, 28 MB). This volume alone was not
@@ -77,7 +70,7 @@ patterns in repeated GET requests to `/search.php`, confirming `111.224.250.131`
 as the attacker. ASN and geolocation lookup against the IP confirmed the origin
 as ChinaNet Hebei Province (ASN 4134), Shijiazhuang, Hebei, China.
 
-### Phase 2 -- SQL Injection Analysis
+### Phase 2: SQL Injection Analysis
 HTTP stream filtering was applied using `http.request.method == "GET"` and
 `ip.src == 111.224.250.131`. TCP streams were followed for requests to
 `/search.php` to reconstruct the full injection sequence. The first injection
@@ -87,14 +80,14 @@ in TCP stream 36. Subsequent streams showed UNION SELECT payloads using
 server's 200 OK responses containing database table names and column schemas
 in the HTML response body were extracted from stream content.
 
-### Phase 3 -- Directory Enumeration and Admin Access
+### Phase 3: Directory Enumeration and Admin Access
 HTTP GET requests to `/admin/` were identified returning HTTP 302. A subsequent
 POST request to `/admin/login.php` was followed in the TCP stream, which
 showed form-encoded credentials submitted in the request body. The 302 redirect
 response to `/admin/index.php` confirmed successful authentication. The
 `/admin/index.php` response body was extracted and showed a file upload form.
 
-### Phase 4 -- Web Shell Upload and Persistence
+### Phase 4: Web Shell Upload and Persistence
 A POST request to `/admin/index.php` with `Content-Type: multipart/form-data`
 was identified. The TCP stream was followed to extract the full upload request,
 including the PHP payload content embedded in the file part. The server's
@@ -107,11 +100,11 @@ and the HTTP 200 OK response recorded.
 
 | ID | Vulnerability | Severity | Affected Endpoint |
 |----|--------------|----------|-------------------|
-| 01 | SQL Injection -- UNION-Based Database Enumeration | Critical | /search.php |
+| 01 | SQL Injection : UNION-Based Database Enumeration | Critical | /search.php |
 | 02 | Customer PII Exposed via SQLi (customers table) | Critical | /search.php |
 | 03 | Hidden Admin Directory Accessible via Directory Enumeration | High | /admin/ |
 | 04 | Default / Weak Admin Credentials | High | /admin/login.php |
-| 05 | Unrestricted File Upload -- PHP Web Shell Installed | Critical | /admin/index.php |
+| 05 | Unrestricted File Upload: PHP Web Shell Installed | Critical | /admin/index.php |
 | 06 | Server Version Disclosure via HTTP Response Headers | Medium | All HTTP Responses |
 
 ---
@@ -120,13 +113,13 @@ and the HTTP 200 OK response recorded.
 
 ---
 
-### Finding 01 -- SQL Injection via UNION SELECT on /search.php
+### Finding 01 : SQL Injection via UNION SELECT on /search.php
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/search.php` -- GET, `search` parameter
+`/search.php`: GET, `search` parameter
 
 #### Description
 The `/search.php` endpoint passes the `search` GET parameter directly into a
@@ -143,7 +136,7 @@ First boolean-based probe extracted from TCP stream 36:
 
 
 
-![Wireshark TCP Stream 36 - First SQLi Probe Request to /search.php](image.jpg)
+![Wireshark TCP Stream 36 - First SQLi Probe Request to /search.php](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_01%20Wireshark%20TCP%20Stream%2036%20-%20First%20SQLi%20Probe%20Request%20to%20search.php.jpg)
 
 
 
@@ -169,7 +162,7 @@ Server response returning database table names in the HTML body:
 
 
 
-![Wireshark - 200 OK Response Containing admin, books, customers Table Names](image.jpg)
+![Wireshark - 200 OK Response Containing admin, books, customers Table Names](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_02%20Wireshark%20-%20200%20OK%20Response%20Containing%20admin%2C%20books%2C%20customers%20Table%20Names.jpg)
 
 
 
@@ -196,13 +189,13 @@ fix is implemented.
 
 ---
 
-### Finding 02 -- Customer PII Exposed via SQL Injection
+### Finding 02: Customer PII Exposed via SQL Injection
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/search.php` -- GET, `search` parameter (customers table)
+`/search.php`: GET, `search` parameter (customers table)
 
 #### Description
 Following schema enumeration, the attacker used `sqlmap` to target the
@@ -220,7 +213,7 @@ column structure:
 
 
 
-![Wireshark - sqlmap UNION SELECT Querying INFORMATION_SCHEMA.COLUMNS for customers Table](image.jpg)
+![Wireshark - sqlmap UNION SELECT Querying INFORMATION_SCHEMA.COLUMNS for customers Table](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_02%20Wireshark%20-%20200%20OK%20Response%20Containing%20admin%2C%20books%2C%20customers%20Table%20Names.jpg)
 
 
 
@@ -250,13 +243,13 @@ query using an account that has read-only access to the `books` table only.
 
 ---
 
-### Finding 03 -- Hidden Admin Directory Accessible via Enumeration
+### Finding 03: Hidden Admin Directory Accessible via Enumeration
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/admin/` -- HTTP GET
+`/admin/`: HTTP GET
 
 #### Description
 After completing database enumeration, the attacker performed directory
@@ -274,7 +267,7 @@ visible in the Wireshark TCP stream:
 
 
 
-![Wireshark - GET /admin/ Request and 302 Redirect Response Confirming Admin Directory](image.jpg)
+![Wireshark - GET /admin/ Request and 302 Redirect Response Confirming Admin Directory](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_03%20Wireshark%20-%20GET%20admin%20Request%20and%20302%20Redirect%20Response%20Confirming%20Admin%20Directory.jpg)
 
 Request and response:
 ```
@@ -289,8 +282,8 @@ Expires: Thu, 19 Nov 1981 08:52:00 GMT
 
 #### Impact
 An attacker who does not know the admin path cannot target the login page.
-Exposing the admin directory at `/admin/` -- a predictable and commonly
-checked path -- means any automated directory scanner would find it. Once
+Exposing the admin directory at `/admin/`, a predictable and commonly
+checked path means any automated directory scanner would find it. Once
 found, the login page becomes the target for credential attacks, as
 demonstrated in Finding 04.
 
@@ -305,13 +298,13 @@ from confirming directory existence through redirect behavior.
 
 ---
 
-### Finding 04 -- Weak Administrative Credentials
+### Finding 04: Weak Administrative Credentials
 
 #### Severity
 High
 
 #### Affected Endpoint
-`/admin/login.php` -- POST, `username` and `password` fields
+`/admin/login.php`: POST, `username` and `password` fields
 
 #### Description
 The attacker authenticated to the administrative login page using the
@@ -330,7 +323,7 @@ confirming successful authentication:
 
 
 
-![Wireshark - POST /admin/login.php with admin/admin123! Credentials and 302 Response](image.jpg)
+![Wireshark - POST /admin/login.php with admin/admin123! Credentials and 302 Response](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_04%20Wireshark%20-%20POST%20admin-login.php%20with%20admin%20admin123!%20Credentials%20and%20302%20Response.jpg)
 
 
 
@@ -364,13 +357,13 @@ lockout after 5 failed login attempts on the admin login endpoint.
 
 ---
 
-### Finding 05 -- Unrestricted File Upload via Admin Dashboard
+### Finding 05: Unrestricted File Upload via Admin Dashboard
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/admin/index.php` -- POST, file upload form
+`/admin/index.php`: POST, file upload form
 
 #### Description
 The `/admin/index.php` page presented a file upload form immediately after
@@ -388,7 +381,7 @@ reverse shell payload:
 
 
 
-![Wireshark - POST /admin/index.php Multipart Upload Request with NVri2vhp.php Payload](image.jpg)
+![Wireshark - POST /admin/index.php Multipart Upload Request with NVri2vhp.php Payload](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/48_05%20Wireshark%20-%20POST%20admin-index.php%20Multipart%20Upload%20Request%20with%20NVri2vhp.php%20Payload.jpg)
 
 
 
@@ -401,13 +394,6 @@ Content-Type: application/x-php
 ```
 
 Server response confirming successful upload:
-
-
-
-![Wireshark - 200 OK Response Confirming NVri2vhp.php Uploaded Successfully](image.jpg)
-
-
-
 ```
 HTTP/1.1 200 OK
 Date: Fri, 15 Mar 2024 12:24:17 GMT
@@ -437,7 +423,7 @@ all upload directories.
 
 ---
 
-### Finding 06 -- Server Version Disclosure via HTTP Response Headers
+### Finding 06: Server Version Disclosure via HTTP Response Headers
 
 #### Severity
 Medium
@@ -502,7 +488,7 @@ to suppress version disclosure. Update Apache to the current supported release.
 | Indicator | Value | Description |
 |-----------|-------|-------------|
 | Attacker IP | `111.224.250.131` | Source of all malicious traffic |
-| Geographic Origin | Shijiazhuang, Hebei, China (ASN 4134 -- ChinaNet Hebei) | GeoIP attribution |
+| Geographic Origin | Shijiazhuang, Hebei, China (ASN 4134: ChinaNet Hebei) | GeoIP attribution |
 | User-Agent | `sqlmap/1.8.3#stable (https://sqlmap.org)` | Automated SQLi tool |
 | User-Agent | `Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0` | Manual browsing sessions |
 | C2 Port | TCP 443 | Reverse shell outbound destination |
@@ -527,14 +513,14 @@ to suppress version disclosure. Update Apache to the current supported release.
 
 **Detection Improvements**
 
-A WAF or IDS configured with regex rules targeting SQL keywords in GET
+- A WAF or IDS configured with regex rules targeting SQL keywords in GET
 parameters would have flagged the injection at the first UNION SELECT request.
 Patterns to detect include `UNION`, `SELECT`, `INFORMATION_SCHEMA`, and
 `CONCAT` appearing in URL-encoded query parameters. The sqlmap User-Agent
 (`sqlmap/1.8.3`) is a reliable blocklist entry that would have blocked all
 automated injection requests immediately upon the first scan packet.
 
-File upload monitoring should alert on the creation of any `.php` file in web
+- File upload monitoring should alert on the creation of any `.php` file in web
 directories. A File Integrity Monitoring tool (OSSEC, Tripwire, or Wazuh)
 configured to watch the upload directory would have triggered an alert at the
 moment `NVri2vhp.php` was written to disk, before the reverse shell was
@@ -542,7 +528,7 @@ activated.
 
 **Response Automation**
 
-When the admin file upload alert fires, manual containment is too slow. A SOAR
+- When the admin file upload alert fires, manual containment is too slow. A SOAR
 playbook triggered by the alert should automatically isolate the affected host
 from the network, revoke all active session tokens (invalidating the attacker's
 PHPSESSID), preserve volatile memory and process list for forensic analysis,
