@@ -40,28 +40,28 @@ I'm a cybersecurity professional with hands-on expertise in **penetration testin
 ## 🎯 Key Skills & Competencies
 
 ### 🔴 Offensive Security
-- **Penetration Testing & Vulnerability Assessment** — Identifying, exploiting, and reporting security flaws
-- **Web Application Security** — SQL Injection, XSS, CSRF, file upload bypasses, IDOR, authentication bypass
-- **Network Reconnaissance** — OSINT, footprinting, DNS analysis, SMB enumeration, service discovery
-- **Reverse Engineering & Exploitation** — Command injection, reverse shells, privilege escalation, RCE
-- **Password Cracking** — Dictionary attacks, brute-force, hash cracking, rainbow tables
-- **Man-in-the-Middle Attacks** — DNS spoofing, ARP poisoning, packet interception, session hijacking
+- **Penetration Testing & Vulnerability Assessment**: Identifying, exploiting, and reporting security flaws
+- **Web Application Security**: SQL Injection, XSS, CSRF, file upload bypasses, IDOR, authentication bypass
+- **Network Reconnaissance**: OSINT, footprinting, DNS analysis, SMB enumeration, service discovery
+- **Reverse Engineering & Exploitation**: Command injection, reverse shells, privilege escalation, RCE
+- **Password Cracking**: Dictionary attacks, brute-force, hash cracking, rainbow tables
+- **Man-in-the-Middle Attacks**: DNS spoofing, ARP poisoning, packet interception, session hijacking
 
 ### 🟢 Defensive Security
-- **Network Forensics & Analysis** — Wireshark packet analysis, PCAP investigation, traffic anomaly detection
-- **Intrusion Detection Systems** — IDS/IPS configuration, rule creation, threat detection, alert analysis
-- **System Hardening** — Linux security, firewall rules, SELinux policies, access control, user management
-- **Incident Response** — Case study analysis, forensic investigation, threat analysis, timeline reconstruction
-- **Secure Communication** — Cryptography, TLS/SSL, SSH, VPN protocols, digital signatures, PKI
-- **Digital Forensics** — Evidence preservation, file recovery, artifact analysis, forensic tools
+- **Network Forensics & Analysis**: Wireshark packet analysis, PCAP investigation, traffic anomaly detection
+- **Intrusion Detection Systems**: IDS/IPS configuration, rule creation, threat detection, alert analysis
+- **System Hardening**: Linux security, firewall rules, SELinux policies, access control, user management
+- **Incident Response**: Case study analysis, forensic investigation, threat analysis, timeline reconstruction
+- **Secure Communication**: Cryptography, TLS/SSL, SSH, VPN protocols, digital signatures, PKI
+- **Digital Forensics**: Evidence preservation, file recovery, artifact analysis, forensic tools
 
 ### 💻 Core Technical Competencies
-- **Linux System Administration** — User/group management, permissions, services, log management, automation
-- **Windows System Administration** — File system, registry, batch scripting, system configuration
-- **Bash Scripting & Automation** — Security tool development, log parsing, custom exploit automation
-- **Network Protocols & Configuration** — TCP/IP, IPv4/IPv6, subnetting, routing, VLAN, DNS, SMB, HTTP/HTTPS
-- **Database Security** — SQL, database architecture, injection prevention, secure queries
-- **Security Frameworks & Compliance** — OWASP Top 10, risk assessment, threat modeling, security best practices
+- **Linux System Administration**: User/group management, permissions, services, log management, automation
+- **Windows System Administration**: File system, registry, batch scripting, system configuration
+- **Bash Scripting & Automation**: Security tool development, log parsing, custom exploit automation
+- **Network Protocols & Configuration**: TCP/IP, IPv4/IPv6, subnetting, routing, VLAN, DNS, SMB, HTTP/HTTPS
+- **Database Security**: SQL, database architecture, injection prevention, secure queries
+- **Security Frameworks & Compliance**: OWASP Top 10, risk assessment, threat modeling, security best practices
 
 ---
 
